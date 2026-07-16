@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Publish bilingual panel and handoff</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">PUBLISHED</span><h1>Publish the bilingual panel and second-computer handoff</h1><p class="meta"><time datetime="2026-07-16">2026-07-16</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>Verify the completed GitHub authentication, publish all current simulator changes and project rules to the repository, and make the result ready for a second computer to pull and run without separately billed AI services.</p></section>
+    <section><h2>Published scope</h2><ul><li>Chinese and English language switching for the control panel, including persistent language selection.</li><li>Correct panel language metadata, preserved offline-model status, and translated climate-limit alerts.</li><li>Project-wide scope, cost, reviewer, and English HTML work-log rules in <code>AGENTS.md</code>.</li><li>The English second-computer handoff prompt and all English work logs.</li><li>Static contract updates for versioned local assets and the language-switch contract.</li></ul></section>
+    <section><h2>Reviewer recommendations and disposition</h2><ul><li>The reviewer found no blocking or high-severity issue.</li><li>Recommendation: do not mark the entire mostly Chinese page as English when only the control panel is translated. Applied by keeping the document language as Traditional Chinese and changing only <code>#controlPanel</code>.</li><li>Recommendation: preserve the offline model badge and reason when the language changes. Applied through dedicated display-state and reason tracking.</li><li>Related improvement: translate all six known climate-limit messages inside the English panel. Applied.</li><li>The bounded follow-up review did not return additional findings before its deadline, so it was stopped in accordance with the two-round limit.</li></ul></section>
+    <section><h2>Validation</h2><ul><li>GitHub CLI authentication and repository ownership were verified.</li><li>Node.js syntax validation passed for <code>app.js</code>.</li><li>Of 13 repository tests, 12 passed and the CasADi integration test was skipped as expected because its environment flag was not enabled.</li><li>All six pre-publication work-log HTML files parsed successfully.</li><li>No Chinese characters were found in the second-computer prompt or work logs.</li><li><code>git diff --check</code> passed.</li></ul></section>
+    <section><h2>Publication</h2><p>Commit <code>3aab0ef</code> (<code>Add bilingual panel and project handoff workflow</code>) was pushed directly to <code>origin/main</code> at <code>benbenbeatit912002/Greenlight-simulation</code>. Direct publication to <code>main</code> was intentional so the second computer can use a normal fast-forward pull.</p></section>
+  </body>
+</html>
