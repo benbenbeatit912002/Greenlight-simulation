@@ -6,6 +6,16 @@ Copy the prompt below into Codex on the second Windows computer only after the l
 You are working on my second Windows computer. The current workspace should be
 the existing folder for the GreenLight greenhouse simulation project.
 
+Operating constraint:
+- I am controlling this task only from the Codex mobile interface and cannot
+  type commands directly on the second computer.
+- Execute all safe inspection, Git, environment setup, test, and server commands
+  yourself through the available tools. Do not hand routine commands back to me
+  for manual execution.
+- Ask me only when a genuine blocker requires a path choice, login, security
+  approval, or a decision that cannot be made safely from the workspace.
+- Keep me informed with short status updates suitable for reading on a phone.
+
 Goal:
 Safely synchronize the latest Greenlight-simulation repository from GitHub,
 read the project rules, install the required dependencies, run the tests, and
