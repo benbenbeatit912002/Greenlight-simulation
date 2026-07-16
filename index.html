@@ -11,7 +11,7 @@
     <title>GreenLight 2 溫室模擬器</title>
     <link rel="stylesheet" href="styles.css">
     <script defer src="simulator-engine.js"></script>
-    <script defer src="app.js"></script>
+    <script defer src="app.js?v=20260711-language-toggle"></script>
   </head>
   <body>
     <div class="app-shell" id="simulatorApp">
@@ -339,52 +339,55 @@
           </div>
         </section>
 
-        <aside class="control-panel" aria-labelledby="controlPanelTitle">
+        <aside class="control-panel" id="controlPanel" lang="zh-Hant" aria-labelledby="controlPanelTitle">
           <div class="control-panel-header">
             <div>
               <span class="eyebrow">CONTROL PANEL</span>
-              <h2 id="controlPanelTitle">氣候控制</h2>
+              <h2 id="controlPanelTitle" data-i18n="panelTitle">氣候控制</h2>
             </div>
             <div class="control-header-meta">
+              <button class="language-toggle" id="languageToggle" type="button" aria-label="切換為英文">
+                <span aria-hidden="true">文</span><span id="languageToggleLabel">EN</span>
+              </button>
               <span class="engine-badge" id="engineBadge" data-engine="browser">
                 <i aria-hidden="true"></i>
                 <span id="engineLabel">即時近似模型</span>
               </span>
-              <span class="model-step">STEP <b id="stepValue">0000</b></span>
+              <span class="model-step"><span data-i18n="step">STEP</span> <b id="stepValue">0000</b></span>
             </div>
           </div>
 
-          <div class="mode-switch" role="group" aria-label="控制模式">
+          <div class="mode-switch" role="group" data-i18n-aria-label="controlMode" aria-label="控制模式">
             <button type="button" data-mode="auto" aria-pressed="true">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v3m0 14v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg>
-              自動控制
+              <span data-i18n="autoControl">自動控制</span>
             </button>
             <button type="button" data-mode="manual" aria-pressed="false">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-6h6m2 8h6"/></svg>
-              手動控制
+              <span data-i18n="manualControl">手動控制</span>
             </button>
           </div>
 
           <section class="target-section" id="targetSection" aria-labelledby="targetTitle">
             <div class="section-title-row">
-              <h3 id="targetTitle">自動控制目標</h3>
-              <span>規則控制器</span>
+              <h3 id="targetTitle" data-i18n="targetTitle">自動控制目標</h3>
+              <span data-i18n="ruleController">規則控制器</span>
             </div>
             <div class="target-grid">
               <label for="dayTempTarget">
-                <span>日間溫度</span>
+                <span data-i18n="dayTemperature">日間溫度</span>
                 <div><input id="dayTempTarget" type="number" min="16" max="30" step="0.5" value="21.5"><b>°C</b></div>
               </label>
               <label for="nightTempTarget">
-                <span>夜間溫度</span>
+                <span data-i18n="nightTemperature">夜間溫度</span>
                 <div><input id="nightTempTarget" type="number" min="12" max="24" step="0.5" value="17.5"><b>°C</b></div>
               </label>
               <label for="co2Target">
-                <span>CO₂ 目標</span>
+                <span data-i18n="co2Target">CO₂ 目標</span>
                 <div><input id="co2Target" type="number" min="400" max="1500" step="50" value="900"><b>ppm</b></div>
               </label>
               <label for="rhTarget">
-                <span>濕度上限</span>
+                <span data-i18n="humidityLimit">濕度上限</span>
                 <div><input id="rhTarget" type="number" min="60" max="90" step="1" value="82"><b>%</b></div>
               </label>
             </div>
@@ -392,7 +395,7 @@
 
           <section class="actuator-section" aria-labelledby="actuatorTitle">
             <div class="section-title-row">
-              <h3 id="actuatorTitle">GreenLight 致動器</h3>
+              <h3 id="actuatorTitle" data-i18n="actuators">GreenLight 致動器</h3>
               <span id="actuatorModeHint">自動調節中</span>
             </div>
 
@@ -401,7 +404,7 @@
                 <span class="control-symbol heat-symbol">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 19c-3-4 2-6 0-10 4 2 3 5 3 7 2-2 2-5 4-8 4 5 3 9 1 11"/></svg>
                 </span>
-                <span class="control-copy"><b>鍋爐加熱</b><small>uBoil</small></span>
+                <span class="control-copy"><b data-i18n="boilerHeating">鍋爐加熱</b><small>uBoil</small></span>
                 <input id="uBoilControl" data-control="uBoil" type="range" min="0" max="100" step="1" value="38">
                 <output id="uBoilOutput" for="uBoilControl">38%</output>
               </label>
@@ -410,7 +413,7 @@
                 <span class="control-symbol co2-symbol">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16a4 4 0 1 1 1.2-7.8A5.5 5.5 0 0 1 18 9.5 3.5 3.5 0 1 1 18 16H6Z"/></svg>
                 </span>
-                <span class="control-copy"><b>CO₂ 注入</b><small>uCO2</small></span>
+                <span class="control-copy"><b data-i18n="co2Injection">CO₂ 注入</b><small>uCO2</small></span>
                 <input id="uCO2Control" data-control="uCO2" type="range" min="0" max="100" step="1" value="18">
                 <output id="uCO2Output" for="uCO2Control">18%</output>
               </label>
@@ -419,7 +422,7 @@
                 <span class="control-symbol screen-symbol">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v5H3zM5 11v8m14-8v8M3 19h18"/></svg>
                 </span>
-                <span class="control-copy"><b>保溫幕</b><small>uThScr</small></span>
+                <span class="control-copy"><b data-i18n="thermalScreen">保溫幕</b><small>uThScr</small></span>
                 <input id="uThScrControl" data-control="uThScr" type="range" min="0" max="100" step="1" value="46">
                 <output id="uThScrOutput" for="uThScrControl">46%</output>
               </label>
@@ -428,7 +431,7 @@
                 <span class="control-symbol vent-symbol">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17 12 7l8 10M7 17h10M12 7v10"/></svg>
                 </span>
-                <span class="control-copy"><b>屋頂通風</b><small>uVent</small></span>
+                <span class="control-copy"><b data-i18n="roofVentilation">屋頂通風</b><small>uVent</small></span>
                 <input id="uVentControl" data-control="uVent" type="range" min="0" max="100" step="1" value="5">
                 <output id="uVentOutput" for="uVentControl">5%</output>
               </label>
@@ -437,7 +440,7 @@
                 <span class="control-symbol lamp-symbol">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6m-5 3h4M8.5 14.5A7 7 0 1 1 15.5 14.5L14 17h-4l-1.5-2.5Z"/></svg>
                 </span>
-                <span class="control-copy"><b>補光燈</b><small>uLamp</small></span>
+                <span class="control-copy"><b data-i18n="growLights">補光燈</b><small>uLamp</small></span>
                 <input id="uLampControl" data-control="uLamp" type="range" min="0" max="100" step="1" value="34">
                 <output id="uLampOutput" for="uLampControl">34%</output>
               </label>
@@ -446,7 +449,7 @@
                 <span class="control-symbol blackout-symbol">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 9h16M9 5v14"/></svg>
                 </span>
-                <span class="control-copy"><b>遮光幕</b><small>uBlScr</small></span>
+                <span class="control-copy"><b data-i18n="blackoutScreen">遮光幕</b><small>uBlScr</small></span>
                 <input id="uBlScrControl" data-control="uBlScr" type="range" min="0" max="100" step="1" value="0">
                 <output id="uBlScrOutput" for="uBlScrControl">0%</output>
               </label>
@@ -455,20 +458,20 @@
 
           <section class="resource-section" aria-labelledby="resourceTitle">
             <div class="section-title-row">
-              <h3 id="resourceTitle">本次模擬用量</h3>
-              <span>每平方米</span>
+              <h3 id="resourceTitle" data-i18n="resourceUse">本次模擬用量</h3>
+              <span data-i18n="perSquareMeter">每平方米</span>
             </div>
             <div class="resource-grid">
-              <div><span>暖氣</span><strong><b id="resourceHeat">0.000</b> kWh</strong></div>
-              <div><span>補光</span><strong><b id="resourceLamp">0.000</b> kWh</strong></div>
+              <div><span data-i18n="heating">暖氣</span><strong><b id="resourceHeat">0.000</b> kWh</strong></div>
+              <div><span data-i18n="supplementalLighting">補光</span><strong><b id="resourceLamp">0.000</b> kWh</strong></div>
               <div><span>CO₂</span><strong><b id="resourceCo2">0.000</b> kg</strong></div>
-              <div><span>估計成本</span><strong>€<b id="resourceCost">0.000</b></strong></div>
+              <div><span data-i18n="estimatedCost">估計成本</span><strong>€<b id="resourceCost">0.000</b></strong></div>
             </div>
           </section>
 
           <div class="alert-box" id="alertBox" role="status" aria-live="polite">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg>
-            <div><strong>氣候狀態正常</strong><span>所有變量皆在 GreenLight 限制範圍內</span></div>
+            <div><strong data-i18n="climateNormal">氣候狀態正常</strong><span data-i18n="withinLimits">所有變量皆在 GreenLight 限制範圍內</span></div>
           </div>
 
           <p class="model-note" id="modelNote">

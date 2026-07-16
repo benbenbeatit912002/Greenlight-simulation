@@ -4,6 +4,7 @@ import re
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,11 +44,12 @@ class StaticContractTests(unittest.TestCase):
 
     def test_local_assets_exist(self) -> None:
         assets = self.parser.scripts + self.parser.stylesheets
+        asset_paths = [urlsplit(asset).path for asset in assets]
         self.assertEqual(
-            assets,
+            asset_paths,
             ["simulator-engine.js", "app.js", "styles.css"],
         )
-        for asset in assets:
+        for asset in asset_paths:
             self.assertTrue((ROOT / asset).is_file(), asset)
 
     def test_every_app_lookup_exists_in_html(self) -> None:
@@ -73,6 +75,12 @@ class StaticContractTests(unittest.TestCase):
         self.assertIn('aria-live="polite"', self.html)
         self.assertIn('role="img"', self.html)
         self.assertIn('aria-label="模擬執行控制"', self.html)
+        self.assertIn("languageToggle", self.parser.ids)
+        self.assertIn("controlPanel", self.parser.ids)
+        self.assertIn("toggleLanguage", self.app_js)
+        self.assertIn('byId("controlPanel").lang', self.app_js)
+        self.assertIn("engineDisplayState", self.app_js)
+        self.assertIn("translateViolation", self.app_js)
 
 
 if __name__ == "__main__":

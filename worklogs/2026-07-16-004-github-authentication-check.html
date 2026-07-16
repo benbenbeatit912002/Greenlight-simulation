@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | GitHub authentication check</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #ffd786; border: 1px solid #6e5a2c; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">WAITING</span><h1>Check GitHub authentication before publication</h1><p class="meta"><time datetime="2026-07-16">2026-07-16</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>The user reported that GitHub login had completed and asked Codex to continue publishing the current project changes.</p></section>
+    <section><h2>Checks performed</h2><ul><li>Located GitHub CLI 2.96.0 at <code>C:\Program Files\GitHub CLI\gh.exe</code>.</li><li>Confirmed that the current shell had not refreshed PATH, so the executable was invoked through its full path.</li><li>Ran <code>gh auth status</code> for the configured account.</li></ul></section>
+    <section><h2>Blocker</h2><p>GitHub CLI reports that the configured account is active but its stored token is invalid. Publication is paused until <code>gh auth login -h github.com</code> completes successfully and <code>gh auth status</code> returns success.</p></section>
+    <section><h2>Reviewer and validation</h2><p>No code was changed and publication prerequisites are not satisfied, so reviewer and test execution were not started.</p></section>
+  </body>
+</html>

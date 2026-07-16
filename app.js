@@ -13,12 +13,144 @@
   let resizeFrame = null;
   let currentSnapshot = model.snapshot();
   let activeEngine = "browser";
+  let engineDisplayState = "browser";
+  let engineDisplayReason = "";
   let remoteRevision = null;
   let remoteBusy = false;
+  let language = "zh";
+
+  const translations = {
+    zh: {
+      panelTitle: "氣候控制",
+      step: "STEP",
+      controlMode: "控制模式",
+      autoControl: "自動控制",
+      manualControl: "手動控制",
+      targetTitle: "自動控制目標",
+      ruleController: "規則控制器",
+      dayTemperature: "日間溫度",
+      nightTemperature: "夜間溫度",
+      co2Target: "CO₂ 目標",
+      humidityLimit: "濕度上限",
+      actuators: "GreenLight 致動器",
+      boilerHeating: "鍋爐加熱",
+      co2Injection: "CO₂ 注入",
+      thermalScreen: "保溫幕",
+      roofVentilation: "屋頂通風",
+      growLights: "補光燈",
+      blackoutScreen: "遮光幕",
+      resourceUse: "本次模擬用量",
+      perSquareMeter: "每平方米",
+      heating: "暖氣",
+      supplementalLighting: "補光",
+      estimatedCost: "估計成本",
+      climateNormal: "氣候狀態正常",
+      climateWarning: "氣候限制警示",
+      withinLimits: "所有變量皆在 GreenLight 限制範圍內",
+      autoAdjusting: "自動調節中",
+      dragSliders: "拖曳滑桿調整",
+      fullModel: "GreenLight 2 完整模型",
+      offlineModel: "科學模型已離線",
+      approximateModel: "即時近似模型",
+      fullModelNote: "15 分鐘／步 · 28-state GreenLight-Gym2 CasADi 模型 · 阿姆斯特丹實測天氣。六項控制值直接使用 0–1 絕對開度。",
+      browserModelNote: "15 分鐘／步 · 6 項 GreenLight 2 控制量。此介面使用簡化氣候動態作即時互動展示；啟用 Python 科學後端後會自動切換完整 28-state 模型。",
+      offlineModelNote: "GreenLight-Gym2 連線中斷，已安全切回瀏覽器近似模型。",
+      switchToEnglish: "切換為英文",
+      switchToChinese: "切換為中文",
+      roomBelow15: "室溫低於 15°C",
+      roomAbove34: "室溫高於 34°C",
+      humidityBelow50: "相對濕度低於 50%",
+      humidityAbove85: "相對濕度高於 85%",
+      co2Below300: "CO₂ 低於 300 ppm",
+      co2Above1600: "CO₂ 高於 1600 ppm",
+    },
+    en: {
+      panelTitle: "Climate controls",
+      step: "STEP",
+      controlMode: "Control mode",
+      autoControl: "Auto control",
+      manualControl: "Manual control",
+      targetTitle: "Auto-control targets",
+      ruleController: "Rule controller",
+      dayTemperature: "Day temperature",
+      nightTemperature: "Night temperature",
+      co2Target: "CO₂ target",
+      humidityLimit: "Humidity limit",
+      actuators: "GreenLight actuators",
+      boilerHeating: "Boiler heating",
+      co2Injection: "CO₂ injection",
+      thermalScreen: "Thermal screen",
+      roofVentilation: "Roof ventilation",
+      growLights: "Grow lights",
+      blackoutScreen: "Blackout screen",
+      resourceUse: "Simulation resource use",
+      perSquareMeter: "Per m²",
+      heating: "Heating",
+      supplementalLighting: "Supplemental lighting",
+      estimatedCost: "Estimated cost",
+      climateNormal: "Climate status normal",
+      climateWarning: "Climate limit warning",
+      withinLimits: "All variables are within GreenLight limits",
+      autoAdjusting: "Adjusting automatically",
+      dragSliders: "Drag sliders to adjust",
+      fullModel: "GreenLight 2 full model",
+      offlineModel: "Scientific model offline",
+      approximateModel: "Real-time approximation",
+      fullModelNote: "15 min/step · 28-state GreenLight-Gym2 CasADi model · measured Amsterdam weather. The six controls use absolute 0–1 openings.",
+      browserModelNote: "15 min/step · 6 GreenLight 2 control variables. This interface uses simplified climate dynamics for live interaction; it switches to the full 28-state model when the Python scientific backend is available.",
+      offlineModelNote: "GreenLight-Gym2 connection lost. Safely switched to the browser approximation.",
+      switchToEnglish: "Switch to English",
+      switchToChinese: "切換為中文",
+      roomBelow15: "Room temperature is below 15°C",
+      roomAbove34: "Room temperature is above 34°C",
+      humidityBelow50: "Relative humidity is below 50%",
+      humidityAbove85: "Relative humidity is above 85%",
+      co2Below300: "CO₂ is below 300 ppm",
+      co2Above1600: "CO₂ is above 1600 ppm",
+    },
+  };
 
   const controls = Array.from(document.querySelectorAll("[data-control]"));
   const modeButtons = Array.from(document.querySelectorAll("[data-mode]"));
   const chartButtons = Array.from(document.querySelectorAll("[data-chart]"));
+
+  try {
+    language = window.localStorage.getItem("greenlight-panel-language") === "en" ? "en" : "zh";
+  } catch {
+    language = "zh";
+  }
+
+  function t(key) {
+    return translations[language][key] || translations.zh[key] || key;
+  }
+
+  function applyLanguage() {
+    document.documentElement.lang = "zh-Hant";
+    byId("controlPanel").lang = language === "en" ? "en" : "zh-Hant";
+    root.dataset.language = language;
+    document.querySelectorAll("[data-i18n]").forEach((element) => {
+      element.textContent = t(element.dataset.i18n);
+    });
+    document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+      element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+    });
+    const toggle = byId("languageToggle");
+    setText("languageToggleLabel", language === "zh" ? "EN" : "中文");
+    toggle.setAttribute("aria-label", language === "zh" ? t("switchToEnglish") : t("switchToChinese"));
+    updateEngineStatus(engineDisplayState, engineDisplayReason);
+    updateControls(currentSnapshot);
+    updateAlert(currentSnapshot);
+  }
+
+  function toggleLanguage() {
+    language = language === "zh" ? "en" : "zh";
+    try {
+      window.localStorage.setItem("greenlight-panel-language", language);
+    } catch {
+      // The switch remains available even when browser storage is unavailable.
+    }
+    applyLanguage();
+  }
 
   function setText(id, value) {
     const element = byId(id);
@@ -42,28 +174,21 @@
 
   function updateEngineStatus(engine, reason = "") {
     const badge = byId("engineBadge");
+    engineDisplayState = engine;
+    engineDisplayReason = reason;
     badge.dataset.engine = engine;
     if (engine === "greenlight2") {
-      setText("engineLabel", "GreenLight 2 完整模型");
-      setText(
-        "modelNote",
-        "15 分鐘／步 · 28-state GreenLight-Gym2 CasADi 模型 · 阿姆斯特丹實測天氣。六項控制值直接使用 0–1 絕對開度。",
-      );
+      setText("engineLabel", t("fullModel"));
+      setText("modelNote", t("fullModelNote"));
       return;
     }
     if (engine === "error") {
-      setText("engineLabel", "科學模型已離線");
-      setText(
-        "modelNote",
-        `GreenLight-Gym2 連線中斷，已安全切回瀏覽器近似模型。${reason ? ` ${reason}` : ""}`,
-      );
+      setText("engineLabel", t("offlineModel"));
+      setText("modelNote", `${t("offlineModelNote")}${reason ? ` ${reason}` : ""}`);
       return;
     }
-    setText("engineLabel", "即時近似模型");
-    setText(
-      "modelNote",
-      "15 分鐘／步 · 6 項 GreenLight 2 控制量。此介面使用簡化氣候動態作即時互動展示；啟用 Python 科學後端後會自動切換完整 28-state 模型。",
-    );
+    setText("engineLabel", t("approximateModel"));
+    setText("modelNote", t("browserModelNote"));
   }
 
   async function requestApi(path, payload) {
@@ -238,7 +363,7 @@
     });
 
     byId("targetSection").classList.toggle("hidden", snapshot.mode !== "auto");
-    setText("actuatorModeHint", snapshot.mode === "auto" ? "自動調節中" : "拖曳滑桿調整");
+    setText("actuatorModeHint", snapshot.mode === "auto" ? t("autoAdjusting") : t("dragSliders"));
   }
 
   function updateAlert(snapshot) {
@@ -247,10 +372,22 @@
     const message = alertBox.querySelector("span");
     const hasViolation = snapshot.violations.length > 0;
     alertBox.classList.toggle("warning", hasViolation);
-    title.textContent = hasViolation ? "氣候限制警示" : "氣候狀態正常";
+    title.textContent = hasViolation ? t("climateWarning") : t("climateNormal");
     message.textContent = hasViolation
-      ? snapshot.violations.join(" · ")
-      : "所有變量皆在 GreenLight 限制範圍內";
+      ? snapshot.violations.map(translateViolation).join(" · ")
+      : t("withinLimits");
+  }
+
+  function translateViolation(message) {
+    const keys = {
+      "室溫低於 15°C": "roomBelow15",
+      "室溫高於 34°C": "roomAbove34",
+      "相對濕度低於 50%": "humidityBelow50",
+      "相對濕度高於 85%": "humidityAbove85",
+      "CO₂ 低於 300 ppm": "co2Below300",
+      "CO₂ 高於 1600 ppm": "co2Above1600",
+    };
+    return keys[message] ? t(keys[message]) : message;
   }
 
   function render(snapshot = currentSnapshot) {
@@ -499,6 +636,7 @@
   }
 
   function bindEvents() {
+    byId("languageToggle").addEventListener("click", toggleLanguage);
     byId("playButton").addEventListener("click", () => setRunning(!isRunning));
 
     byId("resetButton").addEventListener("click", async () => {
@@ -595,6 +733,7 @@
     });
   }
 
+  applyLanguage();
   bindEvents();
   render(currentSnapshot);
   probeBackend();

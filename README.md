@@ -1,5 +1,7 @@
 # GreenLight 2 溫室模擬器
 
+Project collaboration and validation records are available from [`worklogs/index.html`](worklogs/index.html). The ready-to-copy instructions for setting up another computer are in [`SECOND_COMPUTER_PROMPT.md`](SECOND_COMPUTER_PROMPT.md).
+
 獨立的 GreenLight 2 互動溫室與科學模型橋接器：
 
 ```text
@@ -127,4 +129,3 @@ greenlight-2-simulator/
 ├─ pyproject.toml
 └─ uv.lock
 ```
-

@@ -1097,6 +1097,29 @@ h3 {
   gap: 5px;
 }
 
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 4px 7px;
+  color: var(--muted-strong);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.12);
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.language-toggle:hover,
+.language-toggle:focus-visible {
+  color: var(--green);
+  border-color: rgba(112, 224, 161, 0.42);
+  background: var(--green-soft);
+}
+
 .engine-badge {
   display: inline-flex;
   align-items: center;

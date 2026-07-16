@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Project collaboration workflow</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">COMPLETED</span><h1>Configure project scope, no separate API billing, and HTML work logs</h1><p class="meta"><time datetime="2026-07-16">2026-07-16</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>Do not use separately billed GPT APIs. Keep Codex and reviewer collaboration limited to the GreenLight greenhouse simulation project, and create an HTML work log for every project conversation.</p></section>
+    <section><h2>Decisions and constraints</h2><ul><li>Do not use the OpenAI API, request an API key, or connect to another usage-billed AI service.</li><li>Built-in Codex reviewer subagents are allowed. They do not create a separate API bill but may count against the existing plan quota.</li><li>All writes remain inside <code>greenlight-2-simulator</code>; sibling projects are read-only.</li><li>Non-trivial changes use no more than two review rounds.</li></ul></section>
+    <section><h2>Completed work</h2><ul><li>Added <code>AGENTS.md</code> with scope, cost, review, and work-log rules.</li><li>Added <code>worklogs/index.html</code>.</li><li>Created the first standalone HTML work log.</li></ul></section>
+    <section><h2>Reviewer</h2><p>Review was skipped because this task only added project instructions and static documentation; it did not change simulator runtime behavior.</p></section>
+    <section><h2>Validation</h2><ul><li>The HTML parser successfully parsed both initial work-log files.</li><li>Of 13 existing tests, 12 passed and the CasADi integration test was skipped as expected because its environment flag was not enabled.</li><li><code>git diff --check</code> passed.</li><li>Existing uncommitted language-switch changes were preserved.</li></ul></section>
+  </body>
+</html>
+
