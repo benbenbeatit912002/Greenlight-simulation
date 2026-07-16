@@ -3,7 +3,14 @@
 ## Scope
 
 - Work only inside this `greenlight-2-simulator` repository unless the user explicitly expands the scope.
-- Sibling GreenLight or practice repositories may be inspected read-only when required for compatibility, but must not be modified.
+- Treat every GreenLight practice repository, every GreenLight-Gym2 practice repository, and every GreenLight 2 research or thesis directory outside this repository as protected research material.
+- Source files in protected GreenLight code repositories may be read or imported when necessary for compatibility or scientific-model execution. This is the only permitted external access.
+- Never modify, delete, move, rename, format, patch, stage, commit, check out, install into, test inside, or create cache or bytecode files in protected code repositories.
+- Never read or modify thesis manuscripts, paper drafts, datasets, experiment outputs, results, notes, or other non-source research artifacts unless the user explicitly requests that exact file.
+- Keep every virtual environment, dependency, cache, log, output, and generated file inside this repository. Use `PYTHONDONTWRITEBYTECODE=1` and Python `-B` whenever protected source code is imported.
+- Do not run broad recursive commands from a parent directory that contains protected research material. Read only the specific source paths required by the simulator.
+- If a requested task would require writing to protected research material, stop and report the conflict instead of attempting the write.
+- Open this repository itself as the workspace root. Do not open a common parent directory that also contains protected research projects.
 - Preserve unrelated user changes already present in the worktree.
 
 ## Cost and model usage

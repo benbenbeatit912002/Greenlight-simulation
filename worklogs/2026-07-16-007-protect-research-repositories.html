@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Protect research repositories</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">COMPLETED</span><h1>Protect practice and research repositories during second-computer setup</h1><p class="meta"><time datetime="2026-07-16">2026-07-16</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>Provide exact instructions for the second computer and guarantee that GreenLight practice repositories and GreenLight 2 thesis/research work are not modified. The user clarified that source code may be read or imported, but it must remain strictly read-only.</p></section>
+    <section><h2>Decisions</h2><ul><li>Greenlight-simulation remains a separate workspace and the only writable project.</li><li>Specific source-code files in external GreenLight repositories may be read/imported when required by the scientific model.</li><li>No modification, deletion, move, rename, formatting, patching, Git mutation, installation, test execution, cache, or bytecode generation is allowed in external code repositories.</li><li>Thesis manuscripts, datasets, experiment outputs, results, notes, and other non-source research artifacts remain out of scope.</li><li>All environments, dependencies, caches, logs, and outputs remain inside Greenlight-simulation.</li></ul></section>
+    <section><h2>Files changed</h2><ul><li><code>AGENTS.md</code> now contains the durable protected-research policy.</li><li><code>SECOND_COMPUTER_PROMPT.md</code> now includes exact workspace, read-only source, no-write, <code>-B</code>, and <code>PYTHONDONTWRITEBYTECODE</code> safeguards.</li><li><code>README.md</code> now highlights protected research mode.</li></ul></section>
+    <section><h2>Reviewer</h2><p>A read-only reviewer inspected only the three changed files without accessing sibling repositories. It found no blocking issues and concluded <code>SAFE TO PUBLISH</code>.</p></section>
+    <section><h2>Validation</h2><ul><li>Of 13 repository tests, 12 passed and the CasADi integration test was skipped as expected because its environment flag was not enabled.</li><li>No Chinese characters were found in the English second-computer prompt or existing work logs.</li><li><code>git diff --check</code> passed.</li></ul></section>
+  </body>
+</html>

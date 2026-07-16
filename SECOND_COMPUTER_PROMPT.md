@@ -27,14 +27,38 @@ Safety rules:
 - Do not delete, reset, or overwrite existing local files.
 - Do not use `git reset --hard` or discard local changes with checkout.
 - Modify only the Greenlight-simulation project.
-- Sibling GreenLight-Gym2 repositories may be inspected read-only but must not
-  be modified.
+- The user's GreenLight practice repositories, GreenLight-Gym2 practice
+  repositories, GreenLight 2 research directories, thesis files, paper data,
+  experiments, and results are protected research material.
+- You may read or import specific source-code files from the protected
+  GreenLight code repositories when required for compatibility or full-model
+  execution. This is the only permitted access outside Greenlight-simulation.
+- Never modify, delete, move, rename, format, patch, stage, commit, check out,
+  install into, test inside, or create cache or bytecode files in a protected
+  code repository.
+- Never read or modify thesis manuscripts, paper drafts, datasets, experiment
+  outputs, results, notes, or other non-source research artifacts unless I ask
+  for that exact file.
+- Keep every virtual environment, downloaded dependency, cache, log, output,
+  and generated file inside Greenlight-simulation. Set
+  `PYTHONDONTWRITEBYTECODE=1` and launch Python with `-B` before importing any
+  protected source code.
+- Do not run broad recursive commands from a parent folder containing protected
+  research. Read only the exact source paths required by this simulator.
+- Open only Greenlight-simulation as the workspace root. If the current
+  workspace is a parent folder that also contains protected research, stop and
+  ask me to reopen Codex directly on the simulation repository.
 - For every completed user request, follow AGENTS.md and create an English HTML
   work log.
 
 Perform these steps in order:
 
-1. Confirm the current folder and run:
+1. Resolve and display only the current folder:
+   Resolve-Path .
+
+   Confirm that it is the dedicated Greenlight-simulation folder and is not a
+   protected research folder or a shared parent containing protected research.
+   Do not list the parent directory. When safe, run:
    git status -sb
    git remote -v
 
@@ -58,9 +82,10 @@ Perform these steps in order:
    - SECOND_COMPUTER_PROMPT.md
    - the latest HTML file in worklogs/
 
-5. Check for Python 3.12, uv, and the local project environment. Install only
-   the free and open-source dependencies required to run this project. If
-   `.venv` does not exist, run in PowerShell:
+5. Check for Python 3.12, uv, and the local project environment without writing
+   outside this repository. Install only free and open-source dependencies into
+   this repository's `.venv`. If `.venv` does not exist, run in PowerShell:
+   $env:PYTHONDONTWRITEBYTECODE = '1'
    $env:UV_CACHE_DIR = "$PWD\.uv-cache"
    uv sync --extra greenlight --python 3.12
 
@@ -68,15 +93,17 @@ Perform these steps in order:
    & '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
 
 7. Start the simulator:
+   $env:PYTHONDONTWRITEBYTECODE = '1'
    & '.\.venv\Scripts\python.exe' -B .\server.py --engine auto
 
-8. Verify that http://127.0.0.1:4173/ opens and report whether it is using:
-   - the full GreenLight 2 model; or
-   - the browser approximation model.
+8. Verify that http://127.0.0.1:4173/ opens and report whether it is using the
+   full GreenLight 2 model or the browser approximation model.
 
-9. If the full model cannot start, diagnose missing sibling GreenLight-Gym2
-   source code or free dependencies. Do not modify the sibling repository and
-   do not use paid services.
+9. The simulator may read/import the exact sibling GreenLight-Gym2 source path,
+   but it must not write there. Do not run installers, formatters, tests, Git
+   mutations, or broad searches in that repository. If full-model startup would
+   require any write outside Greenlight-simulation, stop and report the safety
+   conflict instead of continuing.
 
 10. For every non-trivial change, use this bounded workflow:
     - The primary Codex agent implements the change.
@@ -88,4 +115,3 @@ Perform these steps in order:
 Continue until the simulator starts successfully or you reach a genuine safety
 blocker that requires my decision.
 ```
-
