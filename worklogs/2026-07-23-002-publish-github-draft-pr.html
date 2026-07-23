@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Publish the project to GitHub</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">COMPLETED</span><h1>Publish the public greenhouse project to GitHub</h1><p class="meta"><time datetime="2026-07-23">2026-07-23</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>Upload the completed GreenLight Simulation project updates to the owner's GitHub repository.</p></section>
+    <section><h2>Scope decision</h2><p>The publication includes the accumulated, related simulator work from the preceding requests: public showcase and bilingual onboarding, scientific-engine transparency, product documentation, the explainable strategy-comparison workbench, static contracts, protected-source guidance, and all required English work logs. No parent-folder, thesis, dataset, experiment-result, or protected-repository file is included.</p></section>
+    <section><h2>Publication workflow</h2><ul><li>Confirmed <code>origin</code> is <code>https://github.com/benbenbeatit912002/Greenlight-simulation.git</code>.</li><li>Fetched the remote and verified local <code>main</code> exactly matched <code>origin/main</code> before publication.</li><li>Reauthenticated the GitHub CLI through GitHub's official device flow. No token or device code was written to this work log or committed.</li><li>Created <code>agent/public-greenhouse-decision-workbench</code> instead of pushing directly to <code>main</code>.</li><li>Committed only the explicit project files and pushed the branch with upstream tracking.</li><li>Opened a draft pull request targeting <code>main</code> so the repository owner can review the complete public-project update before merging.</li></ul></section>
+    <section><h2>Safety checks</h2><ul><li>A targeted scan found no GitHub token, OpenAI-style key, AWS access-key pattern, private-key block, API-key assignment, or password assignment in the publication scope.</li><li><code>.runtime/</code>, <code>.venv/</code>, <code>.uv-cache/</code>, Python bytecode, and test caches are ignored and were not staged.</li><li><code>git diff --check</code> passed; only the repository's existing LF-to-CRLF working-copy notices were reported.</li><li>The remote branch name was checked before creation so no existing GitHub branch was overwritten.</li></ul></section>
+    <section><h2>Validation</h2><ul><li><code>node --check app.js</code> passed.</li><li>All 16 discovered tests passed; the opt-in scientific integration test was skipped as designed in the default suite.</li><li>The previously enabled full GreenLight-Gym2 CasADi integration test and live scientific server validation are recorded in the July 21 work log.</li></ul></section>
+    <section><h2>Reviewer</h2><p>No new code reviewer was started for this operational publication step. The feature implementation and bounded reviewer attempts are documented in the July 17 and July 21 work logs; this request changed only publication metadata and the required work log.</p></section>
+    <section><h2>Files published</h2><p><code>.gitignore</code>, <code>README.md</code>, <code>PRODUCT_STRATEGY.md</code>, <code>index.html</code>, <code>app.js</code>, <code>styles.css</code>, <code>tests/test_static_contract.py</code>, <code>worklogs/index.html</code>, and the four accumulated unpublished work logs plus this publication log.</p></section>
+    <section><h2>Git status</h2><p>The project was published on the isolated agent branch and proposed through a draft pull request. Nothing was force-pushed, reset, discarded, or pushed directly to <code>main</code>.</p></section>
+  </body>
+</html>

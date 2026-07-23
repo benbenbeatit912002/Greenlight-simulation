@@ -1,23 +1,111 @@
-# GreenLight 2 溫室模擬器
+# GreenLight 2 Greenhouse Simulator
+
+An interactive greenhouse digital twin that connects a polished browser interface to the 28-state GreenLight-Gym2 scientific model. Explore climate control, crop response, actuator behavior, measured Amsterdam weather, and resource use in one local application.
+
+[Overview](#overview) · [Product direction](#product-direction) · [Quick start](#quick-start) · [Model modes](#model-modes) · [Architecture](#architecture) · [繁體中文](#繁體中文)
+
+## Overview
+
+The simulator is designed to be useful in two settings:
+
+- **Scientific local mode** runs the GreenLight-Gym2 CasADi/CVODES model with 28 states, six absolute controls, 15-minute steps, and measured Amsterdam weather.
+- **Installation-free interaction** uses a clearly labelled browser approximation so the interface remains explorable when the scientific backend is unavailable.
+
+The interface shows indoor and outdoor climate, crop state, control targets, actuator openings, limit warnings, trends, energy use, CO₂ use, and estimated cost. It supports both a rule-based controller and manual control of `uBoil`, `uCO2`, `uThScr`, `uVent`, `uLamp`, and `uBlScr`.
+
+## Product direction
+
+This project is an **explainable pre-deployment decision-support workbench**, not a production greenhouse controller. Run one strategy, save it as a baseline, reset, and run a candidate to the same horizon. The comparison remains hidden when the runs use different engines or unequal horizons, and it keeps weather context visible so a user can distinguish a control comparison from a broader scenario comparison.
+
+The first comparison covers heating, supplemental lighting, CO₂, estimated cost, end-state climate alerts, and fruit dry mass. These are trade-offs rather than a single winner score, and the interface explicitly states that simulation output is not production advice.
+
+The evidence, target user, scope boundaries, and staged roadmap are documented in [`PRODUCT_STRATEGY.md`](PRODUCT_STRATEGY.md).
+
+## Quick start
+
+### Browser approximation
+
+This mode demonstrates the interface without importing the external GreenLight-Gym2 source tree:
+
+```powershell
+git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
+Set-Location .\Greenlight-simulation
+$env:PYTHONDONTWRITEBYTECODE = '1'
+$env:UV_CACHE_DIR = "$PWD\.uv-cache"
+uv sync --python 3.12
+& '.\.venv\Scripts\python.exe' -B .\server.py --engine browser
+```
+
+Open <http://127.0.0.1:4173/>.
+
+### Full scientific model
+
+Install the optional open-source scientific dependencies inside this repository, then point the adapter to a read-only GreenLight-Gym2 source checkout:
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE = '1'
+$env:UV_CACHE_DIR = "$PWD\.uv-cache"
+$env:GREENLIGHT_GYM_PATH = 'C:\path\to\GreenLight-Gym2'
+uv sync --extra greenlight --python 3.12
+& '.\.venv\Scripts\python.exe' -B .\server.py --engine glgym
+```
+
+The control-panel badge should report **GreenLight 2 full model**. The adapter imports GreenLight-Gym2 read-only; it does not install into or modify that source checkout.
+
+## Model modes
+
+| Mode | Behavior | Intended use |
+| --- | --- | --- |
+| `--engine glgym` | Requires the full GreenLight-Gym2 model and stops if initialization fails. | Scientific-model validation and local research use. |
+| `--engine auto` | Prefers the full model and falls back to the labelled browser approximation when unavailable. | Normal local use and presentations. |
+| `--engine browser` | Serves the interface without constructing the scientific model. | UI demonstrations and lightweight review. |
+
+The active engine is always visible in the interface and available from `GET /api/status`. Approximation output is never presented as a full scientific result.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    UI["HTML / CSS / JavaScript interface"] -->|"same-origin JSON"| API["Local Python HTTP API"]
+    API --> ADAPTER["GreenLight adapter"]
+    ADAPTER -->|"read-only source import"| MODEL["GreenLight-Gym2 · 28-state CasADi model"]
+    UI --> FALLBACK["Labelled browser approximation"]
+```
+
+- The server binds to `127.0.0.1` by default and does not enable CORS.
+- API mutations use monotonic revisions to prevent stale tabs from overwriting newer state.
+- The frontend stops overlapping simulation loops and safely falls back if the Python backend disappears.
+- Runtime dependencies, caches, logs, and generated files stay inside this repository.
+
+## Validation
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE = '1'
+& '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+To opt into a real CasADi reset-and-step integration check:
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE = '1'
+$env:RUN_GREENLIGHT_INTEGRATION = '1'
+& '.\.venv\Scripts\python.exe' -B -m unittest tests.test_greenlight_integration -v
+```
 
 Project collaboration and validation records are available from [`worklogs/index.html`](worklogs/index.html). The ready-to-copy instructions for setting up another computer are in [`SECOND_COMPUTER_PROMPT.md`](SECOND_COMPUTER_PROMPT.md).
 
 > **Protected research mode:** GreenLight practice and GreenLight 2 source code outside this repository may be loaded read-only, but it must never be modified. Keep `.venv`, downloads, caches, logs, and outputs inside this repository; set `PYTHONDONTWRITEBYTECODE=1` and launch with Python `-B`. Thesis manuscripts, datasets, experiment outputs, and other non-source research artifacts remain out of scope.
 
-獨立的 GreenLight 2 互動溫室與科學模型橋接器：
+## 繁體中文
 
-```text
-C:\Project\greenlight-project\greenlight-2-simulator
-```
-
-它不在 `greenlight-practice` 或 `GreenLight-Gym2-practice` 裡。後端以唯讀方式載入同層的 GL-Gym2 原始碼，並禁止在 practice 專案產生 Python bytecode。
+這是一個獨立的 GreenLight 2 互動溫室與科學模型橋接器。它不應放在 `greenlight-practice` 或 `GreenLight-Gym2-practice` 裡；後端以唯讀方式載入指定的 GL-Gym2 原始碼，並禁止在 practice 專案產生 Python bytecode。
 
 ## 現在直接啟動完整模型
 
-依賴已安裝在本資料夾自己的 `.venv`：
+在專案資料夾內，使用自己的 `.venv` 啟動：
 
 ```powershell
-cd C:\Project\greenlight-project\greenlight-2-simulator
+$env:PYTHONDONTWRITEBYTECODE = '1'
 & '.\.venv\Scripts\python.exe' -B .\server.py --engine glgym
 ```
 

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Second-computer sync and simulator startup</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">COMPLETED</span><h1>Synchronize and start the simulator on the second computer</h1><p class="meta"><time datetime="2026-07-17">2026-07-17</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>Safely synchronize the latest repository, follow the project rules, verify the repository-local Python environment and dependencies, run the tests, start the simulator in automatic engine mode, and confirm whether the scientific model or browser approximation is active. No API billing, paid credits, Fast mode, or writes to protected research repositories were allowed.</p></section>
+    <section><h2>Decisions and assumptions</h2><ul><li>The user explicitly authorized work against the exact <code>Greenlight-simulation</code> path while the Codex workspace remained attached elsewhere.</li><li>The clean local <code>main</code> branch and matching GitHub <code>origin</code> made a fast-forward-only pull safe.</li><li>The existing <code>.venv</code> was retained because it already used Python 3.12.13 and contained every required optional GreenLight dependency.</li><li>Protected GreenLight-Gym2 source was imported read-only with <code>PYTHONDONTWRITEBYTECODE=1</code> and Python <code>-B</code>; runtime temporary files and diagnostics were confined to the ignored repository-local <code>.uv-cache</code>.</li></ul></section>
+    <section><h2>Actions and files changed</h2><ul><li>Fetched and fast-forwarded <code>main</code> from commit <code>2ebab6a</code> to <code>3ea68df</code>.</li><li>Read <code>AGENTS.md</code>, <code>README.md</code>, <code>SECOND_COMPUTER_PROMPT.md</code>, and the latest prior HTML work log completely.</li><li>Verified uv 0.11.13, Python 3.12.13 in <code>.venv</code>, and imports for CasADi, NumPy, SciPy, Pandas, Gymnasium, PyYAML, and pytz.</li><li>Started <code>server.py --engine auto</code> on <code>127.0.0.1:4173</code>.</li><li>Added this work log and updated <code>worklogs/index.html</code>. No simulator source files were edited.</li></ul></section>
+    <section><h2>Reviewer</h2><p>Review was skipped because the primary agent made no simulator code change. The only authored change was the small, required documentation-only work log and index link; synchronization and runtime validation were covered by the full test suite and live HTTP checks.</p></section>
+    <section><h2>Validation</h2><ul><li>All 13 discovered unit tests passed; the opt-in CasADi integration test was skipped as designed.</li><li>The root page returned HTTP 200 with 29,450 bytes.</li><li><code>/api/status</code> reported <code>requested: auto</code>, <code>active: greenlight-gym2</code>, <code>scientific: true</code>, <code>realModelAvailable: true</code>, version 0.3.1, and 28 states.</li><li>The in-app browser had no controllable browser instance, so visual screenshot verification was unavailable; HTTP and API verification succeeded.</li></ul></section>
+    <section><h2>Git status</h2><p>The working tree was clean after the fast-forward pull. After required logging, <code>worklogs/index.html</code> is modified and this work-log file is untracked; no files were staged or committed.</p></section>
+  </body>
+</html>
