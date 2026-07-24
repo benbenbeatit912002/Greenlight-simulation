@@ -2,6 +2,22 @@
   "use strict";
 
   const STEP_MINUTES = 15;
+  const BROWSER_MODEL_VERSION = "2026.07";
+  const BROWSER_WEATHER_VERSION = "synthetic-weather-2026.07";
+  const COST_ASSUMPTIONS = Object.freeze({
+    id: "browser-fixed-eur-2026-07",
+    currency: "EUR",
+    heatEurPerKwh: 0.09,
+    lampEurPerKwh: 0.3,
+    co2EurPerKg: 0.3,
+    liveTariff: false,
+  });
+  const TARGET_LIMITS = Object.freeze({
+    dayTemp: Object.freeze([16, 30]),
+    nightTemp: Object.freeze([12, 24]),
+    co2: Object.freeze([400, 1500]),
+    maxRh: Object.freeze([60, 90]),
+  });
   const CONTROL_NAMES = [
     "uBoil",
     "uCO2",
@@ -74,8 +90,16 @@
 
   class GreenhouseModel {
     constructor(options = {}) {
-      this.scenarioKey = options.scenario || "spring";
-      this.mode = options.mode || "auto";
+      const scenario = options.scenario || "spring";
+      const mode = options.mode || "auto";
+      if (!Object.prototype.hasOwnProperty.call(SCENARIOS, scenario)) {
+        throw new Error(`Unknown weather scenario: ${scenario}`);
+      }
+      if (mode !== "auto" && mode !== "manual") {
+        throw new Error(`Unknown control mode: ${mode}`);
+      }
+      this.scenarioKey = scenario;
+      this.mode = mode;
       this.targets = {
         dayTemp: 21.5,
         nightTemp: 17.5,
@@ -136,7 +160,11 @@
       if (!CONTROL_NAMES.includes(name)) {
         throw new Error(`Unknown GreenLight control: ${name}`);
       }
-      this.controls[name] = clamp(Number(value), 0, 1);
+      const numericValue = Number(value);
+      if (!Number.isFinite(numericValue)) {
+        throw new TypeError(`Control ${name} must be a finite number`);
+      }
+      this.controls[name] = clamp(numericValue, 0, 1);
       return this.controls[name];
     }
 
@@ -144,7 +172,15 @@
       if (!Object.prototype.hasOwnProperty.call(this.targets, name)) {
         throw new Error(`Unknown target: ${name}`);
       }
-      this.targets[name] = Number(value);
+      const numericValue = Number(value);
+      const [minimum, maximum] = TARGET_LIMITS[name];
+      if (!Number.isFinite(numericValue)) {
+        throw new TypeError(`Target ${name} must be a finite number`);
+      }
+      if (numericValue < minimum || numericValue > maximum) {
+        throw new RangeError(`Target ${name} must be between ${minimum} and ${maximum}`);
+      }
+      this.targets[name] = numericValue;
       return this.targets[name];
     }
 
@@ -235,8 +271,11 @@
     }
 
     step(stepCount = 1) {
-      const count = clamp(Math.floor(stepCount), 1, 192);
-      for (let index = 0; index < count; index += 1) {
+      const numericCount = Number(stepCount);
+      if (!Number.isInteger(numericCount) || numericCount < 1 || numericCount > 192) {
+        throw new RangeError("Step count must be an integer between 1 and 192");
+      }
+      for (let index = 0; index < numericCount; index += 1) {
         this._stepOnce();
       }
       return this.snapshot();
@@ -348,11 +387,15 @@
     snapshot() {
       const clock = this.getClock();
       const weather = this.getWeather(clock);
-      const cost = this.state.cumulativeHeatKwh * 0.09
-        + this.state.cumulativeLampKwh * 0.3
-        + this.state.cumulativeCo2Kg * 0.3;
+      const cost = this.state.cumulativeHeatKwh * COST_ASSUMPTIONS.heatEurPerKwh
+        + this.state.cumulativeLampKwh * COST_ASSUMPTIONS.lampEurPerKwh
+        + this.state.cumulativeCo2Kg * COST_ASSUMPTIONS.co2EurPerKg;
 
       return {
+        engine: "browser-approximation",
+        modelVersion: BROWSER_MODEL_VERSION,
+        costModelId: COST_ASSUMPTIONS.id,
+        weatherFingerprint: `${BROWSER_WEATHER_VERSION}:${this.scenarioKey}`,
         modelStep: Math.floor(this.elapsedMinutes / STEP_MINUTES),
         elapsedMinutes: this.elapsedMinutes,
         dayOfYear: clock.dayOfYear,
@@ -397,6 +440,7 @@
           co2Kg: round(this.state.cumulativeCo2Kg, 3),
           costEur: round(cost, 3),
         },
+        economics: { ...COST_ASSUMPTIONS },
         violations: this._violations(),
         history: this.history.map((point) => ({ ...point })),
       };
@@ -408,6 +452,10 @@
     SCENARIOS,
     CONTROL_NAMES,
     STEP_MINUTES,
+    BROWSER_MODEL_VERSION,
+    BROWSER_WEATHER_VERSION,
+    COST_ASSUMPTIONS,
+    TARGET_LIMITS,
     clamp,
     circularHourDistance,
   };

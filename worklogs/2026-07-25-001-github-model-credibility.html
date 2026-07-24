@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | GitHub readiness and model credibility</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; }
+      a { color: #8be8b3; } header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">&larr; Back to the work-log index</a></p>
+    <header>
+      <span class="status">COMPLETED</span>
+      <h1>Make the GitHub project usable and strengthen model credibility</h1>
+      <p class="meta"><time datetime="2026-07-25">2026-07-25</time> &middot; GreenLight Simulation</p>
+    </header>
+    <section>
+      <h2>User request</h2>
+      <p>Research what a usable public GitHub project and a greenhouse-industry side project need, improve the current model, keep all work inside the authorized Greenlight-simulation repository, and record every update in an English HTML log.</p>
+    </section>
+    <section>
+      <h2>Research translated into a product decision</h2>
+      <p>GitHub's community-profile guidance identifies a README, contribution guidance, security policy, issue and pull-request templates, and a clear license as core public-project signals. FAIR4RS emphasizes that research software evolves and therefore needs explicit versioning, executability, and reuse metadata. WUR greenhouse digital-twin research shows that useful decision support combines sensor-aware calibration, scenario generation, resource efficiency, and held-out evaluation. The EPA model-evaluation framework separates software behavior from operational, diagnostic, dynamic, and uncertainty evidence.</p>
+      <p>The resulting decision was to invest this iteration in model provenance, diagnostic contracts, automated CI, and contribution structure instead of adding another unvalidated dashboard feature. The project remains an explainable pre-deployment workbench, not a production controller or agronomic adviser.</p>
+      <ul>
+        <li><a href="https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/about-community-profiles-for-public-repositories">GitHub community profiles</a></li>
+        <li><a href="https://doi.org/10.15497/RDA00068">FAIR Principles for Research Software</a></li>
+        <li><a href="https://research.wur.nl/en/publications/towards-optimization-of-tomato-cultivation-using-a-digital-twin/">WUR tomato digital-twin decision support</a></li>
+        <li><a href="https://www.epa.gov/cmaq/cmaq-model-evaluation-framework">US EPA model-evaluation framework</a></li>
+      </ul>
+    </section>
+    <section>
+      <h2>Model and comparison improvements</h2>
+      <ul>
+        <li>Fixed a reproducible comparison defect: changing weather in browser mode previously retained the old horizon and accumulated resources while assigning a new run ID. All engine modes now stop and reset when the scenario changes.</li>
+        <li>Added browser model version <code>2026.07</code> and versioned economic assumption ID <code>browser-fixed-eur-2026-07</code>.</li>
+        <li>Added equivalent full-model provenance using the GreenLight-Gym2 package label, adapter version, parameter fingerprint, selected-weather fingerprint, and exact Git revision when available. A sandboxed integration run demonstrated the safe fallback: when Git metadata could not be resolved there, the adapter used a SHA-256 fingerprint of only the exact <code>gl_gym</code> Python modules loaded into the process. The final local server resolved the source Git revision normally.</li>
+        <li>Upgraded saved baseline schema to version 2 and blocked deltas when model or cost-assumption versions differ.</li>
+        <li>Added finite-value and range validation for scenarios, modes, controls, targets, and step counts. Invalid UI target values revert to the last valid model value.</li>
+        <li>Moved browser heat, lamp, and CO2 prices into an explicit immutable assumption set and returned it in every snapshot.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Model credibility and GitHub usability</h2>
+      <ul>
+        <li>Added <code>MODEL_CARD.md</code> with intended uses, unsupported uses, engine boundaries, economic assumptions, current evidence, known limitations, reproduction steps, and a staged validation roadmap.</li>
+        <li>Added deterministic Node tests covering all four scenarios, finite/bounded values, monotonic cumulative resources, reset behavior, bad-input rejection, and directional heating, ventilation, CO2, and lamp responses.</li>
+        <li>Added least-privilege public GitHub Actions CI for the default Python contracts and browser-model tests. All actions are pinned to exact commits, checkout credentials are not persisted, and package-manager caching is disabled.</li>
+        <li>Added <code>CONTRIBUTING.md</code>, <code>SECURITY.md</code>, a pull-request checklist, and structured bug, feature, and model-validation issue forms.</li>
+        <li>Updated the README and product strategy to expose the model card, contribution path, CI, evidence limits, license status, and next priorities.</li>
+        <li>Kept the missing software license explicit instead of choosing legal terms for the owner.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Cost and safety controls</h2>
+      <ul>
+        <li>No OpenAI API, API key, usage-billed AI service, Fast mode, credit purchase, or paid add-on was used.</li>
+        <li>The GitHub Actions workflow uses the repository's public standard runner, read-only token permission, no cache upload, and no artifact upload.</li>
+        <li>No parent directory was listed and no protected repository, thesis file, dataset, experiment output, or research result was modified.</li>
+        <li>The full-model integration imported only the exact read-only GreenLight-Gym2 source with <code>PYTHONDONTWRITEBYTECODE=1</code> and Python <code>-B</code>.</li>
+        <li>All environment and runtime files remained inside Greenlight-simulation.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Validation</h2>
+      <ul>
+        <li><code>node --check simulator-engine.js</code> and <code>node --check app.js</code> passed.</li>
+        <li>All five browser-model contract tests passed.</li>
+        <li>All 17 discovered Python tests passed; the one opt-in full-model test was skipped as designed in the default suite.</li>
+        <li>The separately enabled GreenLight-Gym2 CasADi integration test passed.</li>
+        <li>All six workflow and issue-form YAML files parsed successfully.</li>
+        <li><code>uv lock --check</code> passed with the repository-local cache.</li>
+        <li>Live browser validation ran the full model to step 80, changed the scenario, and confirmed the UI returned to step 0 with heat, lamp, CO2, and estimated cost reset to zero. No browser console warning or error was present.</li>
+        <li>The updated local server reported the full <code>greenlight-gym2</code> engine, package version <code>0.3.1</code>, immutable composite model identity, weather fingerprint, and the expected cost-model identifier.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Reviewer</h2>
+      <p>One read-only reviewer found five actionable issues: mutable full-model provenance, overclaimed digital-twin wording, insufficient explicit state-bound tests, an unreachable security-report fallback, and mutable CI action references. The primary agent accepted all five recommendations. The full model now uses a Git revision or loaded-source fingerprint plus parameter and weather fingerprints; public wording consistently says simulation/workbench; tests assert climate, crop, horizon, history, and invalid-input bounds; a non-sensitive security-contact form exists; and CI actions are commit-pinned with credentials and caching disabled. No follow-up reviewer was used.</p>
+    </section>
+    <section>
+      <h2>Publication target</h2>
+      <p>The completed update is intended for the existing draft pull request on branch <code>agent/public-greenhouse-decision-workbench</code>. No force push, destructive reset, direct push to <code>main</code>, or automatic merge is authorized.</p>
+    </section>
+  </body>
+</html>

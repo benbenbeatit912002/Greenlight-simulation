@@ -21,7 +21,8 @@
   let baselineRun = null;
   let currentRunId = createRunId();
 
-  const BASELINE_STORAGE_KEY = "greenlight-decision-baseline-v1";
+  const BASELINE_STORAGE_KEY = "greenlight-decision-baseline-v2";
+  const PROVENANCE_SENTINELS = ["unknown", "unversioned", "local-source"];
 
   const translations = {
     zh: {
@@ -134,9 +135,10 @@
       comparisonReady: "可比較：兩個方案皆運行 {steps} 步（{hours} 小時）。",
       comparisonStepMismatch: "請把目前方案運行到第 {steps} 步；目前為第 {current} 步。步數一致前不顯示差異。",
       comparisonEngineMismatch: "模型引擎不同，無法安全比較。基準：{baseline}；目前：{candidate}。",
+      comparisonModelMismatch: "模型或成本假設版本不同，無法安全比較。基準：{baseline}；目前：{candidate}。",
       comparisonWeatherMatch: "天氣情境一致，適合隔離控制策略差異。",
       comparisonWeatherDifference: "天氣情境不同；結果同時包含天氣與控制差異。",
-      comparisonMeta: "STEP {step} · {mode} · {engine}",
+      comparisonMeta: "STEP {step} · {mode} · {engine} · {version}",
       comparisonAutoStrategy: "日 {day}°C · 夜 {night}°C · CO₂ {co2} ppm · RH ≤ {rh}%",
       comparisonManualStrategy: "鍋爐 {boil}% · CO₂ {co2}% · 保溫幕 {thermal}% · 通風 {vent}% · 燈 {lamp}% · 遮光 {blackout}%",
       climateNormal: "氣候狀態正常",
@@ -291,9 +293,10 @@
       comparisonReady: "Comparable: both runs cover {steps} steps ({hours} hours).",
       comparisonStepMismatch: "Run the current strategy to step {steps}; it is now at step {current}. Deltas stay hidden until horizons match.",
       comparisonEngineMismatch: "The model engines differ, so comparison is blocked. Baseline: {baseline}; current: {candidate}.",
+      comparisonModelMismatch: "The model or cost-assumption versions differ, so comparison is blocked. Baseline: {baseline}; current: {candidate}.",
       comparisonWeatherMatch: "Weather scenarios match, which helps isolate control-strategy effects.",
       comparisonWeatherDifference: "Weather scenarios differ; the result combines weather and control effects.",
-      comparisonMeta: "STEP {step} · {mode} · {engine}",
+      comparisonMeta: "STEP {step} · {mode} · {engine} · {version}",
       comparisonAutoStrategy: "Day {day}°C · night {night}°C · CO₂ {co2} ppm · RH ≤ {rh}%",
       comparisonManualStrategy: "Boiler {boil}% · CO₂ {co2}% · thermal {thermal}% · vent {vent}% · lamp {lamp}% · blackout {blackout}%",
       climateNormal: "Climate status normal",
@@ -400,11 +403,28 @@
   }
 
   function readTargets() {
+    const readBoundedTarget = (inputId, targetName) => {
+      const input = byId(inputId);
+      const value = Number(input.value);
+      const minimum = Number(input.min);
+      const maximum = Number(input.max);
+      if (
+        !Number.isFinite(value)
+        || value < minimum
+        || value > maximum
+        || !input.checkValidity()
+      ) {
+        const fallback = Number(currentSnapshot.targets[targetName]);
+        input.value = String(fallback);
+        return fallback;
+      }
+      return value;
+    };
     return {
-      dayTemp: Number(byId("dayTempTarget").value),
-      nightTemp: Number(byId("nightTempTarget").value),
-      co2: Number(byId("co2Target").value),
-      maxRh: Number(byId("rhTarget").value),
+      dayTemp: readBoundedTarget("dayTempTarget", "dayTemp"),
+      nightTemp: readBoundedTarget("nightTempTarget", "nightTemp"),
+      co2: readBoundedTarget("co2Target", "co2"),
+      maxRh: readBoundedTarget("rhTarget", "maxRh"),
     };
   }
 
@@ -421,7 +441,7 @@
 
   function createRunSummary(snapshot) {
     return {
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId: currentRunId,
       savedAt: new Date().toISOString(),
       modelStep: Number(snapshot.modelStep),
@@ -430,6 +450,9 @@
       scenarioLabel: String(snapshot.scenarioLabel || snapshot.scenario),
       mode: String(snapshot.mode),
       engine: activeEngine === "greenlight2" ? "greenlight2" : "browser",
+      modelVersion: String(snapshot.modelVersion || "unknown"),
+      costModelId: String(snapshot.costModelId || "unknown"),
+      weatherFingerprint: String(snapshot.weatherFingerprint || "unknown"),
       targets: { ...snapshot.targets },
       controls: { ...snapshot.controls },
       resources: {
@@ -444,9 +467,12 @@
   }
 
   function isRunSummary(value) {
-    if (!value || value.schemaVersion !== 1 || typeof value.runId !== "string") return false;
+    if (!value || value.schemaVersion !== 2 || typeof value.runId !== "string") return false;
     if (typeof value.scenario !== "string" || !["auto", "manual"].includes(value.mode)) return false;
     if (!["browser", "greenlight2"].includes(value.engine)) return false;
+    if (typeof value.modelVersion !== "string" || !value.modelVersion) return false;
+    if (typeof value.costModelId !== "string" || !value.costModelId) return false;
+    if (typeof value.weatherFingerprint !== "string" || !value.weatherFingerprint) return false;
     const numericValues = [
       value.modelStep,
       value.elapsedMinutes,
@@ -501,7 +527,31 @@
       step: String(summary.modelStep).padStart(4, "0"),
       mode: t(summary.mode === "manual" ? "manualControl" : "autoControl"),
       engine: comparisonEngineLabel(summary.engine),
+      version: displayModelVersion(summary.modelVersion),
     });
+  }
+
+  function displayModelVersion(version) {
+    return version
+      .replace(/(git\.[0-9a-f]{8})[0-9a-f]{32}/gi, "$1")
+      .replace(/(sha256\.[0-9a-f]{8})[0-9a-f]{56}/gi, "$1")
+      .replace(/(params\.[0-9a-f]{8})[0-9a-f]{56}/gi, "$1");
+  }
+
+  function displayFingerprint(value) {
+    return value.replace(/([0-9a-f]{8})[0-9a-f]{32,56}/gi, "$1");
+  }
+
+  function comparisonModelLabel(summary) {
+    return `${comparisonEngineLabel(summary.engine)} ${displayModelVersion(summary.modelVersion)} / ${summary.costModelId} / weather ${displayFingerprint(summary.weatherFingerprint)}`;
+  }
+
+  function hasComparableProvenance(summary) {
+    return [summary.modelVersion, summary.costModelId, summary.weatherFingerprint].every((value) => (
+      typeof value === "string"
+      && value.length > 0
+      && !PROVENANCE_SENTINELS.some((sentinel) => value.toLowerCase().includes(sentinel))
+    ));
   }
 
   function comparisonStrategy(summary) {
@@ -593,6 +643,13 @@
 
     const status = byId("comparisonStatus");
     const sameEngine = baselineRun.engine === candidate.engine;
+    const sameWeatherEvidence = baselineRun.scenario !== candidate.scenario
+      || baselineRun.weatherFingerprint === candidate.weatherFingerprint;
+    const sameModel = hasComparableProvenance(baselineRun)
+      && hasComparableProvenance(candidate)
+      && baselineRun.modelVersion === candidate.modelVersion
+      && baselineRun.costModelId === candidate.costModelId
+      && sameWeatherEvidence;
     const sameRun = baselineRun.runId === candidate.runId;
     const sameHorizon = baselineRun.modelStep === candidate.modelStep && candidate.modelStep > 0;
     let comparable = false;
@@ -602,6 +659,12 @@
       status.textContent = formatTranslation("comparisonEngineMismatch", {
         baseline: comparisonEngineLabel(baselineRun.engine),
         candidate: comparisonEngineLabel(candidate.engine),
+      });
+    } else if (!sameModel) {
+      status.dataset.state = "blocked";
+      status.textContent = formatTranslation("comparisonModelMismatch", {
+        baseline: comparisonModelLabel(baselineRun),
+        candidate: comparisonModelLabel(candidate),
       });
     } else if (sameRun) {
       status.dataset.state = "pending";
@@ -1199,13 +1262,7 @@
       }
     });
 
-    byId("scenarioSelect").addEventListener("change", async (event) => {
-      if (activeEngine === "browser") {
-        const snapshot = model.setScenario(event.target.value);
-        currentRunId = createRunId();
-        render(snapshot);
-        return;
-      }
+    byId("scenarioSelect").addEventListener("change", async () => {
       setRunning(false);
       try {
         render(await resetActiveEngine());
@@ -1252,9 +1309,8 @@
       ["rhTarget", "maxRh"],
     ];
     targetInputs.forEach(([inputId, targetName]) => {
-      byId(inputId).addEventListener("change", (event) => {
-        const value = Number(event.target.value);
-        if (!Number.isFinite(value)) return;
+      byId(inputId).addEventListener("change", () => {
+        const value = readTargets()[targetName];
         if (activeEngine === "browser") {
           model.setTarget(targetName, value);
           render(model.snapshot());

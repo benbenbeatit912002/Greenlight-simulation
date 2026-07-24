@@ -1,8 +1,10 @@
 # GreenLight 2 Greenhouse Simulator
 
-An interactive greenhouse digital twin that connects a polished browser interface to the 28-state GreenLight-Gym2 scientific model. Explore climate control, crop response, actuator behavior, measured Amsterdam weather, and resource use in one local application.
+An interactive greenhouse simulation and decision-support workbench that connects a polished browser interface to the 28-state GreenLight-Gym2 scientific model. Explore climate control, crop response, actuator behavior, measured Amsterdam weather, and resource use in one local application.
 
-[Overview](#overview) · [Product direction](#product-direction) · [Quick start](#quick-start) · [Model modes](#model-modes) · [Architecture](#architecture) · [繁體中文](#繁體中文)
+[![CI](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml)
+
+[Overview](#overview) · [Product direction](#product-direction) · [Quick start](#quick-start) · [Model modes](#model-modes) · [Model card](MODEL_CARD.md) · [Contributing](CONTRIBUTING.md) · [繁體中文](#繁體中文)
 
 ## Overview
 
@@ -15,11 +17,11 @@ The interface shows indoor and outdoor climate, crop state, control targets, act
 
 ## Product direction
 
-This project is an **explainable pre-deployment decision-support workbench**, not a production greenhouse controller. Run one strategy, save it as a baseline, reset, and run a candidate to the same horizon. The comparison remains hidden when the runs use different engines or unequal horizons, and it keeps weather context visible so a user can distinguish a control comparison from a broader scenario comparison.
+This project is an **explainable pre-deployment decision-support workbench**, not a production greenhouse controller. Run one strategy, save it as a baseline, reset, and run a candidate to the same horizon. Numeric deltas remain hidden when runs use different engines, unresolved or different model provenance, different cost assumptions, or unequal horizons. Weather context stays visible so a user can distinguish a control comparison from a broader scenario comparison.
 
 The first comparison covers heating, supplemental lighting, CO₂, estimated cost, end-state climate alerts, and fruit dry mass. These are trade-offs rather than a single winner score, and the interface explicitly states that simulation output is not production advice.
 
-The evidence, target user, scope boundaries, and staged roadmap are documented in [`PRODUCT_STRATEGY.md`](PRODUCT_STRATEGY.md).
+The evidence, target user, scope boundaries, and staged roadmap are documented in [`PRODUCT_STRATEGY.md`](PRODUCT_STRATEGY.md). Engine provenance, economic assumptions, validation status, and unsupported uses are documented in [`MODEL_CARD.md`](MODEL_CARD.md).
 
 ## Quick start
 
@@ -79,6 +81,16 @@ flowchart LR
 
 ## Validation
 
+The deterministic browser approximation has no npm dependencies. Run its syntax and behavioral contracts with Node.js:
+
+```powershell
+node --check .\simulator-engine.js
+node --check .\app.js
+node --test .\tests\browser_model_contract.test.js
+```
+
+Run the default Python API and static-contract suite:
+
 ```powershell
 $env:PYTHONDONTWRITEBYTECODE = '1'
 & '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
@@ -95,6 +107,18 @@ $env:RUN_GREENLIGHT_INTEGRATION = '1'
 Project collaboration and validation records are available from [`worklogs/index.html`](worklogs/index.html). The ready-to-copy instructions for setting up another computer are in [`SECOND_COMPUTER_PROMPT.md`](SECOND_COMPUTER_PROMPT.md).
 
 > **Protected research mode:** GreenLight practice and GreenLight 2 source code outside this repository may be loaded read-only, but it must never be modified. Keep `.venv`, downloads, caches, logs, and outputs inside this repository; set `PYTHONDONTWRITEBYTECODE=1` and launch with Python `-B`. Thesis manuscripts, datasets, experiment outputs, and other non-source research artifacts remain out of scope.
+
+## GitHub collaboration
+
+- Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) and the structured issue forms.
+- Use [`MODEL_CARD.md`](MODEL_CARD.md) before interpreting or changing model behavior.
+- Report sensitive software problems through [`SECURITY.md`](SECURITY.md), not a public issue.
+- Pull requests run a free public-repository CI job containing the default Python contracts and deterministic browser-model tests. It uses no paid API, cache upload, or artifact storage.
+- Every completed project task has an English HTML record in [`worklogs/index.html`](worklogs/index.html).
+
+## License status
+
+No open-source software license has been selected yet. Public GitHub visibility does not grant permission to copy, redistribute, or create derivative works. The repository owner must make and document the license decision before broad reuse is invited.
 
 ## 繁體中文
 

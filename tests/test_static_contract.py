@@ -141,11 +141,16 @@ class StaticContractTests(unittest.TestCase):
         ):
             self.assertIn(element_id, self.parser.ids)
 
-        self.assertIn("greenlight-decision-baseline-v1", self.app_js)
+        self.assertIn("greenlight-decision-baseline-v2", self.app_js)
         self.assertIn("function createRunSummary", self.app_js)
         self.assertIn("function renderComparison", self.app_js)
         self.assertIn("function comparisonStrategy", self.app_js)
         self.assertIn("baselineRun.engine === candidate.engine", self.app_js)
+        self.assertIn("baselineRun.modelVersion === candidate.modelVersion", self.app_js)
+        self.assertIn("baselineRun.costModelId === candidate.costModelId", self.app_js)
+        self.assertIn("baselineRun.weatherFingerprint === candidate.weatherFingerprint", self.app_js)
+        self.assertIn("function hasComparableProvenance", self.app_js)
+        self.assertIn('"unknown", "unversioned", "local-source"', self.app_js)
         self.assertIn("baselineRun.runId === candidate.runId", self.app_js)
         self.assertIn("baselineRun.modelStep === candidate.modelStep", self.app_js)
         self.assertIn("if (!comparable)", self.app_js)
@@ -162,6 +167,7 @@ class StaticContractTests(unittest.TestCase):
             "comparisonReady",
             "comparisonStepMismatch",
             "comparisonEngineMismatch",
+            "comparisonModelMismatch",
             "comparisonWeatherMatch",
             "comparisonWeatherDifference",
             "comparisonMeta",
@@ -171,10 +177,79 @@ class StaticContractTests(unittest.TestCase):
             self.assertRegex(zh_block, rf"\b{re.escape(key)}:\s*\"")
             self.assertRegex(en_block, rf"\b{re.escape(key)}:\s*\"")
 
+        scenario_handler = self.app_js.split(
+            'byId("scenarioSelect").addEventListener("change", async () => {',
+            1,
+        )[1].split('byId("speedSelect")', 1)[0]
+        self.assertIn("setRunning(false)", scenario_handler)
+        self.assertIn("render(await resetActiveEngine())", scenario_handler)
+        self.assertNotIn("model.setScenario", scenario_handler)
+
+        for metadata in (
+            "BROWSER_MODEL_VERSION",
+            "BROWSER_WEATHER_VERSION",
+            "COST_ASSUMPTIONS",
+            "TARGET_LIMITS",
+            'engine: "browser-approximation"',
+            "modelVersion: BROWSER_MODEL_VERSION",
+            "costModelId: COST_ASSUMPTIONS.id",
+            "weatherFingerprint:",
+        ):
+            self.assertIn(metadata, self.engine_js)
+
         strategy = (ROOT / "PRODUCT_STRATEGY.md").read_text(encoding="utf-8")
         self.assertIn("explainable, pre-deployment greenhouse decision-support workbench", strategy)
         self.assertIn("USDA Agricultural Research Service", strategy)
         self.assertIn("Wageningen University & Research", strategy)
+
+    def test_public_github_project_contract(self) -> None:
+        required_files = (
+            "MODEL_CARD.md",
+            "CONTRIBUTING.md",
+            "SECURITY.md",
+            ".github/workflows/ci.yml",
+            ".github/pull_request_template.md",
+            ".github/ISSUE_TEMPLATE/bug_report.yml",
+            ".github/ISSUE_TEMPLATE/feature_request.yml",
+            ".github/ISSUE_TEMPLATE/model_validation.yml",
+            ".github/ISSUE_TEMPLATE/security_contact.yml",
+            ".github/ISSUE_TEMPLATE/config.yml",
+            "tests/browser_model_contract.test.js",
+        )
+        for name in required_files:
+            self.assertTrue((ROOT / name).is_file(), name)
+
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("permissions:\n  contents: read", workflow)
+        self.assertIn("uv sync --locked --python 3.12", workflow)
+        self.assertIn("node --test tests/browser_model_contract.test.js", workflow)
+        self.assertIn("enable-cache: false", workflow)
+        self.assertIn("persist-credentials: false", workflow)
+        self.assertIn("package-manager-cache: false", workflow)
+        self.assertIn(
+            "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            workflow,
+        )
+        self.assertIn(
+            "actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e",
+            workflow,
+        )
+        self.assertNotIn("upload-artifact", workflow)
+
+        model_card = (ROOT / "MODEL_CARD.md").read_text(encoding="utf-8")
+        self.assertIn("Browser approximation", model_card)
+        self.assertIn("not a production climate computer", model_card)
+        self.assertIn("Operational", model_card)
+        self.assertIn("Uncertainty", model_card)
+        self.assertIn("browser-fixed-eur-2026-07", model_card)
+        self.assertIn("SHA-256 fingerprint of the exact", model_card)
+
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("greenhouse simulation and decision-support workbench", readme)
+        self.assertNotIn("An interactive greenhouse digital twin", readme)
+        self.assertNotIn("scientific digital twin", self.html)
 
     def test_worklog_index_links_exist(self) -> None:
         worklog_dir = ROOT / "worklogs"

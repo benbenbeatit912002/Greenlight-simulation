@@ -40,6 +40,38 @@ class GreenLightIntegrationTests(unittest.TestCase):
                 }
             )
             self.assertEqual(reset_snapshot["engine"], "greenlight-gym2")
+            metadata = adapter.metadata()
+            self.assertRegex(
+                metadata["sourceFingerprint"],
+                r"^[0-9a-f]{64}$",
+            )
+            self.assertRegex(
+                metadata["parameterFingerprint"],
+                r"^[0-9a-f]{64}$",
+            )
+            self.assertRegex(
+                metadata["weatherFingerprint"],
+                r"^[0-9a-f]{64}$",
+            )
+            if metadata["gitRevision"] is not None:
+                self.assertRegex(metadata["gitRevision"], r"^[0-9a-f]{40}$")
+                self.assertIn(metadata["gitRevision"], reset_snapshot["modelVersion"])
+            else:
+                self.assertIn(
+                    metadata["sourceFingerprint"],
+                    reset_snapshot["modelVersion"],
+                )
+            self.assertNotIn("unversioned", reset_snapshot["modelVersion"])
+            self.assertNotIn("local-source", reset_snapshot["modelVersion"])
+            self.assertEqual(
+                reset_snapshot["weatherFingerprint"],
+                metadata["weatherFingerprint"],
+            )
+            self.assertEqual(
+                reset_snapshot["costModelId"],
+                "greenlight-gym2-variable-costs",
+            )
+            self.assertFalse(reset_snapshot["economics"]["liveTariff"])
             self.assertEqual(reset_snapshot["modelStep"], 0)
             self.assertAlmostEqual(reset_snapshot["crop"]["fruitDryMass"], 55.338, places=2)
 

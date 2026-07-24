@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.metadata
+import importlib.util
 import math
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -80,6 +83,8 @@ RULE_BASED_DEFAULTS = {
     "useBlScr": 1,
 }
 
+ADAPTER_VERSION = "2026.07"
+
 
 def _clamp(value: float, minimum: float, maximum: float) -> float:
     return min(maximum, max(minimum, float(value)))
@@ -95,6 +100,78 @@ def default_source_path() -> Path:
         return Path(configured).expanduser().resolve()
     project_root = Path(__file__).resolve().parents[2]
     return project_root / "GreenLight-Gym2-practice" / "GreenLight-Gym2"
+
+
+def _git_revision(source_path: Path) -> str | None:
+    options: dict[str, Any] = {}
+    if os.name == "nt":
+        options["creationflags"] = subprocess.CREATE_NO_WINDOW
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(source_path), "rev-parse", "--verify", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            **options,
+        )
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return None
+    revision = result.stdout.strip().lower()
+    if len(revision) != 40 or any(character not in "0123456789abcdef" for character in revision):
+        return None
+    return revision
+
+
+def _loaded_source_fingerprint(source_path: Path) -> str | None:
+    source_files: set[Path] = set()
+    for module_name, module in tuple(sys.modules.items()):
+        if module_name != "gl_gym" and not module_name.startswith("gl_gym."):
+            continue
+        file_name = getattr(module, "__file__", None)
+        if not file_name:
+            continue
+        module_path = Path(file_name)
+        if module_path.suffix in {".pyc", ".pyo"}:
+            try:
+                module_path = Path(importlib.util.source_from_cache(str(module_path)))
+            except ValueError:
+                continue
+        try:
+            resolved = module_path.resolve()
+            resolved.relative_to(source_path)
+        except (OSError, ValueError):
+            continue
+        if resolved.suffix == ".py" and resolved.is_file():
+            source_files.add(resolved)
+
+    if not source_files:
+        return None
+
+    digest = hashlib.sha256()
+    for source_file in sorted(source_files, key=lambda path: path.as_posix()):
+        relative_path = source_file.relative_to(source_path).as_posix()
+        digest.update(relative_path.encode("utf-8"))
+        digest.update(b"\0")
+        with source_file.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def _array_fingerprint(np_module: Any, values: Any) -> str | None:
+    try:
+        array = np_module.ascontiguousarray(values)
+    except Exception:
+        return None
+    digest = hashlib.sha256()
+    digest.update(str(array.dtype).encode("ascii", errors="replace"))
+    digest.update(b"\0")
+    digest.update(repr(tuple(array.shape)).encode("ascii"))
+    digest.update(b"\0")
+    digest.update(array.tobytes(order="C"))
+    return digest.hexdigest()
 
 
 class GreenLightGymAdapter:
@@ -137,6 +214,7 @@ class GreenLightGymAdapter:
             self.package_version = importlib.metadata.version("gl-gym")
         except importlib.metadata.PackageNotFoundError:
             self.package_version = "local-source"
+        self.git_revision = _git_revision(self.source_path)
 
         try:
             self.env = gym.make(
@@ -148,6 +226,28 @@ class GreenLightGymAdapter:
             raise RuntimeError(f"GL-Gym2 could not be initialized: {exc}") from exc
 
         self.core = self.env.unwrapped
+        self.source_fingerprint = _loaded_source_fingerprint(self.source_path)
+        source_identity = (
+            f"git.{self.git_revision}"
+            if self.git_revision
+            else f"sha256.{self.source_fingerprint or 'unversioned'}"
+        )
+        package_identity = (
+            "source-checkout"
+            if self.package_version == "local-source"
+            else self.package_version
+        )
+        self.parameter_fingerprint = _array_fingerprint(
+            self._np,
+            self.core.parameter_provider.base_p,
+        )
+        self.model_identifier = (
+            f"gl-gym2@{package_identity}"
+            f"+{source_identity}"
+            f".adapter.{ADAPTER_VERSION}"
+            f".params.{self.parameter_fingerprint or 'unversioned'}"
+        )
+        self.weather_fingerprint = "unversioned"
         self.mode = "auto"
         self.targets = dict(DEFAULT_TARGETS)
         self.scenario_key = "spring"
@@ -171,6 +271,12 @@ class GreenLightGymAdapter:
             "scientific": True,
             "model": "GreenLight 2 / GreenLightTomato-v0",
             "version": self.package_version,
+            "modelIdentifier": self.model_identifier,
+            "gitRevision": self.git_revision,
+            "sourceFingerprint": self.source_fingerprint or "unversioned",
+            "parameterFingerprint": self.parameter_fingerprint or "unversioned",
+            "weatherFingerprint": self.weather_fingerprint,
+            "adapterVersion": ADAPTER_VERSION,
             "stateCount": 28,
             "controlCount": 6,
             "stepMinutes": self.step_minutes,
@@ -204,6 +310,10 @@ class GreenLightGymAdapter:
                     "start_day": scenario["start_day"],
                 }
             },
+        )
+        self.weather_fingerprint = (
+            _array_fingerprint(self._np, self.core.weather_data)
+            or "unversioned"
         )
         self.resources = {
             "heatKwh": 0.0,
@@ -395,6 +505,9 @@ class GreenLightGymAdapter:
             "scenario": self.scenario_key,
             "scenarioLabel": scenario["label"],
             "engine": self.kind,
+            "modelVersion": self.model_identifier,
+            "costModelId": "greenlight-gym2-variable-costs",
+            "weatherFingerprint": self.weather_fingerprint,
             "indoor": {
                 "airTemp": _round(climate[1]),
                 "canopyTemp": _round(values["canopyTemp"]),
@@ -427,6 +540,12 @@ class GreenLightGymAdapter:
             "targets": {name: float(value) for name, value in self.targets.items()},
             "resources": {
                 name: _round(value, 3) for name, value in self.resources.items()
+            },
+            "economics": {
+                "id": "greenlight-gym2-variable-costs",
+                "currency": "EUR",
+                "source": "GreenLight-Gym2 info.variable_costs",
+                "liveTariff": False,
             },
             "violations": violations,
             "episode": {

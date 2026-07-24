@@ -1,6 +1,6 @@
 # Product Strategy: Explainable Greenhouse Decision Support
 
-Last reviewed: 2026-07-21
+Last reviewed: 2026-07-25
 
 ## Product decision
 
@@ -71,7 +71,8 @@ The differentiator is not “AI.” It is disciplined experimentation:
 
 | Priority | Increment | Why it belongs here | Exit condition |
 | --- | --- | --- | --- |
-| Now | Experiment comparison workbench | Creates immediate decision-support value from the model already present. | A baseline and candidate can be compared only when engine and horizon are compatible; all provenance remains visible. |
+| Now | Experiment comparison workbench | Creates immediate decision-support value from the model already present. | A baseline and candidate can be compared only when engine, immutable model provenance, cost assumptions, and horizon are compatible; all provenance remains visible. |
+| Now | Model credibility and public collaboration foundation | A public scientific-software project needs explicit evidence boundaries, deterministic tests, review structure, and reproducible automation before adding more features. | A model card separates the two engines and their evidence; comparisons also require matching model/cost versions; CI runs software and diagnostic contracts; issue and pull-request templates request model evidence. |
 | Next | Reproducible experiment recipe and report | Makes results reviewable by a supervisor, grower, or collaborator. | Settings, seed, engine, model version, horizon, metrics, and caveats can be reproduced from one saved recipe. |
 | Next | Tariff, carbon-intensity, and resource-price scenarios | Energy cost and environmental impact vary over time; fixed assumptions hide the real trade-off. | Every calculated cost or footprint identifies its source, unit, and time basis. |
 | Later | Sensitivity and uncertainty analysis | A single deterministic run can create false confidence. | Key parameters can be varied in bounded ensembles and outputs show ranges rather than only point values. |
@@ -90,9 +91,11 @@ The differentiator is not “AI.” It is disciplined experimentation:
 ## Public-project readiness gaps
 
 - The repository owner still needs to choose a software license before broad reuse is invited.
-- Scientific claims need documented validation cases and references beyond software tests.
+- Scientific claims still need observed-data validation cases with a declared calibration/validation split; the current model card and diagnostic contracts deliberately stop short of predictive-accuracy claims.
 - Public deployment should default to the clearly labelled browser approximation unless a managed scientific backend is available.
 - A calibrated commercial-greenhouse case study would be stronger evidence than additional interface polish.
+
+The current public foundation now includes a model card, deterministic browser-model contracts, default Python contracts, public-repository CI, contribution and security guidance, issue forms, and a pull-request evidence checklist.
 
 ## Sources
 

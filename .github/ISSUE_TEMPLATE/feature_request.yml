@@ -1,0 +1,52 @@
+name: Feature proposal
+description: Propose a focused greenhouse decision-support improvement.
+title: "[Feature] "
+body:
+  - type: textarea
+    id: user_problem
+    attributes:
+      label: User and decision problem
+      description: Who needs this, and what greenhouse decision or review task should become easier?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable behavior, not only a preferred implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Industry or research evidence
+      description: Link primary sources, grower feedback, or a reproducible example.
+    validations:
+      required: true
+  - type: dropdown
+    id: model_impact
+    attributes:
+      label: Model impact
+      options:
+        - No model change
+        - Browser approximation
+        - GreenLight-Gym2 adapter
+        - Economics or resource accounting
+        - Data, calibration, or uncertainty
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety, assumptions, and limitations
+      description: Explain how the proposal avoids production-control claims and protects private research data.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Suggested acceptance checks
+      description: List the tests or evidence that would make the feature reviewable.
+    validations:
+      required: true
