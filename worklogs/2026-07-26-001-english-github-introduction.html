@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | English GitHub introduction</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; }
+      a { color: #8be8b3; } header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">&larr; Back to the work-log index</a></p>
+    <header>
+      <span class="status">COMPLETED</span>
+      <h1>Standardize the GitHub introduction in English</h1>
+      <p class="meta"><time datetime="2026-07-26">2026-07-26</time> &middot; GreenLight Simulation</p>
+    </header>
+    <section>
+      <h2>User request</h2>
+      <p>Make the GitHub project introduction fully English while continuing to work only inside the authorized Greenlight-simulation repository.</p>
+    </section>
+    <section>
+      <h2>Changes</h2>
+      <ul>
+        <li>Removed the duplicated Traditional Chinese README navigation item and documentation section.</li>
+        <li>Kept the application itself bilingual and stated clearly that the interface can switch between English and Traditional Chinese while GitHub project documentation remains English.</li>
+        <li>Restored the information that was unique to the removed section as an English local API contract, including endpoints, revision handling, actuator mappings, and an example manual-step payload.</li>
+        <li>Confirmed that the draft pull-request title and description are already written in English.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Scope and safety</h2>
+      <ul>
+        <li>No simulator behavior, model equation, control logic, or bilingual interface translation was changed.</li>
+        <li>No protected sibling repository, thesis material, dataset, experiment output, or result was accessed or modified.</li>
+        <li>No OpenAI API, API key, usage-billed AI service, Fast mode, paid add-on, or extra credit was used.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Reviewer</h2>
+      <p>One read-only reviewer found that deleting the duplicated Chinese README section also removed the only explicit API request contract. The recommendation was accepted: the README now contains an English local API section with the three endpoints, optimistic revision guard, six actuator mappings, and a complete request example. The reviewer found no other missing setup, validation, or architecture information and confirmed that the reviewed GitHub-facing files contain no Chinese introduction text. No follow-up review was needed.</p>
+    </section>
+    <section>
+      <h2>Validation</h2>
+      <ul>
+        <li>A targeted character scan found no CJK characters in the README, model card, product strategy, contribution and security guidance, handoff instructions, project rules, GitHub configuration, or work logs.</li>
+        <li>All 17 discovered Python tests passed except the one opt-in full-model integration test, which was skipped as designed.</li>
+        <li>All five deterministic browser-model tests passed.</li>
+        <li>Both JavaScript syntax checks and <code>git diff --check</code> passed.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Publication target</h2>
+      <p>The completed documentation update was published on 2026-07-28 to draft pull request <a href="https://github.com/benbenbeatit912002/Greenlight-simulation/pull/1">#1</a> on branch <code>agent/public-greenhouse-decision-workbench</code>. Because the saved GitHub CLI token and Git credential were no longer valid, publication used the already authorized GitHub connector to create one normal fast-forward commit. No direct push to <code>main</code>, force push, destructive reset, or automatic merge was used.</p>
+    </section>
+  </body>
+</html>
