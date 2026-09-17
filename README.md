@@ -1,164 +1,93 @@
 # GreenLight 2 Greenhouse Simulator
 
-An interactive greenhouse simulation and decision-support workbench that connects a polished browser interface to the 28-state GreenLight-Gym2 scientific model. Explore climate control, crop response, actuator behavior, measured Amsterdam weather, and resource use in one local application.
+An interactive greenhouse simulation and decision-support workbench connecting a bilingual browser interface to the GreenLight-Gym2 scientific model. Explore greenhouse settings, weather, control strategies, climate and resource use.
 
 [![CI](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml)
 
-[Overview](#overview) · [Product direction](#product-direction) · [Quick start](#quick-start) · [Model modes](#model-modes) · [Local API](#local-api) · [Model card](MODEL_CARD.md) · [Contributing](CONTRIBUTING.md)
+**Status:** research/education prototype. The public interface uses the full scientific model or hides results when it is unavailable. Independent predictive validation, full-series result export and parameter calibration are not yet complete.
 
-## Overview
+## Acknowledgements and citation
 
-The simulator is designed to be useful in two settings:
+This work builds on **GreenLight**, developed by **David Katzin and collaborators**, and uses the **GreenLight-Gym2** implementation by **Bart van Laatum and contributors**. We gratefully acknowledge their scientific and software contributions.
 
-- **Scientific local mode** runs the GreenLight-Gym2 CasADi/CVODES model with 28 states, six absolute controls, 15-minute steps, and measured Amsterdam weather.
-- **Installation-free interaction** uses a clearly labelled browser approximation so the interface remains explorable when the scientific backend is unavailable.
+- **Original GreenLight model:** David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. van Henten (2020). *GreenLight – An open source model for greenhouses with supplemental lighting: Evaluation of heat requirements under LED and HPS lamps*. Biosystems Engineering, 194, 61–81. [Paper](https://doi.org/10.1016/j.biosystemseng.2020.03.010) · [Original repository](https://github.com/davkat1/GreenLight).
+- **GreenLight-Gym / GreenLight-Gym2:** Bart van Laatum, Eldert J. van Henten, and Sjoerd Boersma (2025). *GreenLight-Gym: Reinforcement learning benchmark environment for control of greenhouse production systems*. IFAC-PapersOnLine, 59(23), 437–442. [Paper](https://doi.org/10.1016/j.ifacol.2025.11.827) · [Upstream repository](https://github.com/BartvLaatum/GreenLight-Gym2).
 
-The interface shows indoor and outdoor climate, crop state, control targets, actuator openings, limit warnings, trends, energy use, CO₂ use, and estimated cost. It supports both a rule-based controller and manual control of `uBoil`, `uCO2`, `uThScr`, `uVent`, `uLamp`, and `uBlScr`. The application interface can be switched between English and Traditional Chinese while the GitHub project documentation remains in English.
-
-## Product direction
-
-This project is an **explainable pre-deployment decision-support workbench**, not a production greenhouse controller. Run one strategy, save it as a baseline, reset, and run a candidate to the same horizon. Numeric deltas remain hidden when runs use different engines, unresolved or different model provenance, different cost assumptions, or unequal horizons. Weather context stays visible so a user can distinguish a control comparison from a broader scenario comparison.
-
-The first comparison covers heating, supplemental lighting, CO₂, estimated cost, end-state climate alerts, and fruit dry mass. These are trade-offs rather than a single winner score, and the interface explicitly states that simulation output is not production advice.
-
-The evidence, target user, scope boundaries, and staged roadmap are documented in [`PRODUCT_STRATEGY.md`](PRODUCT_STRATEGY.md). Engine provenance, economic assumptions, validation status, and unsupported uses are documented in [`MODEL_CARD.md`](MODEL_CARD.md).
+This repository contributes the browser interface and local integration layer; the underlying greenhouse model and upstream environment are credited to their original authors. Please cite the relevant upstream publications when using this work in research. See [CITATION.md](CITATION.md) for BibTeX and attribution details.
 
 ## Quick start
 
-### Browser approximation
+Install Git and [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
-This mode demonstrates the interface without importing the external GreenLight-Gym2 source tree:
-
-```powershell
+```sh
 git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
-Set-Location .\Greenlight-simulation
-$env:PYTHONDONTWRITEBYTECODE = '1'
-$env:UV_CACHE_DIR = "$PWD\.uv-cache"
-uv sync --python 3.12
-& '.\.venv\Scripts\python.exe' -B .\server.py --engine browser
+cd Greenlight-simulation
+uv sync --locked --python 3.12 --cache-dir .uv-cache
+uv run --no-sync python -B examples/validate_weather.py
+uv run --no-sync python -B server.py --engine browser
 ```
 
-Open <http://127.0.0.1:4173/>.
+Open <http://127.0.0.1:4173/>. This setup displays the interface and validates the bundled synthetic weather without accessing a model checkout or private research data. No Node.js installation is needed to use the app. The example expects 433 records covering 36 hours and reports a successful validation.
 
-### Full scientific model
+To run actual simulations, install the `greenlight` extra and explicitly set `GREENLIGHT_GYM_PATH` to a compatible source checkout. Follow [the full Windows/Linux/macOS installation guide](docs/installation.md). The model source is read-only and is not bundled here; its exact compatible version remains a separate setup requirement.
 
-Install the optional open-source scientific dependencies inside this repository, then point the adapter to a read-only GreenLight-Gym2 source checkout:
+## What you can do
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE = '1'
-$env:UV_CACHE_DIR = "$PWD\.uv-cache"
-$env:GREENLIGHT_GYM_PATH = 'C:\path\to\GreenLight-Gym2'
-uv sync --extra greenlight --python 3.12
-& '.\.venv\Scripts\python.exe' -B .\server.py --engine glgym
-```
+- Use English or Traditional Chinese controls and explanations.
+- Validate an Excel weather workbook, select source-clock simulation dates and review supported ranges.
+- Configure supported greenhouse dimensions, equipment and initial conditions.
+- Run the full model with automatic or manual controls at fixed 15-minute steps.
+- Compare compatible baseline/candidate runs at matching horizons.
 
-The control-panel badge should report **GreenLight 2 full model**. The adapter imports GreenLight-Gym2 read-only; it does not install into or modify that source checkout.
+Each server process owns one shared simulation. For independent work, different users run separate local instances. This release is not a hosted multi-user service or production greenhouse controller.
 
-## Model modes
+## Find the right guide
 
-| Mode | Behavior | Intended use |
-| --- | --- | --- |
-| `--engine glgym` | Requires the full GreenLight-Gym2 model and stops if initialization fails. | Scientific-model validation and local research use. |
-| `--engine auto` | Prefers the full model and falls back to the labelled browser approximation when unavailable. | Normal local use and presentations. |
-| `--engine browser` | Serves the interface without constructing the scientific model. | UI demonstrations and lightweight review. |
-
-The active engine is always visible in the interface and available from `GET /api/status`. Approximation output is never presented as a full scientific result.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    UI["HTML / CSS / JavaScript interface"] -->|"same-origin JSON"| API["Local Python HTTP API"]
-    API --> ADAPTER["GreenLight adapter"]
-    ADAPTER -->|"read-only source import"| MODEL["GreenLight-Gym2 · 28-state CasADi model"]
-    UI --> FALLBACK["Labelled browser approximation"]
-```
-
-- The server binds to `127.0.0.1` by default and does not enable CORS.
-- API mutations use monotonic revisions to prevent stale tabs from overwriting newer state.
-- The frontend stops overlapping simulation loops and safely falls back if the Python backend disappears.
-- Runtime dependencies, caches, logs, and generated files stay inside this repository.
-
-## Local API
-
-The same-origin API is available only from the local server. CORS is disabled and the server binds to `127.0.0.1` by default:
-
-- `GET /api/status` reports engine availability, model provenance, economic assumptions, and the current revision.
-- `POST /api/reset` starts a new run for the selected weather scenario.
-- `POST /api/step` advances the simulation with rule-based or manual control.
-
-Every mutation carries a monotonically increasing `revision`. Clients send `expectedRevision` so stale tabs and duplicate requests cannot overwrite newer simulation state. The backend serializes access to the CasADi environment.
-
-| Control | Actuator |
+| Goal | Read |
 | --- | --- |
-| `uBoil` | Boiler heating |
-| `uCO2` | CO₂ injection |
-| `uThScr` | Thermal screen |
-| `uVent` | Roof ventilation |
-| `uLamp` | Supplemental lighting |
-| `uBlScr` | Blackout screen |
+| Install on another computer | [Installation and troubleshooting](docs/installation.md) |
+| Operate the interface | [User guide](docs/user-guide.md) |
+| Run the public example | [Synthetic example](examples/README.md) |
+| Prepare weather or settings | [Weather input](docs/weather-input.md), [greenhouse configuration](GREENHOUSE_CONFIGURATION.md) |
+| Understand or modify code | [Architecture](docs/architecture.md), [contributing](CONTRIBUTING.md) |
+| Call the local API | [API contract](docs/api.md) |
+| Interpret scientific results | [Model card](MODEL_CARD.md), [validation](docs/scientific-validation.md) |
+| See planned capabilities | [Implementation plan](IMPLEMENTATION_PLAN.md), [product direction](PRODUCT_STRATEGY.md) |
 
-Example manual step:
+## Repository map
 
-```json
-{
-  "steps": 1,
-  "mode": "manual",
-  "controls": {
-    "uBoil": 0.35,
-    "uCO2": 0.15,
-    "uThScr": 0.4,
-    "uVent": 0.05,
-    "uLamp": 0.25,
-    "uBlScr": 0.0
-  },
-  "targets": {
-    "dayTemp": 21.5,
-    "nightTemp": 17.5,
-    "co2": 900,
-    "maxRh": 82
-  },
-  "expectedRevision": 1
-}
+```text
+server.py           Stable local startup entry point
+backend/            HTTP, application operations and scientific adapter
+frontend/           Browser controls, translations, charts and upload UI
+frontend/legacy/    Inactive approximation retained for regression tests
+index.html          Public page and explicit browser-script load order
+styles.css          Interface styling
+docs/               Installation, user, architecture and scientific guides
+examples/           Public validation example and expected summary
+templates/          Synthetic Excel weather template
+tests/              Software contracts and opt-in full-model integration
+scripts/check.py    Shared local/CI quality-check entry point
+worklogs/           English project change records
 ```
 
-## Validation
+## Contributing and checks
 
-The deterministic browser approximation has no npm dependencies. Run its syntax and behavioral contracts with Node.js:
+After the Python setup, install Node.js 22+ for development:
 
-```powershell
-node --check .\simulator-engine.js
-node --check .\app.js
-node --test .\tests\browser_model_contract.test.js
+```sh
+npm ci --ignore-scripts --cache .npm-cache
+uv run --no-sync python -B scripts/check.py
 ```
 
-Run the default Python API and static-contract suite:
+Checks include Ruff formatting/lint/complexity, Prettier formatting, JavaScript syntax, Python and JavaScript contracts, and the public example. Default checks do not run external-model integration or establish scientific accuracy. See [CONTRIBUTING](CONTRIBUTING.md) before submitting a focused pull request. Report sensitive issues through [SECURITY](SECURITY.md).
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE = '1'
-& '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
-```
+## Model provenance and license status
 
-To opt into a real CasADi reset-and-step integration check:
+GreenLight-Gym2 supplies the scientific model; this repository supplies the local interface and adapter. Model attribution and references are in [CITATION.md](CITATION.md) and [MODEL_CARD](MODEL_CARD.md). Source, parameter and weather fingerprints help explain which model/configuration produced a run.
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE = '1'
-$env:RUN_GREENLIGHT_INTEGRATION = '1'
-& '.\.venv\Scripts\python.exe' -B -m unittest tests.test_greenlight_integration -v
-```
+No software license has been selected for this wrapper yet. Public visibility does not grant broad reuse rights. The owner must confirm the license and citation authors before those metadata can be finalized; upstream model and data permissions remain separate.
 
-Project collaboration and validation records are available from [`worklogs/index.html`](worklogs/index.html). The ready-to-copy instructions for setting up another computer are in [`SECOND_COMPUTER_PROMPT.md`](SECOND_COMPUTER_PROMPT.md).
+## Change records
 
-> **Protected research mode:** GreenLight practice and GreenLight 2 source code outside this repository may be loaded read-only, but it must never be modified. Keep `.venv`, downloads, caches, logs, and outputs inside this repository; set `PYTHONDONTWRITEBYTECODE=1` and launch with Python `-B`. Thesis manuscripts, datasets, experiment outputs, and other non-source research artifacts remain out of scope.
-
-## GitHub collaboration
-
-- Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) and the structured issue forms.
-- Use [`MODEL_CARD.md`](MODEL_CARD.md) before interpreting or changing model behavior.
-- Report sensitive software problems through [`SECURITY.md`](SECURITY.md), not a public issue.
-- Pull requests run a free public-repository CI job containing the default Python contracts and deterministic browser-model tests. It uses no paid API, cache upload, or artifact storage.
-- Every completed project task has an English HTML record in [`worklogs/index.html`](worklogs/index.html).
-
-## License status
-
-No open-source software license has been selected yet. Public GitHub visibility does not grant permission to copy, redistribute, or create derivative works. The repository owner must make and document the license decision before broad reuse is invited.
+[Worklog index](worklogs/index.html) records implementation and verification. Existing root startup remains supported; browser assets moved to `frontend/`, and full-model startup now requires explicit `GREENLIGHT_GYM_PATH` instead of automatic sibling discovery.

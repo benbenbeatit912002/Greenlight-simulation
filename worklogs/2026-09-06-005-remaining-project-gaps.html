@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Work Log | Remaining project gaps</title>
+<style>body{max-width:900px;margin:36px auto;padding:20px;font-family:system-ui,sans-serif;line-height:1.7;background:#081310;color:#e7f5ee}a{color:#8be8b3}h2{color:#a9f0c6}</style></head>
+<body><a href="index.html">Work-log index</a><h1>Remaining project gaps</h1><p><time datetime="2026-09-06">2026-09-06</time></p>
+<h2>User request</h2><p>The user asked what is still missing from the simulator. This turn reports implementation gaps rather than changing application behavior.</p>
+<h2>Verified current state</h2><p>The local status endpoint reports browser mode and scientific=false. The upload endpoint explicitly returns simulationReady=false and stored=false. Existing controls include start/pause, reset and speed selection. The full-model adapter still selects fixed scenarios, points weather loading at its external source checkout and retains only 97 history entries. Its inside-radiation field uses a simplified calculation.</p>
+<h2>Recommended implementation order</h2><ol>
+<li>Connect validated simulator-owned weather to the unchanged full GreenLight-Gym2 source with verified units, missing-input policy, initialization and coverage checks. Preserve the read-only research boundary.</li>
+<li>Add run start/end dates, visible full timestamps, single-step operation and saved-state playback. Playback speed must not change physical integration semantics.</li>
+<li>Document a reference greenhouse and crop initialization, then expose supported geometry, cover and equipment parameters instead of suggesting that weather alone defines a user's greenhouse.</li>
+<li>Persist complete runs inside the simulator and export climate, controls, resources and provenance. Extend the existing comparison feature to identical uploaded-weather conditions rather than rebuilding it.</li>
+<li>Audit model-derived versus illustrative fields, then evaluate against explicitly authorized or openly licensed independent observations before claiming predictive accuracy.</li>
+<li>Verify reproducible installation without the owner's research checkout, document model/version and licensing requirements, and publish the reviewed feature when requested.</li>
+</ol>
+<p>The immediate priority is the complete path from uploaded weather through the real model to displayed results. Additional visual polish is secondary to this functional gap.</p>
+<h2>Actions, review and validation</h2><p>Read selected simulator source lines and the local status endpoint. No protected repository was read or imported. Only this required HTML log and its index link were added. Reviewer skipped because this is a documentation-only assessment. Existing application changes were preserved. No model run, dependency installation, commit, push or merge was performed.</p>
+</body></html>

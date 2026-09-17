@@ -99,6 +99,27 @@ class ApiServerTests(unittest.TestCase):
         self.assertIn("GreenLight 2", body)
         self.assertTrue(headers["content-type"].startswith("text/html"))
 
+    def test_frontend_assets_are_public_and_source_is_private(self):
+        for path in (
+            "/frontend/app.js",
+            "/frontend/charts.js",
+            "/frontend/translations.js",
+            "/frontend/climate-upload.js",
+            "/frontend/greenhouse-settings.js",
+            "/frontend/run-window.js",
+        ):
+            with self.subTest(path=path):
+                status, body, _ = self.request("GET", path)
+                self.assertEqual(status, 200)
+                self.assertTrue(body)
+        for path in (
+            "/backend/application.py",
+            "/node_modules/prettier/package.json",
+            "/frontend/",
+        ):
+            with self.subTest(path=path):
+                self.assertEqual(self.request("GET", path)[0], 404)
+
     def test_status_reports_scientific_engine(self) -> None:
         status, body, headers = self.request("GET", "/api/status")
         self.assertEqual(status, 200)
@@ -190,7 +211,10 @@ class UnavailableEngineTests(unittest.TestCase):
                 "POST",
                 "/api/reset",
                 body=body,
-                headers={"Content-Type": "application/json", "Content-Length": str(len(body))},
+                headers={
+                    "Content-Type": "application/json",
+                    "Content-Length": str(len(body)),
+                },
             )
             response = connection.getresponse()
             payload = json.loads(response.read())

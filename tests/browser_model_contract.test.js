@@ -12,7 +12,7 @@ const {
   SCENARIOS,
   STEP_MINUTES,
   TARGET_LIMITS,
-} = require("../simulator-engine.js");
+} = require("../frontend/legacy/simulator-engine.js");
 
 function assertFiniteSnapshot(snapshot) {
   const groups = [
@@ -67,24 +67,15 @@ test("browser snapshot identifies its model and economic assumptions", () => {
   assert.equal(snapshot.engine, "browser-approximation");
   assert.equal(snapshot.modelVersion, BROWSER_MODEL_VERSION);
   assert.equal(snapshot.costModelId, COST_ASSUMPTIONS.id);
-  assert.equal(
-    snapshot.weatherFingerprint,
-    `${BROWSER_WEATHER_VERSION}:spring`,
-  );
+  assert.equal(snapshot.weatherFingerprint, `${BROWSER_WEATHER_VERSION}:spring`);
   assert.deepEqual(snapshot.economics, COST_ASSUMPTIONS);
   assert.equal(snapshot.economics.liveTariff, false);
   assert.equal(STEP_MINUTES, 15);
 });
 
 test("invalid model inputs fail before they can create NaN state", () => {
-  assert.throws(
-    () => new GreenhouseModel({ scenario: "unknown" }),
-    /Unknown weather scenario/,
-  );
-  assert.throws(
-    () => new GreenhouseModel({ mode: "remote-control" }),
-    /Unknown control mode/,
-  );
+  assert.throws(() => new GreenhouseModel({ scenario: "unknown" }), /Unknown weather scenario/);
+  assert.throws(() => new GreenhouseModel({ mode: "remote-control" }), /Unknown control mode/);
 
   const model = new GreenhouseModel();
   assert.throws(() => model.setScenario("unknown"), /Unknown weather scenario/);
@@ -160,12 +151,6 @@ test("reset clears the horizon and cumulative resources without changing provena
   assert.equal(reset.targets.nightTemp, 18);
   assert.equal(reset.modelVersion, BROWSER_MODEL_VERSION);
   assert.equal(reset.costModelId, COST_ASSUMPTIONS.id);
-  assert.equal(
-    reset.weatherFingerprint,
-    `${BROWSER_WEATHER_VERSION}:winter`,
-  );
-  assert.deepEqual(
-    reset.resources,
-    { heatKwh: 0, lampKwh: 0, co2Kg: 0, costEur: 0 },
-  );
+  assert.equal(reset.weatherFingerprint, `${BROWSER_WEATHER_VERSION}:winter`);
+  assert.deepEqual(reset.resources, { heatKwh: 0, lampKwh: 0, co2Kg: 0, costEur: 0 });
 });

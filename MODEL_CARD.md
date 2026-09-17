@@ -1,18 +1,18 @@
 # Model Card: GreenLight Simulation
 
 Status: pre-deployment research and education prototype
-Last reviewed: 2026-07-25
+Last reviewed: 2026-09-15
 
 ## Decision-support claim
 
 This project helps a user compare simulated greenhouse climate-control choices before trying them in a physical greenhouse. It is a local, explainable decision-support workbench, not a production climate computer, a safety alarm, or an autonomous controller.
 
-The interface can run with two different engines. They are deliberately labelled and must not be interpreted as equivalent scientific evidence.
+The current public interface runs only GreenLight-Gym2. Missing connections or solver errors hide simulation values and stop running. The legacy JavaScript approximation remains in the repository for historical regression tests but is not loaded by the interface.
 
 | Engine | What it is | Appropriate use | Evidence status |
 | --- | --- | --- | --- |
 | GreenLight-Gym2 | A read-only adapter to the external `gl_gym/GreenLightTomato-v0` environment, using its 28-state GreenLight model, recorded Amsterdam weather, and six absolute controls. | Local scientific-model exploration and integration testing. | The adapter has reset/step integration tests. It has not yet been validated here against an independent greenhouse dataset. |
-| Browser approximation | A deterministic JavaScript climate/crop approximation with four synthetic weather scenarios, a 15-minute step, six controls, and a rule-based controller. | Installation-free UI demonstrations, software testing, and qualitative exploration. | Software bounds, determinism, reset behavior, and directional actuator responses are tested. It is not calibrated and is not a scientific GreenLight result. |
+| Legacy browser approximation (not active) | Historical deterministic JavaScript model retained for regression tests. | Historical software testing only. | Not calibrated; not loaded by the public UI. |
 
 The active engine is visible in the interface and returned by `GET /api/status`. A saved comparison records the engine, model identifier, weather fingerprint, cost-assumption identifier, scenario, horizon, targets, controls, resources, crop result, and alert count. The full-model identifier combines the installed package version (or a `source-checkout` label), adapter version, parameter fingerprint, and either an exact 40-character source Git revision or a SHA-256 fingerprint of the exact `gl_gym` Python modules loaded by the adapter. The selected weather array is fingerprinted separately. Comparisons are blocked when either side has sentinel provenance such as `unknown`, `unversioned`, or `local-source`; runs using the same scenario also require an identical weather fingerprint.
 
@@ -36,6 +36,18 @@ The active engine is visible in the interface and returned by `GET /api/status`.
 
 ## Inputs and outputs
 
+Radiation is now evaluated directly from the same upstream `aux_states.update` equations as the ODE: above-canopy global radiation from sun and top lamps is `a[42]+a[43]` (W/m2, not including interlighting), and canopy-absorbed PAR is `a[191]` (umol/m2/s). LAI is `a[31]`; heat, lamp electricity and CO2 use integrate `a[220]`, `a[37]` and `a[222]`. Auxiliary values use the forcing row of the just-completed step, matching the upstream observation timing. This replaces the adapter's earlier approximate indoor-radiation formula.
+
+Greenhouse parameters are in upstream `gl_gym/configs/default_params.py`; initial climate and crop state are in `gl_gym/environments/utils.py::init_state`. These parameters have not been calibrated for an arbitrary visitor's greenhouse. Recorded forcing is limited to the explicitly enabled `Amsterdam/2010.csv`, with cross-year reads blocked. Amsterdam-format uploads can be converted in memory for a full-model run after at least 36 hours of coverage. The converter consumes uploaded outdoor CO2, estimates soil temperature with upstream `soilTempNl(time)` using source-year seconds, and retains the undocumented `??` and uploaded day-number columns without interpreting them. Uploaded weather compatibility does not establish accuracy or greenhouse-specific calibration.
+
+Custom uploaded runs require an explicit source year and fixed clock convention (UTC or source-local standard time without DST). The model clock and time state begin at the selected source timestamp, including non-midnight starts. Windows are half-open and aligned to the fixed 900-second model step. Coverage includes each simulated day's complete midnight-to-midnight radiation context and a 0.5-day prediction horizon after the chosen end. The adapter stops at exactly the requested number of steps without filling missing weather. Initial states use the applied run configuration; unspecified states inherit GreenLight defaults, with zero warm-up. Startup transients are part of the reported run. The Netherlands soil-temperature approximation remains an assumption, not a site-calibrated soil model.
+
+The first greenhouse-settings release exposes 22 audited parameter/state inputs, described in [GREENHOUSE_CONFIGURATION.md](GREENHOUSE_CONFIGURATION.md). Height-dependent capacities and area-dependent total equipment capacities are recomputed. Empty overrides exactly preserve upstream parameter/state arrays. Only named initial states are changed; other compartments/surfaces keep defaults. The reward's equipment-dependent normalization is refreshed and observations are recomputed before reporting results. All edits remain in a run-local candidate environment.
+
+Parameter fingerprints now hash the effective model vector; initial-state fingerprints hash the actual 28-state initial array. The configuration fingerprint also includes selected-window metadata. Numeric comparisons require matching configuration evidence, including initial state, so old baselines without that evidence are blocked. Whole-greenhouse resource totals use actual floor area and unrounded cumulative per-area values. These software checks do not establish realistic behavior for every accepted parameter combination.
+
+Cutaway geometry, cloud/sun placement, plant animation, threshold warnings and rounded displays are presentation choices, not additional GreenLight measurements or spatial predictions. Cloud amount is unavailable rather than falsely reported as a measured zero.
+
 The common user inputs are:
 
 - weather scenario;
@@ -46,7 +58,7 @@ The common user inputs are:
 
 The common outputs include indoor and outdoor climate, crop-state indicators, actuator positions, cumulative heating, lamp electricity, CO2 use, estimated cost, climate-limit warnings, and a short rolling history.
 
-The browser model rejects non-finite targets and controls, and requires each step request to be an integer from 1 through 192, before invalid inputs can create model state. Target limits match the interface:
+Historical regression context: the retained (inactive) browser model rejects non-finite targets and controls, and requires each step request to be an integer from 1 through 192. Target limits match the interface:
 
 | Target | Accepted range |
 | --- | --- |
@@ -57,7 +69,7 @@ The browser model rejects non-finite targets and controls, and requires each ste
 
 These are software input bounds, not universal agronomic recommendations.
 
-The approximation also applies implementation safety clamps that are asserted by its contract tests:
+The inactive approximation applies the following historical software clamps. They are **not applied to GreenLight-Gym2 scientific state**:
 
 | State or record | Software bound |
 | --- | --- |
@@ -73,7 +85,7 @@ These clamps prevent runaway software state. They are not evidence that every va
 
 Cost is an explanatory output, not a live quotation.
 
-The browser approximation uses the versioned assumption set `browser-fixed-eur-2026-07`:
+The inactive browser approximation used the versioned assumption set `browser-fixed-eur-2026-07` (not used by the current UI):
 
 | Resource | Fixed illustrative value |
 | --- | ---: |
@@ -92,6 +104,7 @@ The full engine accumulates the `variable_costs` value returned by GreenLight-Gy
 - Manual response tests require heating to raise winter temperature, ventilation to lower summer temperature, CO2 dosing to raise concentration and use, and lighting to raise inside radiation and electricity use.
 - Reset tests require the horizon and cumulative resources to return to zero while model provenance remains stable.
 - The UI contract requires a scenario change to perform a reset before a new run is compared.
+- Calendar-window tests cover non-midnight starts, one-step and one-day windows, the last valid endpoint, batch overshoot, source-year/leap-day validation, unchanged runs after invalid selections, and candidate reset rollback. JavaScript date arithmetic does not depend on the viewer's timezone or daylight saving.
 - An opt-in integration test constructs the real GreenLight-Gym2 adapter, resolves Git provenance when available or hashes the exact loaded source modules when it is not, fingerprints parameters and selected weather without modifying the checkout, advances one model step, and checks finite output and immutable provenance.
 
 These tests show that the software behaves consistently with its declared contract. They do not establish predictive accuracy for a commercial greenhouse.
@@ -125,8 +138,8 @@ No accuracy threshold or commercial fitness claim should be added until the inte
 Browser-model contract tests require only Node.js:
 
 ```powershell
-node --check .\simulator-engine.js
-node --check .\app.js
+node --check .\frontend\legacy\simulator-engine.js
+node --check .\frontend\app.js
 node --test .\tests\browser_model_contract.test.js
 ```
 
@@ -164,6 +177,10 @@ Do not place private greenhouse data, thesis material, credentials, or protected
 7. Consider live read-only sensor synchronization only after the offline evaluation protocol is stable.
 
 ## Scientific and software-quality references
+
+Full upstream author attribution and BibTeX are provided in [CITATION.md](CITATION.md). The underlying GreenLight model is credited to Katzin and collaborators; the GreenLight-Gym2 environment is credited to van Laatum and contributors. This repository supplies the interface and adapter.
+
+- van Laatum, Bart; van Henten, Eldert J.; and Boersma, Sjoerd (2025), [GreenLight-Gym: Reinforcement learning benchmark environment for control of greenhouse production systems](https://doi.org/10.1016/j.ifacol.2025.11.827). IFAC-PapersOnLine, 59(23), 437–442. This is the citation requested by the [GreenLight-Gym2 upstream repository](https://github.com/BartvLaatum/GreenLight-Gym2#citation).
 
 - Katzin et al. (2020), [GreenLight - An open source model for greenhouses with supplemental lighting](https://doi.org/10.1016/j.biosystemseng.2020.03.010). This is provenance for the underlying GreenLight model, not validation of this project's browser approximation or adapter configuration.
 - de Visser et al. (2025), [Towards optimization of tomato cultivation using a digital twin](https://research.wur.nl/en/publications/towards-optimization-of-tomato-cultivation-using-a-digital-twin/). The study describes calibration using sensor data and manual plant observations, followed by scenario-oriented decision support.

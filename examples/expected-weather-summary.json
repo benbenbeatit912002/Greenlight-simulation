@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "amsterdam-weather-xlsx-v2",
+  "rowCount": 433,
+  "intervalMinutes": 5,
+  "durationHours": 36,
+  "stored": false
+}

@@ -12,23 +12,15 @@ Thank you for helping make GreenLight Simulation more reproducible, understandab
 
 ## Local setup
 
-The browser-only development environment has no third-party runtime dependency:
+Follow [installation](docs/installation.md), including the contributor setup. Python dependencies are locked in `uv.lock`; Prettier is locked in `package-lock.json`. Node.js is only a development dependency.
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE = '1'
-$env:UV_CACHE_DIR = "$PWD\.uv-cache"
-uv sync --locked --python 3.12
+```sh
+uv sync --locked --python 3.12 --cache-dir .uv-cache
+npm ci --ignore-scripts --cache .npm-cache
+uv run --no-sync python -B server.py --engine browser
 ```
 
-Start the local browser model:
-
-```powershell
-& '.\.venv\Scripts\python.exe' -B .\server.py --engine browser
-```
-
-Open <http://127.0.0.1:4173/>.
-
-The optional full GreenLight-Gym2 setup is documented in `README.md`. Treat the external source checkout as read-only. Keep virtual environments, caches, logs, and generated outputs inside this repository, set `PYTHONDONTWRITEBYTECODE=1`, and invoke Python with `-B`.
+This serves the interface and upload validation, with scientific results unavailable until the full model is configured. The optional model is an explicit, read-only source checkout. Set `GREENLIGHT_GYM_PATH`; never edit a collaborator's model or research files while working on this wrapper.
 
 ## Make a focused change
 
@@ -58,30 +50,23 @@ Do not tune a parameter on validation data and then report the same data as inde
 
 ## Run the checks
 
-JavaScript syntax and browser-model contracts:
-
-```powershell
-node --check .\simulator-engine.js
-node --check .\app.js
-node --test .\tests\browser_model_contract.test.js
+```sh
+uv run --no-sync python -B scripts/check.py
 ```
 
-Default Python suite:
+The shared runner disables external-model integration, keeps temporary files inside this repository, and fails on the first failed check. CI runs it on Windows, Linux and macOS. Cross-platform CI results are established only after the workflow runs on GitHub.
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE = '1'
-& '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
+Apply formatting explicitly:
+
+```sh
+uv run --no-sync ruff format backend tests scripts examples server.py
+uv run --no-sync ruff check backend tests scripts examples server.py --fix
+npm run format
 ```
 
-Optional full-model integration:
+The Python cyclomatic-complexity limit is 20. New code should use focused functions with explicit inputs and documented units. A score below the limit does not by itself make code understandable. Keep source readable; generated/minified distribution assets should not replace the maintained source.
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE = '1'
-$env:RUN_GREENLIGHT_INTEGRATION = '1'
-& '.\.venv\Scripts\python.exe' -B -m unittest tests.test_greenlight_integration -v
-```
-
-Only run the optional test when the open-source dependencies are installed locally and the external GreenLight-Gym2 source can remain read-only.
+For model execution checks, follow [the opt-in integration instructions](docs/scientific-validation.md). Run them only against an explicitly authorized source/data setup. Passing software checks is not evidence of greenhouse prediction accuracy.
 
 ## Pull request expectations
 

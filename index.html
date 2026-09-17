@@ -1,33 +1,54 @@
 <!doctype html>
 <html lang="zh-Hant">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#07110f">
-    <meta name="application-name" content="GreenLight 2 Greenhouse Simulator">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#07110f" />
+    <meta name="application-name" content="GreenLight 2 Greenhouse Simulator" />
     <meta
       name="description"
-      content="Interactive GreenLight 2 greenhouse climate and control simulator with a scientific Python backend and browser-safe fallback."
-    >
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="GreenLight 2 Greenhouse Simulator">
-    <meta property="og:description" content="Explore greenhouse climate, crop state, controls, and resource use through a scientific simulation workbench.">
-    <meta property="og:locale" content="zh_TW">
+      content="Interactive GreenLight 2 greenhouse climate and control simulator using the scientific Python model."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="GreenLight 2 Greenhouse Simulator" />
+    <meta
+      property="og:description"
+      content="Explore greenhouse climate, crop state, controls, and resource use through a scientific simulation workbench."
+    />
+    <meta property="og:locale" content="zh_TW" />
     <title>GreenLight 2 溫室模擬器</title>
-    <link rel="stylesheet" href="styles.css?v=20260721-decision-workbench">
-    <script defer src="simulator-engine.js"></script>
-    <script defer src="app.js?v=20260721-decision-workbench"></script>
+    <link rel="stylesheet" href="styles.css?v=20260915-greenhouse" />
+    <script defer src="frontend/run-window.js?v=20260912"></script>
+    <script defer src="frontend/greenhouse-settings.js?v=20260915"></script>
+    <script defer src="frontend/charts.js"></script>
+    <script defer src="frontend/translations.js"></script>
+    <script defer src="frontend/app.js?v=20260915-greenhouse"></script>
+    <script defer src="frontend/climate-upload.js?v=20260915-greenhouse"></script>
   </head>
   <body>
-    <div class="app-shell" id="simulatorApp">
+    <div class="app-shell model-unavailable" id="simulatorApp">
       <header class="topbar">
         <div class="brand-block">
           <div class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 40 40" role="img">
-              <path d="M20 5 34 16v18H6V16L20 5Z" fill="none" stroke="currentColor" stroke-width="2.2"/>
-              <path d="M20 10v23M7 18h26" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".65"/>
-              <path d="M20 25c-5.5-.4-8.2-3.5-8.4-8.5 5.4-.2 8.3 2.8 8.4 8.5Zm0 3.4c4.9-.3 7.5-3 7.7-7.6-4.9-.2-7.6 2.5-7.7 7.6Z" fill="currentColor"/>
+              <path
+                d="M20 5 34 16v18H6V16L20 5Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+              />
+              <path
+                d="M20 10v23M7 18h26"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                opacity=".65"
+              />
+              <path
+                d="M20 25c-5.5-.4-8.2-3.5-8.4-8.5 5.4-.2 8.3 2.8 8.4 8.5Zm0 3.4c4.9-.3 7.5-3 7.7-7.6-4.9-.2-7.6 2.5-7.7 7.6Z"
+                fill="currentColor"
+              />
             </svg>
           </div>
           <div>
@@ -37,6 +58,14 @@
         </div>
 
         <div class="run-controls" data-i18n-aria-label="runControls" aria-label="模擬執行控制">
+          <button
+            class="language-toggle"
+            id="languageToggleTop"
+            type="button"
+            aria-label="切換為英文"
+          >
+            EN
+          </button>
           <label class="compact-field" for="scenarioSelect">
             <span data-i18n="weatherScenario">天氣情境</span>
             <select id="scenarioSelect">
@@ -44,6 +73,7 @@
               <option value="cloudy" data-i18n="scenarioCloudy">多雲寒冷</option>
               <option value="summer" data-i18n="scenarioSummer">夏季炎熱</option>
               <option value="winter" data-i18n="scenarioWinter">冬季低溫</option>
+              <option value="uploaded" data-i18n="uploadedWeather" hidden>上傳的氣候資料</option>
             </select>
           </label>
           <label class="compact-field speed-field" for="speedSelect">
@@ -55,18 +85,24 @@
               <option value="48">48×</option>
             </select>
           </label>
-          <button class="icon-button" id="resetButton" type="button" data-i18n-aria-label="resetSimulation" aria-label="重設模擬">
+          <button
+            class="icon-button"
+            id="resetButton"
+            type="button"
+            data-i18n-aria-label="resetSimulation"
+            aria-label="重設模擬"
+          >
             <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/>
-              <path d="M3 3v5h5"/>
+              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+              <path d="M3 3v5h5" />
             </svg>
           </button>
           <button class="play-button" id="playButton" type="button" aria-pressed="false">
             <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m8 5 11 7-11 7V5Z"/>
+              <path d="m8 5 11 7-11 7V5Z" />
             </svg>
             <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5v14M16 5v14"/>
+              <path d="M8 5v14M16 5v14" />
             </svg>
             <span id="playLabel">開始模擬</span>
           </button>
@@ -76,39 +112,239 @@
       <section class="showcase-intro" aria-labelledby="showcaseTitle">
         <div class="showcase-copy">
           <span class="eyebrow">OPEN GREENHOUSE SIMULATION</span>
-          <h2 id="showcaseTitle" data-i18n="showcaseTitle">在決策進入溫室前，先看見氣候與作物的反應。</h2>
-          <p data-i18n="showcaseBody">以實測天氣、28-state GreenLight 模型與六項致動器，探索控制策略如何改變溫度、濕度、CO₂、作物與資源使用。</p>
+          <h2 id="showcaseTitle" data-i18n="showcaseTitle">
+            在決策進入溫室前，先看見氣候與作物的反應。
+          </h2>
+          <p data-i18n="showcaseBody">
+            以實測天氣、28-state GreenLight
+            模型與六項致動器，探索控制策略如何改變溫度、濕度、CO₂、作物與資源使用。
+          </p>
           <div class="showcase-actions">
-            <button class="showcase-primary" id="showcaseStartButton" type="button" data-i18n="exploreControls">開始探索控制</button>
-            <button class="showcase-secondary" id="tourButton" type="button" aria-haspopup="dialog" data-i18n="howItWorks">了解運作方式</button>
+            <button
+              class="showcase-primary"
+              id="showcaseStartButton"
+              type="button"
+              data-i18n="exploreControls"
+            >
+              開始探索控制
+            </button>
+            <button
+              class="showcase-secondary"
+              id="tourButton"
+              type="button"
+              aria-haspopup="dialog"
+              data-i18n="howItWorks"
+            >
+              了解運作方式
+            </button>
           </div>
         </div>
         <dl class="showcase-facts" data-i18n-aria-label="projectHighlights" aria-label="專案重點">
-          <div><dt>28</dt><dd data-i18n="stateVariables">狀態變數</dd></div>
-          <div><dt>15 min</dt><dd data-i18n="stepDuration">每個模型步長</dd></div>
-          <div><dt>2008–12</dt><dd data-i18n="measuredWeather">阿姆斯特丹實測天氣</dd></div>
+          <div>
+            <dt>28</dt>
+            <dd data-i18n="stateVariables">狀態變數</dd>
+          </div>
+          <div>
+            <dt>15 min</dt>
+            <dd data-i18n="stepDuration">每個模型步長</dd>
+          </div>
+          <div>
+            <dt>2010</dt>
+            <dd data-i18n="measuredWeather">阿姆斯特丹實測天氣</dd>
+          </div>
         </dl>
       </section>
 
+      <section class="model-connection" aria-live="polite">
+        <p id="modelConnectionText">正在連接 GreenLight 完整模型；連接前不顯示模擬數字。</p>
+        <p id="modelConnectionReason"></p>
+        <button
+          class="showcase-secondary"
+          id="retryModelButton"
+          type="button"
+          data-i18n="retryModel"
+        >
+          重新連接完整模型
+        </button>
+      </section>
+
+      <section class="weather-import" id="weatherImport" aria-labelledby="weatherImportTitle">
+        <div class="weather-import-heading">
+          <div>
+            <span class="eyebrow" data-weather-i18n="stage">第一階段 · 檢查並執行</span>
+            <h2 id="weatherImportTitle" data-weather-i18n="title">匯入你的室外氣候</h2>
+            <p data-weather-i18n="intro">先檢查 Excel 氣候資料，再準備接入溫室模型。</p>
+          </div>
+          <a
+            class="showcase-secondary weather-template-link"
+            href="templates/greenlight-weather-template.xlsx"
+            download
+            data-weather-i18n="template"
+            >下載 Excel 範本</a
+          >
+        </div>
+        <form id="weatherUploadForm">
+          <label for="weatherFile" data-weather-i18n="file">氣候資料檔案（.xlsx）</label>
+          <input
+            id="weatherFile"
+            name="weather"
+            type="file"
+            accept=".xlsx"
+            aria-describedby="weatherLimits weatherPrivacy"
+          />
+          <button
+            class="showcase-primary"
+            id="weatherCheckButton"
+            type="submit"
+            data-weather-i18n="check"
+          >
+            檢查氣候資料
+          </button>
+        </form>
+        <p id="weatherLimits" data-weather-i18n="limits">
+          上限 2 MiB、10,000 筆。使用 Amsterdam 的 9 欄格式，每 300 秒一筆。只接受數值，不接受公式。
+        </p>
+        <details class="weather-tutorial" id="weatherTutorial">
+          <summary data-weather-i18n="tutorialTitle">
+            Excel 格式教學（與 Amsterdam/2010.csv 對齊）
+          </summary>
+          <ol>
+            <li data-weather-i18n="tutorialDownload"></li>
+            <li data-weather-i18n="tutorialHeaders"></li>
+            <li data-weather-i18n="tutorialTime"></li>
+            <li data-weather-i18n="tutorialValues"></li>
+            <li data-weather-i18n="tutorialPreview"></li>
+          </ol>
+          <div
+            class="weather-table-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Amsterdam columns"
+          >
+            <table>
+              <caption data-weather-i18n="tutorialColumns"></caption>
+              <thead>
+                <tr>
+                  <th data-weather-i18n="column"></th>
+                  <th data-weather-i18n="tutorialUnit"></th>
+                  <th data-weather-i18n="tutorialUse"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>time</td>
+                  <td>s</td>
+                  <td data-weather-i18n="useTime"></td>
+                </tr>
+                <tr>
+                  <td>global radiation</td>
+                  <td>W/m²</td>
+                  <td data-weather-i18n="useRadiation"></td>
+                </tr>
+                <tr>
+                  <td>wind speed</td>
+                  <td>m/s</td>
+                  <td data-weather-i18n="useWind"></td>
+                </tr>
+                <tr>
+                  <td>air temperature</td>
+                  <td>°C</td>
+                  <td data-weather-i18n="useAir"></td>
+                </tr>
+                <tr>
+                  <td>sky temperature</td>
+                  <td>°C</td>
+                  <td data-weather-i18n="useSky"></td>
+                </tr>
+                <tr>
+                  <td>??</td>
+                  <td>—</td>
+                  <td data-weather-i18n="useUnknown"></td>
+                </tr>
+                <tr>
+                  <td>CO2 concentration</td>
+                  <td>ppm</td>
+                  <td data-weather-i18n="useCo2"></td>
+                </tr>
+                <tr>
+                  <td>day number</td>
+                  <td>day</td>
+                  <td data-weather-i18n="useDay"></td>
+                </tr>
+                <tr>
+                  <td>RH</td>
+                  <td>% (0–100)</td>
+                  <td data-weather-i18n="useRh"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p data-weather-i18n="tutorialAssumptions"></p>
+          <p data-weather-i18n="tutorialSource"></p>
+        </details>
+        <p id="weatherPrivacy" data-weather-i18n="privacy">
+          只在這台電腦的記憶體中檢查，不儲存檔案，也不會上傳 GitHub。
+        </p>
+        <p class="weather-stage-note" data-weather-i18n="unchanged">
+          檔案只在記憶體中檢查。通過模型檢查後，可使用這份天氣初始化完整 GreenLight 模型。
+        </p>
+        <p id="weatherUploadStatus" role="status" aria-live="polite"></p>
+        <div id="weatherPreview"></div>
+        <section
+          id="runProgressPanel"
+          class="run-progress"
+          hidden
+          aria-labelledby="runProgressTitle"
+        >
+          <h3 id="runProgressTitle"></h3>
+          <p id="runProgressRange"></p>
+          <progress
+            id="runProgressBar"
+            max="100"
+            value="0"
+            aria-labelledby="runProgressTitle"
+          ></progress>
+          <p id="runProgressText" role="status" aria-live="polite"></p>
+          <p id="runProgressNote"></p>
+        </section>
+      </section>
+
+      <section
+        class="weather-import greenhouse-settings"
+        id="greenhouseSettings"
+        aria-label="Greenhouse configuration"
+      ></section>
+
       <main class="dashboard">
-        <section class="simulation-column" data-i18n-aria-label="simulationStatus" aria-label="溫室即時狀態">
+        <section
+          class="simulation-column"
+          data-i18n-aria-label="simulationStatus"
+          aria-label="溫室即時狀態"
+        >
           <div class="metric-grid">
             <article class="metric-card" data-metric="temperature">
               <div class="metric-header">
                 <span class="metric-icon temperature-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M14 14.8V5a4 4 0 0 0-8 0v9.8a6 6 0 1 0 8 0Z"/><path d="M10 7v9"/></svg>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M14 14.8V5a4 4 0 0 0-8 0v9.8a6 6 0 1 0 8 0Z" />
+                    <path d="M10 7v9" />
+                  </svg>
                 </span>
                 <span data-i18n="indoorAir">室內空氣</span>
                 <span class="status-dot" id="tempStatusDot"></span>
               </div>
               <div class="metric-value"><span id="airTempValue">19.2</span><small>°C</small></div>
-              <div class="metric-foot"><span id="airTempDelta">目標 21.5°C</span><span>15–34°C</span></div>
+              <div class="metric-foot">
+                <span id="airTempDelta">目標 21.5°C</span><span>15–34°C</span>
+              </div>
             </article>
 
             <article class="metric-card" data-metric="humidity">
               <div class="metric-header">
                 <span class="metric-icon humidity-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M12 3S5.5 10.4 5.5 15a6.5 6.5 0 1 0 13 0C18.5 10.4 12 3 12 3Z"/></svg>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 3S5.5 10.4 5.5 15a6.5 6.5 0 1 0 13 0C18.5 10.4 12 3 12 3Z" />
+                  </svg>
                 </span>
                 <span data-i18n="relativeHumidity">相對濕度</span>
                 <span class="status-dot" id="rhStatusDot"></span>
@@ -120,45 +356,71 @@
             <article class="metric-card" data-metric="co2">
               <div class="metric-header">
                 <span class="metric-icon co2-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M7 17h10a4 4 0 0 0 .7-7.9A6 6 0 0 0 6.4 8.4 4.5 4.5 0 0 0 7 17Z"/></svg>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M7 17h10a4 4 0 0 0 .7-7.9A6 6 0 0 0 6.4 8.4 4.5 4.5 0 0 0 7 17Z" />
+                  </svg>
                 </span>
                 <span data-i18n="indoorCo2">室內 CO₂</span>
                 <span class="status-dot" id="co2StatusDot"></span>
               </div>
               <div class="metric-value"><span id="co2Value">690</span><small>ppm</small></div>
-              <div class="metric-foot"><span id="co2Delta">目標 900 ppm</span><span>300–1600</span></div>
+              <div class="metric-foot">
+                <span id="co2Delta">目標 900 ppm</span><span>300–1600</span>
+              </div>
             </article>
 
             <article class="metric-card" data-metric="pipe">
               <div class="metric-header">
                 <span class="metric-icon pipe-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M4 8h11a5 5 0 0 1 5 5v3H7a3 3 0 0 1-3-3V8Z"/><path d="M8 8V5m4 3V5"/></svg>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 8h11a5 5 0 0 1 5 5v3H7a3 3 0 0 1-3-3V8Z" />
+                    <path d="M8 8V5m4 3V5" />
+                  </svg>
                 </span>
                 <span data-i18n="heatingPipe">加熱管道</span>
                 <span class="status-dot neutral"></span>
               </div>
               <div class="metric-value"><span id="pipeTempValue">39.0</span><small>°C</small></div>
-              <div class="metric-foot"><span id="boilerState">鍋爐 38%</span><span id="heatUse">0.000 kWh/m²</span></div>
+              <div class="metric-foot">
+                <span id="boilerState">鍋爐 38%</span><span id="heatUse">0.000 kWh/m²</span>
+              </div>
             </article>
           </div>
 
-          <section class="greenhouse-card" data-i18n-aria-label="greenhouseSection" aria-label="互動溫室剖面">
+          <section
+            class="greenhouse-card"
+            data-i18n-aria-label="greenhouseSection"
+            aria-label="互動溫室剖面"
+          >
             <div class="stage-header">
               <div>
                 <span class="live-indicator" id="liveIndicator"><i></i><span>已暫停</span></span>
                 <strong id="clockLabel">第 59 天・06:00</strong>
               </div>
-              <div class="stage-weather" data-i18n-aria-label="outdoorWeather" aria-label="室外天氣">
+              <div
+                class="stage-weather"
+                data-i18n-aria-label="outdoorWeather"
+                aria-label="室外天氣"
+              >
                 <span>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" />
+                    <path
+                      d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+                    />
+                  </svg>
                   <b id="outsideRadiation">0</b> W/m²
                 </span>
                 <span>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 14.8V5a4 4 0 0 0-8 0v9.8a6 6 0 1 0 8 0Z"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 14.8V5a4 4 0 0 0-8 0v9.8a6 6 0 1 0 8 0Z" />
+                  </svg>
                   <b id="outsideTemp">9.5</b>°C
                 </span>
                 <span>
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h11a2 2 0 1 0-2-2M3 12h16a2 2 0 1 1-2 2M3 16h8"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 8h11a2 2 0 1 0-2-2M3 12h16a2 2 0 1 1-2 2M3 16h8" />
+                  </svg>
                   <b id="outsideWind">2.8</b> m/s
                 </span>
               </div>
@@ -169,147 +431,381 @@
               <div class="sun" id="sun" aria-hidden="true"></div>
               <div class="cloud cloud-one" aria-hidden="true"><i></i><i></i><i></i></div>
               <div class="cloud cloud-two" aria-hidden="true"><i></i><i></i><i></i></div>
-              <div class="wind-lines" id="windLines" aria-hidden="true">
-                <i></i><i></i><i></i>
-              </div>
+              <div class="wind-lines" id="windLines" aria-hidden="true"><i></i><i></i><i></i></div>
 
-              <svg class="greenhouse-svg" viewBox="0 0 1000 500" role="img" aria-labelledby="greenhouseTitle greenhouseDesc">
-                <title id="greenhouseTitle" data-i18n="greenhouseTitle">GreenLight 2 溫室剖面即時狀態</title>
-                <desc id="greenhouseDesc" data-i18n="greenhouseDescription">畫面依據通風窗、保溫幕、遮光幕、燈光、暖氣、二氧化碳與作物狀態同步變化。</desc>
+              <svg
+                class="greenhouse-svg"
+                viewBox="0 0 1000 500"
+                role="img"
+                aria-labelledby="greenhouseTitle greenhouseDesc"
+              >
+                <title id="greenhouseTitle" data-i18n="greenhouseTitle">
+                  GreenLight 2 溫室剖面即時狀態
+                </title>
+                <desc id="greenhouseDesc" data-i18n="greenhouseDescription">
+                  畫面依據通風窗、保溫幕、遮光幕、燈光、暖氣、二氧化碳與作物狀態同步變化。
+                </desc>
 
                 <defs>
                   <linearGradient id="glassFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#bff7e5" stop-opacity=".22"/>
-                    <stop offset="1" stop-color="#57b9a2" stop-opacity=".08"/>
+                    <stop offset="0" stop-color="#bff7e5" stop-opacity=".22" />
+                    <stop offset="1" stop-color="#57b9a2" stop-opacity=".08" />
                   </linearGradient>
                   <linearGradient id="soilFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#79563a"/>
-                    <stop offset="1" stop-color="#39291d"/>
+                    <stop offset="0" stop-color="#79563a" />
+                    <stop offset="1" stop-color="#39291d" />
                   </linearGradient>
                   <filter id="lampGlow" x="-80%" y="-160%" width="260%" height="420%">
-                    <feGaussianBlur stdDeviation="12" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    <feGaussianBlur stdDeviation="12" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
                   </filter>
                   <filter id="pipeGlow" x="-40%" y="-200%" width="180%" height="500%">
-                    <feGaussianBlur stdDeviation="8" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    <feGaussianBlur stdDeviation="8" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
                   </filter>
                   <clipPath id="greenhouseClip">
-                    <path d="M120 418V175L300 70h200l180 105v243Z"/>
+                    <path d="M120 418V175L300 70h200l180 105v243Z" />
                   </clipPath>
                 </defs>
 
                 <g class="scene-ground">
-                  <path d="M42 418H944"/>
-                  <path d="M0 419h1000v81H0z" fill="url(#soilFill)"/>
-                  <path d="M0 439c160-12 270 16 425 1s325-12 575 2"/>
+                  <path d="M42 418H944" />
+                  <path d="M0 419h1000v81H0z" fill="url(#soilFill)" />
+                  <path d="M0 439c160-12 270 16 425 1s325-12 575 2" />
                 </g>
 
                 <g clip-path="url(#greenhouseClip)">
-                  <rect class="greenhouse-light" id="greenhouseLight" x="110" y="60" width="580" height="360"/>
+                  <rect
+                    class="greenhouse-light"
+                    id="greenhouseLight"
+                    x="110"
+                    y="60"
+                    width="580"
+                    height="360"
+                  />
                   <g class="light-beams" id="lightBeams">
-                    <path d="M225 154 180 402h125l-26-248Z"/>
-                    <path d="M388 154 337 402h124l-22-248Z"/>
-                    <path d="M550 154 500 402h125l-23-248Z"/>
+                    <path d="M225 154 180 402h125l-26-248Z" />
+                    <path d="M388 154 337 402h124l-22-248Z" />
+                    <path d="M550 154 500 402h125l-23-248Z" />
                   </g>
                   <g class="thermal-screen" id="thermalScreen">
-                    <rect x="123" y="177" width="554" height="18" rx="5"/>
-                    <path d="M135 183h526"/>
+                    <rect x="123" y="177" width="554" height="18" rx="5" />
+                    <path d="M135 183h526" />
                   </g>
                   <g class="blackout-screen" id="blackoutScreen">
-                    <path d="M124 174 300 77h198l177 101-15 27-169-91H309L139 205Z"/>
+                    <path d="M124 174 300 77h198l177 101-15 27-169-91H309L139 205Z" />
                   </g>
                   <g class="co2-particles" id="co2Particles" aria-hidden="true">
-                    <circle cx="186" cy="356" r="5"/><circle cx="213" cy="333" r="4"/>
-                    <circle cx="260" cy="370" r="5"/><circle cx="332" cy="342" r="4"/>
-                    <circle cx="392" cy="365" r="5"/><circle cx="447" cy="330" r="4"/>
-                    <circle cx="520" cy="362" r="5"/><circle cx="580" cy="339" r="4"/>
-                    <circle cx="632" cy="367" r="5"/>
+                    <circle cx="186" cy="356" r="5" />
+                    <circle cx="213" cy="333" r="4" />
+                    <circle cx="260" cy="370" r="5" />
+                    <circle cx="332" cy="342" r="4" />
+                    <circle cx="392" cy="365" r="5" />
+                    <circle cx="447" cy="330" r="4" />
+                    <circle cx="520" cy="362" r="5" />
+                    <circle cx="580" cy="339" r="4" />
+                    <circle cx="632" cy="367" r="5" />
                   </g>
                   <g class="humidity-drops" id="humidityDrops" aria-hidden="true">
-                    <path d="M171 211c0 8-11 8-11 0 0-4 5.5-11 5.5-11s5.5 7 5.5 11Z"/>
-                    <path d="M640 224c0 8-11 8-11 0 0-4 5.5-11 5.5-11s5.5 7 5.5 11Z"/>
-                    <path d="M470 135c0 8-11 8-11 0 0-4 5.5-11 5.5-11s5.5 7 5.5 11Z"/>
+                    <path d="M171 211c0 8-11 8-11 0 0-4 5.5-11 5.5-11s5.5 7 5.5 11Z" />
+                    <path d="M640 224c0 8-11 8-11 0 0-4 5.5-11 5.5-11s5.5 7 5.5 11Z" />
+                    <path d="M470 135c0 8-11 8-11 0 0-4 5.5-11 5.5-11s5.5 7 5.5 11Z" />
                   </g>
                 </g>
 
-                <path class="glass" d="M120 418V175L300 70h200l180 105v243Z" fill="url(#glassFill)"/>
+                <path
+                  class="glass"
+                  d="M120 418V175L300 70h200l180 105v243Z"
+                  fill="url(#glassFill)"
+                />
                 <g class="frame">
-                  <path d="M120 418V175L300 70h200l180 105v243M120 175h560M300 70v348M500 70v348M120 418h560"/>
-                  <path d="m120 175 180-105 200 105 180-105" opacity=".45"/>
-                  <path d="M210 418V123M405 418V70M590 418V123" opacity=".35"/>
+                  <path
+                    d="M120 418V175L300 70h200l180 105v243M120 175h560M300 70v348M500 70v348M120 418h560"
+                  />
+                  <path d="m120 175 180-105 200 105 180-105" opacity=".45" />
+                  <path d="M210 418V123M405 418V70M590 418V123" opacity=".35" />
                 </g>
 
                 <g class="roof-vents" id="roofVents">
-                  <g class="vent vent-left" id="ventLeft"><path d="M315 71h92"/><circle cx="315" cy="71" r="5"/></g>
-                  <g class="vent vent-right" id="ventRight"><path d="M500 71h92"/><circle cx="500" cy="71" r="5"/></g>
+                  <g class="vent vent-left" id="ventLeft">
+                    <path d="M315 71h92" />
+                    <circle cx="315" cy="71" r="5" />
+                  </g>
+                  <g class="vent vent-right" id="ventRight">
+                    <path d="M500 71h92" />
+                    <circle cx="500" cy="71" r="5" />
+                  </g>
                 </g>
 
                 <g class="lamp-fixtures" id="lampFixtures">
-                  <g transform="translate(220 151)"><path d="M-24 0h48"/><path class="lamp-glow" d="M-20 5h40" filter="url(#lampGlow)"/></g>
-                  <g transform="translate(385 151)"><path d="M-24 0h48"/><path class="lamp-glow" d="M-20 5h40" filter="url(#lampGlow)"/></g>
-                  <g transform="translate(550 151)"><path d="M-24 0h48"/><path class="lamp-glow" d="M-20 5h40" filter="url(#lampGlow)"/></g>
+                  <g transform="translate(220 151)">
+                    <path d="M-24 0h48" />
+                    <path class="lamp-glow" d="M-20 5h40" filter="url(#lampGlow)" />
+                  </g>
+                  <g transform="translate(385 151)">
+                    <path d="M-24 0h48" />
+                    <path class="lamp-glow" d="M-20 5h40" filter="url(#lampGlow)" />
+                  </g>
+                  <g transform="translate(550 151)">
+                    <path d="M-24 0h48" />
+                    <path class="lamp-glow" d="M-20 5h40" filter="url(#lampGlow)" />
+                  </g>
                 </g>
 
                 <g class="crop-row" id="cropRow">
                   <g class="plant" transform="translate(195 410)">
-                    <path class="stem" d="M0 0c8-48-7-95 5-151"/>
-                    <ellipse class="leaf" cx="-12" cy="-42" rx="24" ry="9" transform="rotate(24 -12 -42)"/>
-                    <ellipse class="leaf" cx="18" cy="-70" rx="25" ry="9" transform="rotate(-25 18 -70)"/>
-                    <ellipse class="leaf" cx="-13" cy="-101" rx="23" ry="8" transform="rotate(22 -13 -101)"/>
-                    <ellipse class="leaf" cx="18" cy="-130" rx="22" ry="8" transform="rotate(-28 18 -130)"/>
-                    <g class="fruit"><circle cx="10" cy="-50" r="8"/><circle cx="-4" cy="-61" r="7"/><circle cx="14" cy="-84" r="7"/></g>
+                    <path class="stem" d="M0 0c8-48-7-95 5-151" />
+                    <ellipse
+                      class="leaf"
+                      cx="-12"
+                      cy="-42"
+                      rx="24"
+                      ry="9"
+                      transform="rotate(24 -12 -42)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="18"
+                      cy="-70"
+                      rx="25"
+                      ry="9"
+                      transform="rotate(-25 18 -70)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="-13"
+                      cy="-101"
+                      rx="23"
+                      ry="8"
+                      transform="rotate(22 -13 -101)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="18"
+                      cy="-130"
+                      rx="22"
+                      ry="8"
+                      transform="rotate(-28 18 -130)"
+                    />
+                    <g class="fruit">
+                      <circle cx="10" cy="-50" r="8" />
+                      <circle cx="-4" cy="-61" r="7" />
+                      <circle cx="14" cy="-84" r="7" />
+                    </g>
                   </g>
                   <g class="plant" transform="translate(305 410)">
-                    <path class="stem" d="M0 0c-7-53 8-101-2-163"/>
-                    <ellipse class="leaf" cx="-17" cy="-45" rx="25" ry="9" transform="rotate(25 -17 -45)"/>
-                    <ellipse class="leaf" cx="18" cy="-73" rx="25" ry="9" transform="rotate(-26 18 -73)"/>
-                    <ellipse class="leaf" cx="-16" cy="-106" rx="24" ry="8" transform="rotate(20 -16 -106)"/>
-                    <ellipse class="leaf" cx="16" cy="-139" rx="22" ry="8" transform="rotate(-28 16 -139)"/>
-                    <g class="fruit"><circle cx="9" cy="-52" r="8"/><circle cx="-6" cy="-66" r="7"/><circle cx="13" cy="-91" r="8"/></g>
+                    <path class="stem" d="M0 0c-7-53 8-101-2-163" />
+                    <ellipse
+                      class="leaf"
+                      cx="-17"
+                      cy="-45"
+                      rx="25"
+                      ry="9"
+                      transform="rotate(25 -17 -45)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="18"
+                      cy="-73"
+                      rx="25"
+                      ry="9"
+                      transform="rotate(-26 18 -73)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="-16"
+                      cy="-106"
+                      rx="24"
+                      ry="8"
+                      transform="rotate(20 -16 -106)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="16"
+                      cy="-139"
+                      rx="22"
+                      ry="8"
+                      transform="rotate(-28 16 -139)"
+                    />
+                    <g class="fruit">
+                      <circle cx="9" cy="-52" r="8" />
+                      <circle cx="-6" cy="-66" r="7" />
+                      <circle cx="13" cy="-91" r="8" />
+                    </g>
                   </g>
                   <g class="plant" transform="translate(420 410)">
-                    <path class="stem" d="M0 0c8-49-7-104 5-158"/>
-                    <ellipse class="leaf" cx="-16" cy="-43" rx="25" ry="9" transform="rotate(23 -16 -43)"/>
-                    <ellipse class="leaf" cx="19" cy="-72" rx="25" ry="9" transform="rotate(-25 19 -72)"/>
-                    <ellipse class="leaf" cx="-15" cy="-103" rx="24" ry="8" transform="rotate(20 -15 -103)"/>
-                    <ellipse class="leaf" cx="18" cy="-135" rx="22" ry="8" transform="rotate(-29 18 -135)"/>
-                    <g class="fruit"><circle cx="9" cy="-50" r="8"/><circle cx="-6" cy="-65" r="7"/><circle cx="13" cy="-89" r="8"/></g>
+                    <path class="stem" d="M0 0c8-49-7-104 5-158" />
+                    <ellipse
+                      class="leaf"
+                      cx="-16"
+                      cy="-43"
+                      rx="25"
+                      ry="9"
+                      transform="rotate(23 -16 -43)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="19"
+                      cy="-72"
+                      rx="25"
+                      ry="9"
+                      transform="rotate(-25 19 -72)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="-15"
+                      cy="-103"
+                      rx="24"
+                      ry="8"
+                      transform="rotate(20 -15 -103)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="18"
+                      cy="-135"
+                      rx="22"
+                      ry="8"
+                      transform="rotate(-29 18 -135)"
+                    />
+                    <g class="fruit">
+                      <circle cx="9" cy="-50" r="8" />
+                      <circle cx="-6" cy="-65" r="7" />
+                      <circle cx="13" cy="-89" r="8" />
+                    </g>
                   </g>
                   <g class="plant" transform="translate(535 410)">
-                    <path class="stem" d="M0 0c-8-48 7-97-4-155"/>
-                    <ellipse class="leaf" cx="-17" cy="-44" rx="25" ry="9" transform="rotate(24 -17 -44)"/>
-                    <ellipse class="leaf" cx="18" cy="-72" rx="25" ry="9" transform="rotate(-27 18 -72)"/>
-                    <ellipse class="leaf" cx="-15" cy="-105" rx="23" ry="8" transform="rotate(20 -15 -105)"/>
-                    <ellipse class="leaf" cx="16" cy="-135" rx="22" ry="8" transform="rotate(-27 16 -135)"/>
-                    <g class="fruit"><circle cx="9" cy="-50" r="8"/><circle cx="-6" cy="-66" r="7"/><circle cx="13" cy="-90" r="8"/></g>
+                    <path class="stem" d="M0 0c-8-48 7-97-4-155" />
+                    <ellipse
+                      class="leaf"
+                      cx="-17"
+                      cy="-44"
+                      rx="25"
+                      ry="9"
+                      transform="rotate(24 -17 -44)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="18"
+                      cy="-72"
+                      rx="25"
+                      ry="9"
+                      transform="rotate(-27 18 -72)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="-15"
+                      cy="-105"
+                      rx="23"
+                      ry="8"
+                      transform="rotate(20 -15 -105)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="16"
+                      cy="-135"
+                      rx="22"
+                      ry="8"
+                      transform="rotate(-27 16 -135)"
+                    />
+                    <g class="fruit">
+                      <circle cx="9" cy="-50" r="8" />
+                      <circle cx="-6" cy="-66" r="7" />
+                      <circle cx="13" cy="-90" r="8" />
+                    </g>
                   </g>
                   <g class="plant" transform="translate(635 410)">
-                    <path class="stem" d="M0 0c7-45-7-92 4-143"/>
-                    <ellipse class="leaf" cx="-16" cy="-43" rx="23" ry="8" transform="rotate(24 -16 -43)"/>
-                    <ellipse class="leaf" cx="17" cy="-71" rx="23" ry="8" transform="rotate(-27 17 -71)"/>
-                    <ellipse class="leaf" cx="-14" cy="-101" rx="21" ry="8" transform="rotate(20 -14 -101)"/>
-                    <g class="fruit"><circle cx="8" cy="-51" r="8"/><circle cx="-5" cy="-65" r="7"/><circle cx="13" cy="-88" r="7"/></g>
+                    <path class="stem" d="M0 0c7-45-7-92 4-143" />
+                    <ellipse
+                      class="leaf"
+                      cx="-16"
+                      cy="-43"
+                      rx="23"
+                      ry="8"
+                      transform="rotate(24 -16 -43)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="17"
+                      cy="-71"
+                      rx="23"
+                      ry="8"
+                      transform="rotate(-27 17 -71)"
+                    />
+                    <ellipse
+                      class="leaf"
+                      cx="-14"
+                      cy="-101"
+                      rx="21"
+                      ry="8"
+                      transform="rotate(20 -14 -101)"
+                    />
+                    <g class="fruit">
+                      <circle cx="8" cy="-51" r="8" />
+                      <circle cx="-5" cy="-65" r="7" />
+                      <circle cx="13" cy="-88" r="7" />
+                    </g>
                   </g>
                 </g>
 
                 <g class="heating-pipes" id="heatingPipes" filter="url(#pipeGlow)">
-                  <path d="M144 402h501"/>
-                  <path d="M156 392h477" opacity=".5"/>
+                  <path d="M144 402h501" />
+                  <path d="M156 392h477" opacity=".5" />
                 </g>
 
                 <g class="sensor-labels">
-                  <g transform="translate(741 205)"><path d="M-55 22h42"/><rect x="0" y="0" width="177" height="44" rx="12"/><circle cx="18" cy="22" r="5"/><text x="32" y="18" data-i18n="indoorClimate">室內氣候</text><text class="sensor-value" id="svgClimateValue" x="32" y="34">19.2°C · 73%</text></g>
-                  <g transform="translate(741 269)"><path d="M-55 22h42"/><rect x="0" y="0" width="177" height="44" rx="12"/><circle cx="18" cy="22" r="5"/><text x="32" y="18" data-i18n="co2Concentration">CO₂ 濃度</text><text class="sensor-value" id="svgCo2Value" x="32" y="34">690 ppm</text></g>
-                  <g transform="translate(741 333)"><path d="M-55 22h42"/><rect x="0" y="0" width="177" height="44" rx="12"/><circle cx="18" cy="22" r="5"/><text x="32" y="18" data-i18n="canopyTemperature">冠層溫度</text><text class="sensor-value" id="svgCanopyValue" x="32" y="34">18.9°C</text></g>
+                  <g transform="translate(741 205)">
+                    <path d="M-55 22h42" />
+                    <rect x="0" y="0" width="177" height="44" rx="12" />
+                    <circle cx="18" cy="22" r="5" />
+                    <text x="32" y="18" data-i18n="indoorClimate">室內氣候</text>
+                    <text class="sensor-value" id="svgClimateValue" x="32" y="34">
+                      19.2°C · 73%
+                    </text>
+                  </g>
+                  <g transform="translate(741 269)">
+                    <path d="M-55 22h42" />
+                    <rect x="0" y="0" width="177" height="44" rx="12" />
+                    <circle cx="18" cy="22" r="5" />
+                    <text x="32" y="18" data-i18n="co2Concentration">CO₂ 濃度</text>
+                    <text class="sensor-value" id="svgCo2Value" x="32" y="34">690 ppm</text>
+                  </g>
+                  <g transform="translate(741 333)">
+                    <path d="M-55 22h42" />
+                    <rect x="0" y="0" width="177" height="44" rx="12" />
+                    <circle cx="18" cy="22" r="5" />
+                    <text x="32" y="18" data-i18n="canopyTemperature">冠層溫度</text>
+                    <text class="sensor-value" id="svgCanopyValue" x="32" y="34">18.9°C</text>
+                  </g>
                 </g>
               </svg>
 
-              <div class="actuator-legend" data-i18n-aria-label="actuatorStatus" aria-label="溫室致動器狀態">
-                <span><i class="legend-vent"></i><span data-i18n="ventShort">窗</span> <b id="legendVent">5%</b></span>
-                <span><i class="legend-screen"></i><span data-i18n="thermalShort">保溫幕</span> <b id="legendThermal">46%</b></span>
-                <span><i class="legend-lamp"></i><span data-i18n="lampShort">燈</span> <b id="legendLamp">34%</b></span>
-                <span><i class="legend-heat"></i><span data-i18n="heatingShort">暖氣</span> <b id="legendHeat">38%</b></span>
+              <div
+                class="actuator-legend"
+                data-i18n-aria-label="actuatorStatus"
+                aria-label="溫室致動器狀態"
+              >
+                <span
+                  ><i class="legend-vent"></i><span data-i18n="ventShort">窗</span>
+                  <b id="legendVent">5%</b></span
+                >
+                <span
+                  ><i class="legend-screen"></i><span data-i18n="thermalShort">保溫幕</span>
+                  <b id="legendThermal">46%</b></span
+                >
+                <span
+                  ><i class="legend-lamp"></i><span data-i18n="lampShort">燈</span>
+                  <b id="legendLamp">34%</b></span
+                >
+                <span
+                  ><i class="legend-heat"></i><span data-i18n="heatingShort">暖氣</span>
+                  <b id="legendHeat">38%</b></span
+                >
               </div>
             </div>
           </section>
@@ -321,15 +817,36 @@
                   <span class="eyebrow">RECENT 24 HOURS</span>
                   <h2 id="trendTitle" data-i18n="environmentTrends">環境趨勢</h2>
                 </div>
-                <div class="segmented-control" id="chartSelector" data-i18n-aria-label="chartVariable" aria-label="選擇圖表變量">
-                  <button type="button" data-chart="temperature" aria-pressed="true" data-i18n="temperature">溫度</button>
-                  <button type="button" data-chart="humidity" aria-pressed="false" data-i18n="humidity">濕度</button>
+                <div
+                  class="segmented-control"
+                  id="chartSelector"
+                  data-i18n-aria-label="chartVariable"
+                  aria-label="選擇圖表變量"
+                >
+                  <button
+                    type="button"
+                    data-chart="temperature"
+                    aria-pressed="true"
+                    data-i18n="temperature"
+                  >
+                    溫度
+                  </button>
+                  <button
+                    type="button"
+                    data-chart="humidity"
+                    aria-pressed="false"
+                    data-i18n="humidity"
+                  >
+                    濕度
+                  </button>
                   <button type="button" data-chart="co2" aria-pressed="false">CO₂</button>
                 </div>
               </div>
               <div class="chart-wrap">
                 <canvas id="trendCanvas" role="img" aria-label="最近 24 小時溫室環境趨勢"></canvas>
-                <div class="chart-empty" id="chartEmpty" data-i18n="chartEmpty">開始模擬後會顯示趨勢</div>
+                <div class="chart-empty" id="chartEmpty" data-i18n="chartEmpty">
+                  開始模擬後會顯示趨勢
+                </div>
               </div>
               <div class="chart-legend" id="chartLegend" aria-hidden="true"></div>
             </section>
@@ -345,48 +862,107 @@
               <div class="crop-illustration" aria-hidden="true">
                 <div class="crop-orbit"></div>
                 <svg viewBox="0 0 180 120">
-                  <path class="crop-stem" d="M91 113C81 80 100 59 88 12"/>
-                  <ellipse class="crop-leaf" cx="65" cy="79" rx="30" ry="11" transform="rotate(24 65 79)"/>
-                  <ellipse class="crop-leaf" cx="116" cy="58" rx="31" ry="11" transform="rotate(-24 116 58)"/>
-                  <ellipse class="crop-leaf" cx="64" cy="34" rx="27" ry="10" transform="rotate(19 64 34)"/>
-                  <circle class="crop-fruit" cx="105" cy="83" r="14"/><circle class="crop-fruit" cx="79" cy="60" r="12"/><circle class="crop-fruit" cx="116" cy="30" r="10"/>
+                  <path class="crop-stem" d="M91 113C81 80 100 59 88 12" />
+                  <ellipse
+                    class="crop-leaf"
+                    cx="65"
+                    cy="79"
+                    rx="30"
+                    ry="11"
+                    transform="rotate(24 65 79)"
+                  />
+                  <ellipse
+                    class="crop-leaf"
+                    cx="116"
+                    cy="58"
+                    rx="31"
+                    ry="11"
+                    transform="rotate(-24 116 58)"
+                  />
+                  <ellipse
+                    class="crop-leaf"
+                    cx="64"
+                    cy="34"
+                    rx="27"
+                    ry="10"
+                    transform="rotate(19 64 34)"
+                  />
+                  <circle class="crop-fruit" cx="105" cy="83" r="14" />
+                  <circle class="crop-fruit" cx="79" cy="60" r="12" />
+                  <circle class="crop-fruit" cx="116" cy="30" r="10" />
                 </svg>
               </div>
               <div class="crop-values">
-                <div><span data-i18n="fruitDryMass">果實乾物質</span><strong><b id="fruitMassValue">55.34</b> g/m²</strong></div>
-                <div><span data-i18n="leafAreaIndex">葉面積指數</span><strong id="laiValue">2.35</strong></div>
-                <div><span data-i18n="temperatureSum">溫度積分</span><strong><b id="tempSumValue">3097.8</b> °C·day</strong></div>
-                <div><span data-i18n="canopy24h">冠層 24h</span><strong><b id="canopy24Value">19.1</b>°C</strong></div>
+                <div>
+                  <span data-i18n="fruitDryMass">果實乾物質</span
+                  ><strong><b id="fruitMassValue">55.34</b> g/m²</strong>
+                </div>
+                <div>
+                  <span data-i18n="leafAreaIndex">葉面積指數</span
+                  ><strong id="laiValue">2.35</strong>
+                </div>
+                <div>
+                  <span data-i18n="temperatureSum">溫度積分</span
+                  ><strong><b id="tempSumValue">3097.8</b> °C·day</strong>
+                </div>
+                <div>
+                  <span data-i18n="canopy24h">冠層 24h</span
+                  ><strong><b id="canopy24Value">19.1</b>°C</strong>
+                </div>
               </div>
             </section>
           </div>
         </section>
 
-        <aside class="control-panel" id="controlPanel" lang="zh-Hant" aria-labelledby="controlPanelTitle">
+        <aside
+          class="control-panel"
+          id="controlPanel"
+          lang="zh-Hant"
+          aria-labelledby="controlPanelTitle"
+        >
           <div class="control-panel-header">
             <div>
               <span class="eyebrow">CONTROL PANEL</span>
               <h2 id="controlPanelTitle" data-i18n="panelTitle">氣候控制</h2>
             </div>
             <div class="control-header-meta">
-              <button class="language-toggle" id="languageToggle" type="button" aria-label="切換為英文">
+              <button
+                class="language-toggle"
+                id="languageToggle"
+                type="button"
+                aria-label="切換為英文"
+              >
                 <span aria-hidden="true">文</span><span id="languageToggleLabel">EN</span>
               </button>
-              <span class="engine-badge" id="engineBadge" data-engine="browser">
+              <span class="engine-badge" id="engineBadge" data-engine="error">
                 <i aria-hidden="true"></i>
                 <span id="engineLabel">即時近似模型</span>
               </span>
-              <span class="model-step"><span data-i18n="step">STEP</span> <b id="stepValue">0000</b></span>
+              <span class="model-step"
+                ><span data-i18n="step">STEP</span> <b id="stepValue">0000</b></span
+              >
             </div>
           </div>
 
-          <div class="mode-switch" role="group" data-i18n-aria-label="controlMode" aria-label="控制模式">
+          <div
+            class="mode-switch"
+            role="group"
+            data-i18n-aria-label="controlMode"
+            aria-label="控制模式"
+          >
             <button type="button" data-mode="auto" aria-pressed="true">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v3m0 14v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 2v3m0 14v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"
+                />
+                <circle cx="12" cy="12" r="4" />
+              </svg>
               <span data-i18n="autoControl">自動控制</span>
             </button>
             <button type="button" data-mode="manual" aria-pressed="false">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-6h6m2 8h6"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-6h6m2 8h6" />
+              </svg>
               <span data-i18n="manualControl">手動控制</span>
             </button>
           </div>
@@ -399,19 +975,50 @@
             <div class="target-grid">
               <label for="dayTempTarget">
                 <span data-i18n="dayTemperature">日間溫度</span>
-                <div><input id="dayTempTarget" type="number" min="16" max="30" step="0.5" value="21.5"><b>°C</b></div>
+                <div>
+                  <input
+                    id="dayTempTarget"
+                    type="number"
+                    min="16"
+                    max="30"
+                    step="0.5"
+                    value="21.5"
+                  /><b>°C</b>
+                </div>
               </label>
               <label for="nightTempTarget">
                 <span data-i18n="nightTemperature">夜間溫度</span>
-                <div><input id="nightTempTarget" type="number" min="12" max="24" step="0.5" value="17.5"><b>°C</b></div>
+                <div>
+                  <input
+                    id="nightTempTarget"
+                    type="number"
+                    min="12"
+                    max="24"
+                    step="0.5"
+                    value="17.5"
+                  /><b>°C</b>
+                </div>
               </label>
               <label for="co2Target">
                 <span data-i18n="co2Target">CO₂ 目標</span>
-                <div><input id="co2Target" type="number" min="400" max="1500" step="50" value="900"><b>ppm</b></div>
+                <div>
+                  <input
+                    id="co2Target"
+                    type="number"
+                    min="400"
+                    max="1500"
+                    step="50"
+                    value="900"
+                  /><b>ppm</b>
+                </div>
               </label>
               <label for="rhTarget">
                 <span data-i18n="humidityLimit">濕度上限</span>
-                <div><input id="rhTarget" type="number" min="60" max="90" step="1" value="82"><b>%</b></div>
+                <div>
+                  <input id="rhTarget" type="number" min="60" max="90" step="1" value="82" /><b
+                    >%</b
+                  >
+                </div>
               </label>
             </div>
           </section>
@@ -425,55 +1032,127 @@
             <div class="control-list">
               <label class="control-row" for="uBoilControl">
                 <span class="control-symbol heat-symbol">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 19c-3-4 2-6 0-10 4 2 3 5 3 7 2-2 2-5 4-8 4 5 3 9 1 11"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 19c-3-4 2-6 0-10 4 2 3 5 3 7 2-2 2-5 4-8 4 5 3 9 1 11" />
+                  </svg>
                 </span>
-                <span class="control-copy"><b data-i18n="boilerHeating">鍋爐加熱</b><small>uBoil</small></span>
-                <input id="uBoilControl" data-control="uBoil" type="range" min="0" max="100" step="1" value="38">
+                <span class="control-copy"
+                  ><b data-i18n="boilerHeating">鍋爐加熱</b><small>uBoil</small></span
+                >
+                <input
+                  id="uBoilControl"
+                  data-control="uBoil"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="38"
+                />
                 <output id="uBoilOutput" for="uBoilControl">38%</output>
               </label>
 
               <label class="control-row" for="uCO2Control">
                 <span class="control-symbol co2-symbol">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16a4 4 0 1 1 1.2-7.8A5.5 5.5 0 0 1 18 9.5 3.5 3.5 0 1 1 18 16H6Z"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 16a4 4 0 1 1 1.2-7.8A5.5 5.5 0 0 1 18 9.5 3.5 3.5 0 1 1 18 16H6Z" />
+                  </svg>
                 </span>
-                <span class="control-copy"><b data-i18n="co2Injection">CO₂ 注入</b><small>uCO2</small></span>
-                <input id="uCO2Control" data-control="uCO2" type="range" min="0" max="100" step="1" value="18">
+                <span class="control-copy"
+                  ><b data-i18n="co2Injection">CO₂ 注入</b><small>uCO2</small></span
+                >
+                <input
+                  id="uCO2Control"
+                  data-control="uCO2"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="18"
+                />
                 <output id="uCO2Output" for="uCO2Control">18%</output>
               </label>
 
               <label class="control-row" for="uThScrControl">
                 <span class="control-symbol screen-symbol">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v5H3zM5 11v8m14-8v8M3 19h18"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 6h18v5H3zM5 11v8m14-8v8M3 19h18" />
+                  </svg>
                 </span>
-                <span class="control-copy"><b data-i18n="thermalScreen">保溫幕</b><small>uThScr</small></span>
-                <input id="uThScrControl" data-control="uThScr" type="range" min="0" max="100" step="1" value="46">
+                <span class="control-copy"
+                  ><b data-i18n="thermalScreen">保溫幕</b><small>uThScr</small></span
+                >
+                <input
+                  id="uThScrControl"
+                  data-control="uThScr"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="46"
+                />
                 <output id="uThScrOutput" for="uThScrControl">46%</output>
               </label>
 
               <label class="control-row" for="uVentControl">
                 <span class="control-symbol vent-symbol">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17 12 7l8 10M7 17h10M12 7v10"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 17 12 7l8 10M7 17h10M12 7v10" />
+                  </svg>
                 </span>
-                <span class="control-copy"><b data-i18n="roofVentilation">屋頂通風</b><small>uVent</small></span>
-                <input id="uVentControl" data-control="uVent" type="range" min="0" max="100" step="1" value="5">
+                <span class="control-copy"
+                  ><b data-i18n="roofVentilation">屋頂通風</b><small>uVent</small></span
+                >
+                <input
+                  id="uVentControl"
+                  data-control="uVent"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="5"
+                />
                 <output id="uVentOutput" for="uVentControl">5%</output>
               </label>
 
               <label class="control-row" for="uLampControl">
                 <span class="control-symbol lamp-symbol">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6m-5 3h4M8.5 14.5A7 7 0 1 1 15.5 14.5L14 17h-4l-1.5-2.5Z"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 18h6m-5 3h4M8.5 14.5A7 7 0 1 1 15.5 14.5L14 17h-4l-1.5-2.5Z" />
+                  </svg>
                 </span>
-                <span class="control-copy"><b data-i18n="growLights">補光燈</b><small>uLamp</small></span>
-                <input id="uLampControl" data-control="uLamp" type="range" min="0" max="100" step="1" value="34">
+                <span class="control-copy"
+                  ><b data-i18n="growLights">補光燈</b><small>uLamp</small></span
+                >
+                <input
+                  id="uLampControl"
+                  data-control="uLamp"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="34"
+                />
                 <output id="uLampOutput" for="uLampControl">34%</output>
               </label>
 
               <label class="control-row" for="uBlScrControl">
                 <span class="control-symbol blackout-symbol">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 9h16M9 5v14"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 5h16v14H4zM4 9h16M9 5v14" />
+                  </svg>
                 </span>
-                <span class="control-copy"><b data-i18n="blackoutScreen">遮光幕</b><small>uBlScr</small></span>
-                <input id="uBlScrControl" data-control="uBlScr" type="range" min="0" max="100" step="1" value="0">
+                <span class="control-copy"
+                  ><b data-i18n="blackoutScreen">遮光幕</b><small>uBlScr</small></span
+                >
+                <input
+                  id="uBlScrControl"
+                  data-control="uBlScr"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="0"
+                />
                 <output id="uBlScrOutput" for="uBlScrControl">0%</output>
               </label>
             </div>
@@ -485,10 +1164,21 @@
               <span data-i18n="perSquareMeter">每平方米</span>
             </div>
             <div class="resource-grid">
-              <div><span data-i18n="heating">暖氣</span><strong><b id="resourceHeat">0.000</b> kWh</strong></div>
-              <div><span data-i18n="supplementalLighting">補光</span><strong><b id="resourceLamp">0.000</b> kWh</strong></div>
-              <div><span>CO₂</span><strong><b id="resourceCo2">0.000</b> kg</strong></div>
-              <div><span data-i18n="estimatedCost">估計成本</span><strong>€<b id="resourceCost">0.000</b></strong></div>
+              <div>
+                <span data-i18n="heating">暖氣</span
+                ><strong><b id="resourceHeat">0.000</b> kWh</strong>
+              </div>
+              <div>
+                <span data-i18n="supplementalLighting">補光</span
+                ><strong><b id="resourceLamp">0.000</b> kWh</strong>
+              </div>
+              <div>
+                <span>CO₂</span><strong><b id="resourceCo2">0.000</b> kg</strong>
+              </div>
+              <div>
+                <span data-i18n="estimatedCost">估計成本</span
+                ><strong>€<b id="resourceCost">0.000</b></strong>
+              </div>
             </div>
           </section>
 
@@ -497,12 +1187,26 @@
               <h3 id="comparisonTitle" data-i18n="comparisonTitle">方案比較工作台</h3>
               <span data-i18n="decisionSupport">決策支援</span>
             </div>
-            <p class="comparison-intro" data-i18n="comparisonIntro">先儲存一個完整模擬結果，再重設並以相同步數測試另一個策略。</p>
+            <p class="comparison-intro" data-i18n="comparisonIntro">
+              先儲存一個完整模擬結果，再重設並以相同步數測試另一個策略。
+            </p>
             <div class="comparison-actions">
-              <button id="saveBaselineButton" type="button" disabled data-i18n="saveBaseline">儲存目前結果為基準</button>
-              <button id="clearBaselineButton" type="button" disabled data-i18n="clearBaseline">清除</button>
+              <button id="saveBaselineButton" type="button" disabled data-i18n="saveBaseline">
+                儲存目前結果為基準
+              </button>
+              <button id="clearBaselineButton" type="button" disabled data-i18n="clearBaseline">
+                清除
+              </button>
             </div>
-            <p class="comparison-empty" id="comparisonEmpty" role="status" aria-live="polite" data-i18n="comparisonEmpty">先執行至少一步模擬，便可儲存基準方案。</p>
+            <p
+              class="comparison-empty"
+              id="comparisonEmpty"
+              role="status"
+              aria-live="polite"
+              data-i18n="comparisonEmpty"
+            >
+              先執行至少一步模擬，便可儲存基準方案。
+            </p>
             <div class="comparison-content hidden" id="comparisonContent">
               <div class="comparison-run-meta">
                 <div>
@@ -518,49 +1222,147 @@
                   <small class="comparison-strategy" id="candidateStrategy">—</small>
                 </div>
               </div>
-              <p class="comparison-status" id="comparisonStatus" role="status" aria-live="polite"></p>
+              <p
+                class="comparison-status"
+                id="comparisonStatus"
+                role="status"
+                aria-live="polite"
+              ></p>
               <p class="comparison-context" id="comparisonContext"></p>
               <dl class="comparison-grid">
-                <div><dt data-i18n="heatingDelta">暖氣差異</dt><dd id="comparisonHeatDelta">—</dd></div>
-                <div><dt data-i18n="lightingDelta">補光差異</dt><dd id="comparisonLampDelta">—</dd></div>
-                <div><dt data-i18n="co2UseDelta">CO₂ 差異</dt><dd id="comparisonCo2Delta">—</dd></div>
-                <div><dt data-i18n="costDelta">成本差異</dt><dd id="comparisonCostDelta">—</dd></div>
-                <div><dt data-i18n="fruitMassDelta">果實乾物質差異</dt><dd id="comparisonFruitDelta">—</dd></div>
-                <div><dt data-i18n="endStateAlerts">終點警示</dt><dd id="comparisonAlertDelta">—</dd></div>
+                <div>
+                  <dt data-i18n="heatingDelta">暖氣差異</dt>
+                  <dd id="comparisonHeatDelta">—</dd>
+                </div>
+                <div>
+                  <dt data-i18n="lightingDelta">補光差異</dt>
+                  <dd id="comparisonLampDelta">—</dd>
+                </div>
+                <div>
+                  <dt data-i18n="co2UseDelta">CO₂ 差異</dt>
+                  <dd id="comparisonCo2Delta">—</dd>
+                </div>
+                <div>
+                  <dt data-i18n="costDelta">成本差異</dt>
+                  <dd id="comparisonCostDelta">—</dd>
+                </div>
+                <div>
+                  <dt data-i18n="fruitMassDelta">果實乾物質差異</dt>
+                  <dd id="comparisonFruitDelta">—</dd>
+                </div>
+                <div>
+                  <dt data-i18n="endStateAlerts">終點警示</dt>
+                  <dd id="comparisonAlertDelta">—</dd>
+                </div>
               </dl>
-              <p class="comparison-caution" data-i18n="comparisonCaution">綠色只表示較低資源使用或較高果實乾物質，不代表整體策略較佳，也不構成生產建議。</p>
+              <p class="comparison-caution" data-i18n="comparisonCaution">
+                綠色只表示較低資源使用或較高果實乾物質，不代表整體策略較佳，也不構成生產建議。
+              </p>
             </div>
           </section>
 
           <div class="alert-box" id="alertBox" role="status" aria-live="polite">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg>
-            <div><strong data-i18n="climateNormal">氣候狀態正常</strong><span data-i18n="withinLimits">所有變量皆在 GreenLight 限制範圍內</span></div>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3 2 21h20L12 3Z" />
+              <path d="M12 9v5m0 3h.01" />
+            </svg>
+            <div>
+              <strong data-i18n="climateNormal">氣候狀態正常</strong
+              ><span data-i18n="withinLimits">所有變量皆在 GreenLight 限制範圍內</span>
+            </div>
           </div>
 
+          <section class="scientific-radiation">
+            <dl>
+              <div>
+                <dt data-i18n="insideRadiation">冠層上方總輻射（陽光＋頂燈）</dt>
+                <dd><span id="insideRadiationValue">—</span> W/m²</dd>
+              </div>
+              <div>
+                <dt data-i18n="absorbedPar">冠層吸收 PAR</dt>
+                <dd><span id="absorbedParValue">—</span> µmol/m²/s</dd>
+              </div>
+            </dl>
+            <p data-i18n="radiationNote"></p>
+          </section>
           <p class="model-note" id="modelNote">
-            15 分鐘／步 · 6 項 GreenLight 2 控制量。此介面使用簡化氣候動態作即時互動展示，數值不取代完整 28-state 科學模型。
+            15 分鐘／步 · 6 項 GreenLight 2
+            控制量。此介面使用簡化氣候動態作即時互動展示，數值不取代完整 28-state 科學模型。
           </p>
         </aside>
       </main>
 
-      <dialog class="project-dialog" id="projectDialog" aria-labelledby="tourTitle" aria-describedby="tourIntro">
+      <dialog
+        class="project-dialog"
+        id="projectDialog"
+        aria-labelledby="tourTitle"
+        aria-describedby="tourIntro"
+      >
         <div class="dialog-shell">
-          <button class="dialog-close" id="tourCloseButton" type="button" data-i18n-aria-label="closeTour" aria-label="關閉導覽">×</button>
+          <button
+            class="dialog-close"
+            id="tourCloseButton"
+            type="button"
+            data-i18n-aria-label="closeTour"
+            aria-label="關閉導覽"
+          >
+            ×
+          </button>
           <span class="eyebrow" data-i18n="tourKicker">PROJECT WALKTHROUGH</span>
           <h2 id="tourTitle" data-i18n="tourTitle">用三步理解這座數位溫室</h2>
-          <p class="dialog-lead" id="tourIntro" data-i18n="tourBody">從天氣與控制目標開始，觀察模型如何連結氣候、致動器、作物生長與資源使用。</p>
+          <p class="dialog-lead" id="tourIntro" data-i18n="tourBody">
+            從天氣與控制目標開始，觀察模型如何連結氣候、致動器、作物生長與資源使用。
+          </p>
           <ol class="tour-steps">
-            <li><span>01</span><div><h3 data-i18n="tourStepOneTitle">選擇情境</h3><p data-i18n="tourStepOneBody">切換季節與實測天氣條件，建立不同的溫室外部擾動。</p></div></li>
-            <li><span>02</span><div><h3 data-i18n="tourStepTwoTitle">比較控制策略</h3><p data-i18n="tourStepTwoBody">使用規則控制器，或手動調整六項 GreenLight 絕對控制量。</p></div></li>
-            <li><span>03</span><div><h3 data-i18n="tourStepThreeTitle">閱讀系統反應</h3><p data-i18n="tourStepThreeBody">追蹤氣候、作物、限制警示、能源、CO₂ 與估計成本。</p></div></li>
+            <li>
+              <span>01</span>
+              <div>
+                <h3 data-i18n="tourStepOneTitle">選擇情境</h3>
+                <p data-i18n="tourStepOneBody">切換季節與實測天氣條件，建立不同的溫室外部擾動。</p>
+              </div>
+            </li>
+            <li>
+              <span>02</span>
+              <div>
+                <h3 data-i18n="tourStepTwoTitle">比較控制策略</h3>
+                <p data-i18n="tourStepTwoBody">
+                  使用規則控制器，或手動調整六項 GreenLight 絕對控制量。
+                </p>
+              </div>
+            </li>
+            <li>
+              <span>03</span>
+              <div>
+                <h3 data-i18n="tourStepThreeTitle">閱讀系統反應</h3>
+                <p data-i18n="tourStepThreeBody">
+                  追蹤氣候、作物、限制警示、能源、CO₂ 與估計成本。
+                </p>
+              </div>
+            </li>
           </ol>
-          <section class="tour-model-card" id="tourModelCard" data-engine="browser" aria-labelledby="tourModelTitle" aria-live="polite">
-            <div><span data-i18n="liveEngine">LIVE ENGINE</span><strong id="tourModelTitle">即時近似模型</strong></div>
-            <p id="tourEngineDescription">目前使用瀏覽器近似模型，適合免安裝互動展示。</p>
+          <section
+            class="tour-model-card"
+            id="tourModelCard"
+            data-engine="error"
+            aria-labelledby="tourModelTitle"
+            aria-live="polite"
+          >
+            <div>
+              <span data-i18n="liveEngine">LIVE ENGINE</span
+              ><strong id="tourModelTitle">即時近似模型</strong>
+            </div>
+            <p id="tourEngineDescription">完整模型尚未連接；此面板不提供近似模型運算。</p>
           </section>
           <div class="dialog-footer">
             <p data-i18n="modelTransparency">介面會清楚標示目前引擎；近似模型不會冒充科學結果。</p>
-            <button class="showcase-primary" id="tourExploreButton" type="button" data-i18n="goToControls">前往控制面板</button>
+            <button
+              class="showcase-primary"
+              id="tourExploreButton"
+              type="button"
+              data-i18n="goToControls"
+            >
+              前往控制面板
+            </button>
           </div>
         </div>
       </dialog>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connect uploaded weather to the full GreenLight model</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+    body { max-width: 960px; margin: 0 auto; padding: 42px 22px; line-height: 1.65; }
+    a { color: #a9f0c6; } h1, h2 { color: #b8efcc; }
+    code { color: #d5f5e2; } table { border-collapse: collapse; width: 100%; margin: 18px 0; }
+    th, td { border: 1px solid #315144; padding: 10px; text-align: left; vertical-align: top; }
+    th { color: #b8efcc; background: #10261d; }
+    .pass { color: #a9f0c6; } .note { color: #f0d99a; }
+  </style>
+</head>
+<body>
+  <p><a href="index.html">Work log index</a></p>
+  <h1>Uploaded weather drives the full GreenLight model</h1>
+  <p>8 September 2026 — M1 implementation and verification</p>
+
+  <h2>Request</h2>
+  <p>Advance the public Greenlight-simulation project toward a usable country-adaptive greenhouse tool: accept a weather workbook, convert it using GreenLight-Gym2-compatible equations, run the scientific model, visualize the resulting greenhouse state, and record the work in English HTML logs. The work stayed inside the authorized simulator repository. The protected GreenLight-Gym2 source checkout was imported read-only only for model execution and compatibility checks.</p>
+
+  <h2>Completed</h2>
+  <ul>
+    <li>Added an in-memory Amsterdam nine-column weather conversion path. It resamples the validated 5-minute workbook to the 15-minute GreenLight disturbance grid and maps radiation, air temperature, humidity, CO2, wind and sky temperature using upstream conversion functions.</li>
+    <li>Added the required 36-hour coverage check: 24 hours of model window plus the 0.5-day controller prediction horizon. The selected upload window is normalized to simulation day 1 so the model clock, day/night controller and daily-light calculations agree.</li>
+    <li>Added explicit staging and activation. Uploading validates and stages weather without resetting the current run. The user must select <em>Run with this weather</em>.</li>
+    <li>Separated <code>conversionReady</code> from <code>modelReady</code>. The first means the weather conversion is staged; the second is true only after a successful GreenLight reset.</li>
+    <li>Made environment replacement transactional. If a candidate custom-weather reset fails, the previous healthy environment and its run state are retained.</li>
+    <li>Retained at most two in-memory datasets: the active dataset and one pending dataset. Datasets are not persisted and remain only until replacement or server shutdown.</li>
+    <li>Updated the public Excel template to 433 synthetic 5-minute records covering 36 hours. The exact nine Amsterdam headers and the Instructions sheet remain intact. No protected weather data was published.</li>
+    <li>Updated the bilingual upload tutorial, readiness messages, model-status labels, README, model card, implementation plan, and API documentation.</li>
+</ul>
+
+  <h2>Reviewer follow-up</h2>
+  <p>A read-only reviewer inspected the implementation after the first pass. The reviewer identified readiness-state ambiguity, environment replacement risk, reconnect label ordering, stale retention wording, and a missing real HTTP integration check. The justified recommendations were applied: readiness fields were split, reset replacement now rolls back safely, reconnect reads the active weather identity before updating labels, documentation now states the two-dataset memory bound, and a real-model HTTP upload test was added.</p>
+
+  <h2>Verification</h2>
+  <table>
+    <thead><tr><th>Check</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>JavaScript syntax and contracts</td><td class="pass">Passed: 7 tests, including browser-model and weather-upload contracts.</td></tr>
+      <tr><td>Python local suite</td><td class="pass">Passed: 57 tests; 3 full-model tests are intentionally opt-in in the ordinary suite.</td></tr>
+      <tr><td>Real GreenLight-Gym2 integration</td><td class="pass">Passed: 3 tests, including direct uploaded-weather execution and HTTP upload → reset → automatic step.</td></tr>
+      <tr><td>Public workbook</td><td class="pass">Artifact-tool inspection and rendered views passed. Workbook has the exact nine-column schema, 433 records and 36-hour coverage.</td></tr>
+      <tr><td>Browser smoke test</td><td class="pass">Passed: scientific page load/step, custom upload preview, no approximation engine, English/Traditional Chinese, 1440px/390px layout, reconnect recovery, and no page errors.</td></tr>
+      <tr><td>Local server</td><td class="pass">Passed: <code>http://127.0.0.1:4173/</code> returned 200; status reported <code>greenlight-gym2</code>; public template upload reported conversion ready, reset reported model ready, and one auto step reached model step 1.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Scope still remaining</h2>
+  <p class="note">The current upload contract is intentionally the Amsterdam nine-column format. It does not yet provide arbitrary country schema mapping, selectable simulation start/end dates, editable greenhouse geometry/equipment/crop initial states, result export, or greenhouse-specific parameter calibration. Weather adaptation is not the same as greenhouse calibration; those are separate planned milestones in <a href="../IMPLEMENTATION_PLAN.md">IMPLEMENTATION_PLAN.md</a>.</p>
+
+  <h2>Git and safety</h2>
+  <p>All changes remain local and uncommitted. No merge, push, reset, checkout, deletion, or overwrite of protected research material was performed. No OpenAI API, paid add-on, or external usage-billed service was used.</p>
+</body>
+</html>

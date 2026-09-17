@@ -18,14 +18,7 @@
     co2: Object.freeze([400, 1500]),
     maxRh: Object.freeze([60, 90]),
   });
-  const CONTROL_NAMES = [
-    "uBoil",
-    "uCO2",
-    "uThScr",
-    "uVent",
-    "uLamp",
-    "uBlScr",
-  ];
+  const CONTROL_NAMES = ["uBoil", "uCO2", "uThScr", "uVent", "uLamp", "uBlScr"];
 
   const SCENARIOS = {
     spring: {
@@ -200,17 +193,11 @@
       const scenario = SCENARIOS[this.scenarioKey];
       const sunrise = 12 - scenario.dayLength / 2;
       const sunset = 12 + scenario.dayLength / 2;
-      const solarProgress = clamp(
-        (clock.hour - sunrise) / Math.max(scenario.dayLength, 0.1),
-        0,
-        1,
-      );
-      const sunShape = clock.hour >= sunrise && clock.hour <= sunset
-        ? Math.sin(Math.PI * solarProgress)
-        : 0;
-      const passingClouds = 1 - scenario.cloud * (
-        0.76 + 0.18 * Math.sin((clock.hour + clock.dayOffset * 1.7) * 1.91)
-      );
+      const solarProgress = clamp((clock.hour - sunrise) / Math.max(scenario.dayLength, 0.1), 0, 1);
+      const sunShape =
+        clock.hour >= sunrise && clock.hour <= sunset ? Math.sin(Math.PI * solarProgress) : 0;
+      const passingClouds =
+        1 - scenario.cloud * (0.76 + 0.18 * Math.sin((clock.hour + clock.dayOffset * 1.7) * 1.91));
       const radiation = Math.max(0, scenario.radiationPeak * sunShape * passingClouds);
       const dailyPhase = ((clock.hour - 8) / 24) * Math.PI * 2;
       const temperature = scenario.meanTemp + scenario.tempAmplitude * Math.sin(dailyPhase);
@@ -220,7 +207,9 @@
         98,
       );
       const wind = clamp(
-        scenario.windBase + 0.7 * Math.sin(clock.hour * 0.83) + 0.35 * Math.cos(clock.dayOffset * 1.3),
+        scenario.windBase +
+          0.7 * Math.sin(clock.hour * 0.83) +
+          0.35 * Math.cos(clock.dayOffset * 1.3),
         0.4,
         8.5,
       );
@@ -248,9 +237,7 @@
 
       const desired = {
         uBoil: clamp(tempError * 0.15 + (isDay ? 0.1 : 0.04), 0, 1),
-        uCO2: isDay && this.controls.uVent < 0.32
-          ? clamp(co2Error / 720, 0, 0.82)
-          : 0,
+        uCO2: isDay && this.controls.uVent < 0.32 ? clamp(co2Error / 720, 0, 0.82) : 0,
         uThScr: !isDay
           ? clamp(0.72 + Math.max(0, 9 - weather.temperature) * 0.025, 0, 1)
           : clamp((80 - this.state.rh) / 100, 0, 0.24),
@@ -260,9 +247,10 @@
           1,
         ),
         uLamp: isDay && cheapSolarLight ? clamp((390 - weather.radiation) / 390, 0, 0.82) : 0,
-        uBlScr: weather.radiation > 650 && this.state.airTemp > tempTarget + 1.5
-          ? clamp((weather.radiation - 620) / 250, 0, 0.78)
-          : 0,
+        uBlScr:
+          weather.radiation > 650 && this.state.airTemp > tempTarget + 1.5
+            ? clamp((weather.radiation - 620) / 250, 0, 0.78)
+            : 0,
       };
 
       CONTROL_NAMES.forEach((name) => {
@@ -293,7 +281,8 @@
       const u = this.controls;
       const transmission = clamp(0.82 - u.uThScr * 0.22 - u.uBlScr * 0.68, 0.08, 0.82);
       const insideRadiation = weather.radiation * transmission + u.uLamp * 165;
-      const ventExchange = (0.06 + u.uVent * 1.85) * (0.78 + weather.wind * 0.09) * (1 - u.uThScr * 0.34);
+      const ventExchange =
+        (0.06 + u.uVent * 1.85) * (0.78 + weather.wind * 0.09) * (1 - u.uThScr * 0.34);
       const pipeTarget = 22 + 58 * u.uBoil;
 
       this.state.pipeTemp += (pipeTarget - this.state.pipeTemp) * (dt / 1.15);
@@ -301,23 +290,23 @@
       const pipeHeat = Math.max(0, this.state.pipeTemp - this.state.airTemp) * 0.085;
       const solarHeat = insideRadiation * 0.0051;
       const lampHeat = u.uLamp * 0.9;
-      const envelopeLoss = (this.state.airTemp - weather.temperature) * (
-        0.105 + ventExchange * 0.55
-      ) * (1 - u.uThScr * 0.24);
+      const envelopeLoss =
+        (this.state.airTemp - weather.temperature) *
+        (0.105 + ventExchange * 0.55) *
+        (1 - u.uThScr * 0.24);
       const cropCooling = clamp(insideRadiation / 720, 0, 1) * this.state.leafAreaIndex * 0.16;
       const airTempRate = pipeHeat + solarHeat + lampHeat - envelopeLoss - cropCooling;
       this.state.airTemp = clamp(this.state.airTemp + airTempRate * dt, -5, 48);
 
       const canopyTarget = this.state.airTemp + insideRadiation * 0.0024 - cropCooling * 0.28;
       this.state.canopyTemp += (canopyTarget - this.state.canopyTemp) * (dt / 0.38);
-      this.state.canopy24hTemp += (
-        this.state.canopyTemp - this.state.canopy24hTemp
-      ) * (dt / 24);
+      this.state.canopy24hTemp += (this.state.canopyTemp - this.state.canopy24hTemp) * (dt / 24);
 
       const lightFactor = insideRadiation / (insideRadiation + 170);
       const co2Factor = this.state.co2 / (this.state.co2 + 420);
-      const tempFactor = Math.exp(-1 * (((this.state.canopyTemp - 22) / 10) ** 2));
-      const photosynthesis = lightFactor * co2Factor * tempFactor * clamp(this.state.leafAreaIndex / 2.5, 0.4, 1.3);
+      const tempFactor = Math.exp(-1 * ((this.state.canopyTemp - 22) / 10) ** 2);
+      const photosynthesis =
+        lightFactor * co2Factor * tempFactor * clamp(this.state.leafAreaIndex / 2.5, 0.4, 1.3);
       const transpiration = lightFactor * tempFactor * (0.85 + this.state.leafAreaIndex * 0.14);
 
       const rhExchange = (weather.rh - this.state.rh) * (0.035 + ventExchange * 0.48);
@@ -340,7 +329,7 @@
 
       const growthRate = 0.19 * photosynthesis;
       this.state.fruitDryMass += growthRate * dt;
-      this.state.tempSum += Math.max(0, this.state.canopyTemp) * dt / 24;
+      this.state.tempSum += (Math.max(0, this.state.canopyTemp) * dt) / 24;
       this.state.leafAreaIndex = clamp(
         this.state.leafAreaIndex + photosynthesis * 0.00028 * dt,
         0.4,
@@ -387,9 +376,10 @@
     snapshot() {
       const clock = this.getClock();
       const weather = this.getWeather(clock);
-      const cost = this.state.cumulativeHeatKwh * COST_ASSUMPTIONS.heatEurPerKwh
-        + this.state.cumulativeLampKwh * COST_ASSUMPTIONS.lampEurPerKwh
-        + this.state.cumulativeCo2Kg * COST_ASSUMPTIONS.co2EurPerKg;
+      const cost =
+        this.state.cumulativeHeatKwh * COST_ASSUMPTIONS.heatEurPerKwh +
+        this.state.cumulativeLampKwh * COST_ASSUMPTIONS.lampEurPerKwh +
+        this.state.cumulativeCo2Kg * COST_ASSUMPTIONS.co2EurPerKg;
 
       return {
         engine: "browser-approximation",
@@ -412,8 +402,9 @@
           rh: round(this.state.rh),
           co2: round(this.state.co2, 0),
           insideRadiation: round(
-            weather.radiation * clamp(0.82 - this.controls.uThScr * 0.22 - this.controls.uBlScr * 0.68, 0.08, 0.82)
-              + this.controls.uLamp * 165,
+            weather.radiation *
+              clamp(0.82 - this.controls.uThScr * 0.22 - this.controls.uBlScr * 0.68, 0.08, 0.82) +
+              this.controls.uLamp * 165,
             0,
           ),
         },
@@ -464,4 +455,4 @@
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
   }
-}(typeof window !== "undefined" ? window : globalThis));
+})(typeof window !== "undefined" ? window : globalThis);

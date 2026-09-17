@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Weather, time, greenhouse settings and calibration plan</title><style>body{font:16px/1.65 system-ui;max-width:960px;margin:40px auto;padding:0 24px;background:#0b1712;color:#e0eee7}a{color:#9cdac5}h1,h2{color:#b8efcc}td,th{padding:12px;border:1px solid #355346;text-align:left}table{border-collapse:collapse;width:100%}</style></head><body>
+<p><a href="index.html">Work log index</a></p><h1>Feature implementation plan</h1><p>8 September 2026 — Planning only</p>
+<h2>Request</h2><p>Write detailed implementation steps for uploaded weather driving GreenLight, selectable start/end times, editable greenhouse/equipment/crop initial conditions and greenhouse-specific calibration.</p>
+<h2>Deliverable</h2><p>The detailed English plan is saved in IMPLEMENTATION_PLAN.md at the simulator repository root. It covers contracts, implementation steps, user flow, proposed modules and milestone acceptance tests.</p>
+<table><thead><tr><th>Order</th><th>Deliverable</th><th>Completion evidence</th></tr></thead><tbody>
+<tr><td>M0</td><td>Baseline and versioned contracts</td><td>Recorded behavior, units and scope before implementation.</td></tr>
+<tr><td>M1</td><td>Uploaded weather drives the scientific model</td><td>Verified forcing mapping, explicit assumptions, bounded in-memory uploads, successful custom-weather trajectories.</td></tr>
+<tr><td>M2</td><td>Simulation start/end selection</td><td>Exact step counts, correct clocks and coverage, no hidden extrapolation or next-year reads.</td></tr>
+<tr><td>M3</td><td>Greenhouse, equipment and initial-state forms</td><td>Verified effective parameter/state mapping and baseline-equivalent defaults.</td></tr>
+<tr><td>M4</td><td>Results, recipes and portable public example</td><td>Another user can install, run and reproduce a synthetic example.</td></tr>
+<tr><td>M5</td><td>Parameter calibration</td><td>Known controls, aligned observations, bounded fitting and independent held-out evaluation.</td></tr>
+</tbody></table>
+<h2>Decisions and assumptions</h2><p>M1-M4 form the first demonstration release. Country is descriptive metadata, not an automatic model calibration. Weather alone cannot identify greenhouse parameters. Soil-temperature assumptions, outdoor CO2 and unknown timezone must be visible. Retain scientific-only results; older strategy references to approximation fallback are stale. M5 requires separately supplied and authorized observations.</p>
+<h2>Actions and files changed</h2><p>Inspected the current README, project strategy, setup prompt, code integration points and log index. Added IMPLEMENTATION_PLAN.md and this log; updated the log index. No runtime source, server state, protected repository, dataset or Git history was modified.</p>
+<h2>Review and validation</h2><p>Reviewer skipped because this is documentation-only planning. Checked the plan against existing upload/reset behavior and the known source contracts. No runtime tests were necessary or run; all future acceptance tests are identified as planned, not passed.</p>
+<h2>Git status</h2><p>Existing local changes are preserved. This request performs no commit, merge or push. The plan and log remain local.</p>
+</body></html>

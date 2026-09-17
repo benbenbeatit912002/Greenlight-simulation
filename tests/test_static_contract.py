@@ -6,7 +6,6 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -14,6 +13,7 @@ class IdCollector(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.ids: set[str] = set()
+        self.elements: dict[str, dict[str, str | None]] = {}
         self.controls: list[str] = []
         self.scripts: list[str] = []
         self.stylesheets: list[str] = []
@@ -23,6 +23,7 @@ class IdCollector(HTMLParser):
         element_id = values.get("id")
         if element_id:
             self.ids.add(element_id)
+            self.elements[element_id] = values
         control_name = values.get("data-control")
         if control_name:
             self.controls.append(control_name)
@@ -36,8 +37,9 @@ class StaticContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.html = (ROOT / "index.html").read_text(encoding="utf-8")
-        cls.app_js = (ROOT / "app.js").read_text(encoding="utf-8")
-        cls.engine_js = (ROOT / "simulator-engine.js").read_text(encoding="utf-8")
+        cls.app_js = (ROOT / "frontend/app.js").read_text(encoding="utf-8")
+        cls.translations_js = (ROOT / "frontend/translations.js").read_text(encoding="utf-8")
+        cls.engine_js = (ROOT / "frontend/legacy/simulator-engine.js").read_text(encoding="utf-8")
         cls.styles = (ROOT / "styles.css").read_text(encoding="utf-8")
         cls.parser = IdCollector()
         cls.parser.feed(cls.html)
@@ -47,7 +49,15 @@ class StaticContractTests(unittest.TestCase):
         asset_paths = [urlsplit(asset).path for asset in assets]
         self.assertEqual(
             asset_paths,
-            ["simulator-engine.js", "app.js", "styles.css"],
+            [
+                "frontend/run-window.js",
+                "frontend/greenhouse-settings.js",
+                "frontend/charts.js",
+                "frontend/translations.js",
+                "frontend/app.js",
+                "frontend/climate-upload.js",
+                "styles.css",
+            ],
         )
         for asset in asset_paths:
             self.assertTrue((ROOT / asset).is_file(), asset)
@@ -104,7 +114,10 @@ class StaticContractTests(unittest.TestCase):
 
         self.assertIn('aria-haspopup="dialog"', self.html)
         self.assertIn('aria-describedby="tourIntro"', self.html)
-        self.assertIn('id="tourModelCard" data-engine="browser" aria-labelledby="tourModelTitle" aria-live="polite"', self.html)
+        model_card = self.parser.elements["tourModelCard"]
+        self.assertEqual(model_card["data-engine"], "error")
+        self.assertEqual(model_card["aria-labelledby"], "tourModelTitle")
+        self.assertEqual(model_card["aria-live"], "polite")
         self.assertIn("openProjectDialog", self.app_js)
         self.assertIn("showModal", self.app_js)
         self.assertIn("focusSimulatorControls", self.app_js)
@@ -113,8 +126,8 @@ class StaticContractTests(unittest.TestCase):
 
         translation_keys = set(re.findall(r'data-i18n="([A-Za-z0-9_]+)"', self.html))
         translation_keys.update(re.findall(r'data-i18n-aria-label="([A-Za-z0-9_]+)"', self.html))
-        zh_block = self.app_js.split("zh: {", 1)[1].split("},\n    en: {", 1)[0]
-        en_block = self.app_js.split("en: {", 1)[1].split("},\n  };", 1)[0]
+        zh_block = self.translations_js.split("zh: {", 1)[1].split("},\n    en: {", 1)[0]
+        en_block = self.translations_js.split("en: {", 1)[1].split("},\n  };", 1)[0]
         for key in sorted(translation_keys):
             self.assertRegex(zh_block, rf"\b{re.escape(key)}:\s*\"")
             self.assertRegex(en_block, rf"\b{re.escape(key)}:\s*\"")
@@ -148,7 +161,10 @@ class StaticContractTests(unittest.TestCase):
         self.assertIn("baselineRun.engine === candidate.engine", self.app_js)
         self.assertIn("baselineRun.modelVersion === candidate.modelVersion", self.app_js)
         self.assertIn("baselineRun.costModelId === candidate.costModelId", self.app_js)
-        self.assertIn("baselineRun.weatherFingerprint === candidate.weatherFingerprint", self.app_js)
+        self.assertIn(
+            "baselineRun.weatherFingerprint === candidate.weatherFingerprint",
+            self.app_js,
+        )
         self.assertIn("function hasComparableProvenance", self.app_js)
         self.assertIn('"unknown", "unversioned", "local-source"', self.app_js)
         self.assertIn("baselineRun.runId === candidate.runId", self.app_js)
@@ -157,8 +173,8 @@ class StaticContractTests(unittest.TestCase):
         self.assertIn("window.localStorage.setItem(BASELINE_STORAGE_KEY", self.app_js)
         self.assertIn("window.localStorage.removeItem(BASELINE_STORAGE_KEY", self.app_js)
 
-        zh_block = self.app_js.split("zh: {", 1)[1].split("},\n    en: {", 1)[0]
-        en_block = self.app_js.split("en: {", 1)[1].split("},\n  };", 1)[0]
+        zh_block = self.translations_js.split("zh: {", 1)[1].split("},\n    en: {", 1)[0]
+        en_block = self.translations_js.split("en: {", 1)[1].split("},\n  };", 1)[0]
         for key in (
             "replaceBaseline",
             "comparisonReadyToSave",
@@ -198,7 +214,10 @@ class StaticContractTests(unittest.TestCase):
             self.assertIn(metadata, self.engine_js)
 
         strategy = (ROOT / "PRODUCT_STRATEGY.md").read_text(encoding="utf-8")
-        self.assertIn("explainable, pre-deployment greenhouse decision-support workbench", strategy)
+        self.assertIn(
+            "explainable, pre-deployment greenhouse decision-support workbench",
+            strategy,
+        )
         self.assertIn("USDA Agricultural Research Service", strategy)
         self.assertIn("Wageningen University & Research", strategy)
 
@@ -219,12 +238,10 @@ class StaticContractTests(unittest.TestCase):
         for name in required_files:
             self.assertTrue((ROOT / name).is_file(), name)
 
-        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
-            encoding="utf-8"
-        )
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("permissions:\n  contents: read", workflow)
         self.assertIn("uv sync --locked --python 3.12", workflow)
-        self.assertIn("node --test tests/browser_model_contract.test.js", workflow)
+        self.assertIn("python -B scripts/check.py", workflow)
         self.assertIn("enable-cache: false", workflow)
         self.assertIn("persist-credentials: false", workflow)
         self.assertIn("package-manager-cache: false", workflow)
@@ -239,7 +256,7 @@ class StaticContractTests(unittest.TestCase):
         self.assertNotIn("upload-artifact", workflow)
 
         model_card = (ROOT / "MODEL_CARD.md").read_text(encoding="utf-8")
-        self.assertIn("Browser approximation", model_card)
+        self.assertIn("Legacy browser approximation (not active)", model_card)
         self.assertIn("not a production climate computer", model_card)
         self.assertIn("Operational", model_card)
         self.assertIn("Uncertainty", model_card)
@@ -258,6 +275,18 @@ class StaticContractTests(unittest.TestCase):
         self.assertGreater(len(links), 0)
         for link in links:
             self.assertTrue((worklog_dir / link).is_file(), link)
+
+    def test_weather_template_link_alignment(self) -> None:
+        self.assertIn('class="showcase-secondary weather-template-link"', self.html)
+        rule = re.search(r"\.weather-template-link\s*\{([^}]+)\}", self.styles)
+        self.assertIsNotNone(rule)
+        for declaration in (
+            "display: inline-flex",
+            "align-items: center",
+            "justify-content: center",
+            "min-height: 44px",
+        ):
+            self.assertIn(declaration, rule.group(1))
 
 
 if __name__ == "__main__":
