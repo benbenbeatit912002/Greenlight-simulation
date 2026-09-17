@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Start the local simulator</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">COMPLETED</span><h1>Start the local simulator for mobile access</h1><p class="meta"><time datetime="2026-07-23">2026-07-23</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>Explain how to open the greenhouse simulator while the user is controlling the second Windows computer only through the Codex mobile interface.</p></section>
+    <section><h2>Decisions and actions</h2><ul><li>Checked the existing local URL first; the server was offline.</li><li>Started <code>server.py --engine auto</code> from the dedicated <code>Greenlight-simulation</code> repository with the repository-local Python 3.12 environment.</li><li>Set <code>PYTHONDONTWRITEBYTECODE=1</code>, used Python <code>-B</code>, and kept output logs in <code>.runtime</code> inside this repository.</li><li>Added <code>.runtime/</code> to <code>.gitignore</code> so operational logs do not appear as research or source changes.</li></ul></section>
+    <section><h2>Reviewer</h2><p>No reviewer was used because this was a routine, reversible local startup operation with no application-code or scientific-model change.</p></section>
+    <section><h2>Validation</h2><ul><li><code>http://127.0.0.1:4173/api/status</code> responded successfully.</li><li>The active engine is <code>greenlight-gym2</code>, marked scientific, with 28 model states.</li><li>The user-facing simulator is available at <a href="http://127.0.0.1:4173/">http://127.0.0.1:4173/</a>.</li></ul></section>
+    <section><h2>Files changed</h2><p><code>.gitignore</code>, <code>worklogs/index.html</code>, and this work log. Runtime logs were generated only under the ignored <code>.runtime</code> directory. No protected repository or research artifact was modified.</p></section>
+    <section><h2>Git status</h2><p>Existing unstaged showcase and decision-workbench changes remain preserved. This startup log and the <code>.gitignore</code> update are unstaged. Nothing was committed, reset, discarded, or pushed.</p></section>
+  </body>
+</html>

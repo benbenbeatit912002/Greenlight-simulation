@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Climate upload and model-backed simulation design</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 920px; margin: 0 auto; padding: 36px 20px 60px; line-height: 1.7; }
+      a { color: #8be8b3; } header, section { padding: 20px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 14px; background: #0d1c17; }
+      h1 { line-height: 1.2; } h2 { color: #a9f0c6; font-size: 20px; } p, li { color: #b7ccc3; }
+      code { overflow-wrap: anywhere; color: #d9f8e6; } .meta { color: #78988a; } table { width: 100%; border-collapse: collapse; } th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid #24453a; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">Back to the work-log index</a></p>
+    <header>
+      <h1>Climate upload and model-backed simulation design</h1>
+      <p class="meta"><time datetime="2026-09-06">2026-09-06</time> &middot; Design assessment completed; implementation not started</p>
+    </header>
+    <section>
+      <h2>User request and scope</h2>
+      <p>Assess a public-facing project where users provide climate data in an Excel workbook, choose a simulation period, control greenhouse equipment and playback in the frontend, and observe greenhouse changes calculated by the GreenLight-Gym2 model. The user explicitly forbids modifications to both practice repositories.</p>
+      <p>This was an advice request, not authorization to implement the feature or publish changes. No project files were modified except this work log and its index link. All local inspection and documentation changes were restricted to <code>D:\Thesis_project\greeenlight-project\Greenlight-simulation</code>, using explicit command working directories under the user's earlier authorization. The Codex workspace setting itself was not changed. Neither protected practice directory was searched, read, imported, tested, or modified in this turn.</p>
+    </section>
+    <section>
+      <h2>Current implementation evidence</h2>
+      <ul>
+        <li>The simulator already has a GreenLight-Gym2 adapter and a separately labelled browser approximation. The adapter uses a 15-minute control interval, six normalized controls, and the 28-state model described in the project model card.</li>
+        <li><code>backend/greenlight_adapter.py</code> selects fixed Amsterdam weather scenarios and passes a weather directory inside the configured external source checkout to the environment. No custom workbook input is implemented in the inspected API or frontend.</li>
+        <li>The UI already supports speed selection and start/pause behavior. A date-based run definition, validated uploaded weather, and persistent full-run replay would extend this foundation.</li>
+        <li>The adapter retains only 97 history records. Multi-day inspection needs a complete run record independent of the rolling chart window.</li>
+        <li>The adapter's <code>insideRadiation</code> is a simplified calculation from radiation, screens, and lighting, rather than a direct model observation. Other displayed derived values and units also need an explicit provenance audit before claiming that every value is a direct scientific-model output.</li>
+        <li>The model card correctly states that local integration is not independent validation of prediction accuracy for a user's greenhouse.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Recommended product definition</h2>
+      <p>Build a weather-driven greenhouse scenario workbench: upload outdoor weather, inspect data quality, choose a documented greenhouse/crop configuration and period, run the scientific model, explore climate and actuator histories, and compare control strategies under the same conditions. Indoor observations belong in a separate optional validation dataset; they must not silently replace predicted indoor states.</p>
+      <p>Start with one reference tomato-greenhouse configuration and a 24- to 72-hour demonstration, subject to model initialization and weather coverage requirements. Greenhouse geometry, cover properties, equipment capacities, crop state, initialization, and calibration matter in addition to weather. Present early results as reference-greenhouse simulation, not a validated digital twin or guaranteed yield prediction.</p>
+    </section>
+    <section>
+      <h2>Proposed workbook contract</h2>
+      <p>The following is a proposed user-facing schema, not an implemented or final model input contract. Confirm compatibility with the exact local source revision before implementation.</p>
+      <table>
+        <thead><tr><th>Input</th><th>Meaning and checks</th></tr></thead>
+        <tbody>
+          <tr><td>Timestamp and timezone</td><td>Real dates, ordered unique records, explicit timezone/offset and daylight-saving handling; report gaps and sampling interval.</td></tr>
+          <tr><td>Outdoor air temperature</td><td>Degrees Celsius; finite numeric values and documented plausibility checks.</td></tr>
+          <tr><td>Outdoor relative humidity</td><td>Percent, 0 to 100; do not interpret fractions as percentages without confirmed mapping.</td></tr>
+          <tr><td>Global solar radiation</td><td>W/m2; distinguish global radiation from PAR and accumulated energy.</td></tr>
+          <tr><td>Outdoor wind speed</td><td>m/s; nonnegative values and declared measurement context.</td></tr>
+          <tr><td>Additional weather and metadata</td><td>Sky temperature, soil temperature, outdoor CO2, site information, and any required derivation inputs. Missing quantities need a documented method and explicit assumption acknowledgement, or must block the run.</td></tr>
+        </tbody>
+      </table>
+      <p>Accept a constrained <code>.xlsx</code> template first, preview column mappings and errors before execution, and impose upload/decompression/row limits. Do not execute macros or workbook formulas; required input cells should contain numeric values. Store uploaded data and generated results only inside the simulator and exclude private inputs from Git and static-file serving.</p>
+    </section>
+    <section>
+      <h2>Model integration and time semantics</h2>
+      <ul>
+        <li>Implement parsing, unit conversion, weather provision, run storage, and API/UI changes exclusively in Greenlight-simulation. Keep the protected source immutable. Any later permitted source import must use Python <code>-B</code> and <code>PYTHONDONTWRITEBYTECODE=1</code>, with all writable paths directed inside the simulator.</li>
+        <li>Replace the assumption that weather must live alongside protected source. Supply uploaded weather through an adapter/provider or simulator-owned weather directory, following the exact supported source contract. Stop if compatibility requires modifying the protected repository.</li>
+        <li>Require sufficient weather coverage for the selected run, initialization and any controller look-ahead. Do not silently repeat weather, invent a following year, or extrapolate beyond coverage.</li>
+        <li>Distinguish weather sampling, model/control intervals, and screen playback speed. Faster playback must preserve the model's integration and control schedule rather than changing physical behavior.</li>
+        <li>Provide start/end date selection, play/pause, single-step and acceleration. Timeline scrubbing initially replays saved states; changing controls in the past starts a new calculation rather than pretending the model is reversible.</li>
+        <li>Uploaded-weather scientific runs must fail clearly when the full engine is unavailable. A browser-only demo may remain separately available, but must not silently replace the selected scientific engine.</li>
+        <li>Record model/source identity, parameters, weather checksum, timezone, initialization, seed, controls, timestep, derivations and output units with each run. Keep measured inputs, model states, derived indicators and illustrative graphics distinguishable.</li>
+        <li>For public reproducibility, document a pinned, legally distributable model installation path within the simulator. Other users should not require the owner's D-drive research checkout. Licensing and packaging need verification before any redistribution.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Delivery and acceptance plan</h2>
+      <ol>
+        <li>Implement and test the workbook schema, template, parser, preview and rejection messages, using generated non-research fixtures.</li>
+        <li>Connect simulator-owned weather to the unchanged full model and verify timestamps, units, coverage, deterministic repeatability and no writes outside the project.</li>
+        <li>Add full-date timeline controls, complete run history, indoor/outdoor charts and controls that genuinely affect the model. Distinguish fast climate responses from longer-horizon crop changes.</li>
+        <li>Add downloadable results and reproducible run metadata, then baseline-versus-candidate comparison under identical weather, configuration and horizon.</li>
+        <li>Finish English setup documentation, a safe sample dataset/template, dependency/version and license documentation, and a fresh-install demonstration independent of the protected repositories.</li>
+      </ol>
+      <p>Each non-trivial implementation follows the repository's primary-agent implementation, read-only review, justified corrections and at most one follow-up review, then relevant tests and an English HTML work log. The present turn implements none of these features.</p>
+    </section>
+    <section>
+      <h2>Public-source research and limitations</h2>
+      <p>The upstream <a href="https://github.com/BartvLaatum/GreenLight-Gym2/blob/master/gl_gym/components/weather.py">weather component</a> separates weather loading from scenario sampling. Its <a href="https://github.com/BartvLaatum/GreenLight-Gym2/blob/master/gl_gym/environments/utils.py">weather conversion implementation</a> uses radiation, outdoor temperature, vapor pressure, CO2 density, wind, sky and soil temperature, plus derived daily/daylight quantities. It includes a fixed CO2 assumption and a Netherlands-specific soil-temperature function. These are upstream observations, not confirmation that the protected local fork is identical. They motivate explicit conversion and assumption records instead of treating arbitrary Excel columns as sufficient model inputs.</p>
+    </section>
+    <section>
+      <h2>Review, validation and Git status</h2>
+      <p>No reviewer agent was used: this is a documentation-only design assessment, which AGENTS.md permits without review. No model or application behavior was changed, no dependency was installed, and no scientific run or protected-source import was attempted.</p>
+      <p>Validation for the two documentation changes: all nine static-contract tests passed, including the work-log index link check, using the simulator's virtual environment with bytecode disabled. <code>git diff --check</code> passed. Git reported its existing LF-to-CRLF conversion warning for the index; this is not a test failure.</p>
+      <p id="validation-result">Passed: 9 tests, 0 failures. No full-model runtime or scientific-accuracy validation was performed.</p>
+      <p>The working tree was clean at inspection on <code>agent/public-greenhouse-decision-workbench</code>; origin matched the user's Greenlight-simulation GitHub URL. This turn adds this HTML file and updates <code>worklogs/index.html</code> only. No fetch, pull, commit, push, merge, force operation, or publication was performed. No paid API or additional credits were used.</p>
+    </section>
+  </body>
+</html>

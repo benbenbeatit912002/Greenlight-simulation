@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M2: Custom simulation dates and exact stopping</title>
+<style>body{font:16px/1.65 system-ui,sans-serif;max-width:960px;margin:36px auto;padding:0 22px;color:#20352b;background:#fafcfb}a{color:#16654b}h1{line-height:1.2}code{overflow-wrap:anywhere}th,td{border:1px solid #cedbd2;padding:10px;text-align:left;vertical-align:top}table{border-collapse:collapse;width:100%}li{margin-bottom:8px}</style></head>
+<body><p><a href="index.html">Work log index</a></p>
+<h1>M2: Custom simulation dates and exact stopping</h1><p>12 September 2026</p>
+<h2>Request and outcome</h2>
+<p>Continue milestone M2: show uploaded weather coverage, select start/end times, show duration and step count, validate initialization and look-ahead coverage, and implement progress, pause and exact endpoint stopping without fabricated weather. This milestone is now implemented for Amsterdam-format uploaded weather and verified against the full GreenLight-Gym2 model.</p>
+<h2>Decisions and assumptions</h2>
+<ul>
+<li>The user supplies the actual source year (1900–2100) and either UTC or fixed source-local standard time. The application does not infer timezone, apply daylight-saving changes or use the viewer's computer timezone.</li>
+<li>Windows are half-open [start, end), with both boundaries aligned to the fixed 900-second model step. A 09:15–10:00 run contains exactly three steps. Playback speed changes pacing and batch size only.</li>
+<li>Initialization uses GreenLight default states at the selected source timestamp. Warm-up is explicitly zero hours; startup transients are included. This is not equilibrium initialization or greenhouse calibration.</li>
+<li>The controller needs complete daily radiation context. Uploaded weather must include midnight-to-midnight data for every simulated day and at least 12 hours after the selected end. The selectable range reflects both requirements. A partially covered first day is excluded.</li>
+<li>The existing 36-hour upload minimum, 300-second source grid, 2 MiB limit and 10,000-record limit are retained. No missing samples are filled and no next-year data file is opened.</li>
+<li>Source-year seconds drive the model clock, its time state, daily radiation and upstream seasonal soil-temperature estimate. The Netherlands soil estimate remains a disclosed assumption, not a country-specific calibration.</li>
+<li>Pause prevents new requests but permits an already requested batch to finish. A completed run cannot advance further; resetting explicitly starts another run.</li>
+</ul>
+<h2>Implementation</h2>
+<table><thead><tr><th>Area</th><th>Changes</th></tr></thead><tbody>
+<tr><td>Calendar contract</td><td><code>backend/run_window.py</code> and <code>run-window.js</code>: coverage limits, strict four-field request validation, leap-year/calendar handling, duration and step calculation.</td></tr>
+<tr><td>Scientific adapter</td><td><code>backend/greenlight_adapter.py</code>: retain source calendar, slice exact forcing with look-ahead, set non-midnight initialization clocks/state, enforce selected step count, report window/progress and preserve an existing run after failed candidate initialization.</td></tr>
+<tr><td>API</td><td><code>backend/server.py</code>: upload coverage metadata, required uploaded runWindow, pre-mutation validation, certified rollback handling and static delivery of the new date helper.</td></tr>
+<tr><td>Interface</td><td><code>climate-upload.js</code>, <code>app.js</code>, <code>index.html</code>, <code>styles.css</code>: bilingual year/clock/start/end fields, duration, selectable coverage, progress/status, exact completion, reset/step synchronization and keyboard-stable validation.</td></tr>
+<tr><td>Tests and CI</td><td><code>tests/test_run_window.py</code>, <code>tests/run_window.test.js</code>, <code>tests/test_greenlight_integration.py</code>, <code>tests/test_weather_upload.py</code>, <code>tests/test_static_contract.py</code> and <code>.github/workflows/ci.yml</code>.</td></tr>
+<tr><td>Documentation</td><td><code>README.md</code>, <code>MODEL_CARD.md</code>, <code>IMPLEMENTATION_PLAN.md</code>, this log and its index. The public Excel template's Instructions cells B4/B5/B7 now explain source dates and coverage instead of the obsolete normalization to simulation day 1.</td></tr>
+</tbody></table>
+<h2>Read-only review and disposition</h2>
+<p>One initial reviewer round and one follow-up were used, within the two-round limit. The reviewer made no file changes and did not inspect protected upstream paths.</p>
+<ol>
+<li><strong>Preserved adapter run became inaccessible through API after failed reset.</strong> Accepted. Added an explicit preserved-run exception and HTTP 422 RESET_REJECTED response. The server keeps revision, active dataset and API access unchanged when rollback is certified. Real-model tests now fail both candidate construction and reset, then successfully continue the unfinished previous run.</li>
+<li><strong>A previously rejected step promise prevented resetting after reconnection.</strong> Accepted. Changed the synchronization barrier to wait only for settlement and recheck current model availability. A browser regression forces a network failure, reconnects and initializes a new window without stepping in between.</li>
+<li><strong>Changing date fields replaced controls and lost keyboard focus.</strong> Accepted. Field changes now update validation, bounds and messages without replacing the inputs. Browser checks verify convention-keyboard focus and stable date-input identity.</li>
+</ol>
+<p>The single follow-up found no new actionable defects in the reviewed fixes.</p>
+<h2>Validation evidence</h2>
+<ul>
+<li><strong>64 Python tests passed with no skips</strong>, with full-model integration explicitly enabled. This includes five real GreenLight integration tests.</li>
+<li><strong>10 JavaScript tests passed</strong>. App, upload and date-helper syntax checks passed. The legacy browser-model tests remain historical regression tests; the live UI does not load that approximation.</li>
+<li>Exact full-model endpoints verified for a non-midnight three-step window, one day, the final valid one-step interval and a request for 192 steps that would overshoot. An extra step after completion does not advance the model.</li>
+<li>A later-year upload beginning five minutes after midnight was tested. A 2024-02-29 09:15–10:00 selection retained its leap-day clock, correct seasonal soil input and exact three-step stop.</li>
+<li>Malformed, missing, misaligned and out-of-coverage selections are rejected before changing revision or model state. Candidate construction/reset failure preserves the previous run and permits subsequent stepping.</li>
+<li>Headless Microsoft Edge checks passed: public template upload, year and clock selection, 12x playback stopping at three steps, invalid coverage disabled, pause during an in-flight request, network failure/reconnect/reset, rejected candidate preserving completion, and page reload preserving run identity/progress.</li>
+<li>English and Traditional Chinese layouts were checked at 1440px and 390px without horizontal overflow or JavaScript page errors. The mobile weather/time/progress panel was visually inspected.</li>
+<li>The Spreadsheets skill was used for the narrow template instruction edit. Before/after instructions were rendered and inspected. A saved-workbook comparison confirmed unchanged weather values, other instruction cells, fonts, fills, borders, alignment, number formats, dimensions, panes and tables. Formula-error scan found no matches.</li>
+<li>Initial validation caught the static asset contract needing the new helper entry. The browser test initially requested a nonexistent 8x option; it was corrected to the existing 12x option. Subsequent runs passed. No production defect was hidden by skipping a failing test.</li>
+<li><code>git diff --check</code> passed. The localhost status endpoint reported scientific engine <code>greenlight-gym2</code>, adapter <code>2026.09-source-calendar-windows</code>, and a synthetic 09:15–10:00 demonstration completed at 3/3 steps.</li>
+</ul>
+<h2>Safety, runtime and Git</h2>
+<p>All edits, temporary files, screenshots, workbooks and server logs stayed inside Greenlight-simulation. Protected GreenLight practice repositories were not changed. Only exact required model source files and the previously authorized Amsterdam/2010.csv were imported/read outside this project, with bytecode disabled and project-local cache locations. Existing dependencies were reused. No paid service, API key or additional credits were used.</p>
+<p>The verified project server was restarted on <a href="http://127.0.0.1:4173/">http://127.0.0.1:4173/</a> with the full model. The final demonstration is completed, not continuously computing. Server logs and browser artifacts are local runtime files excluded from Git.</p>
+<p>Existing modified and untracked work remains preserved on <code>agent/public-greenhouse-decision-workbench</code>. No commit, merge or push was performed during this milestone.</p>
+<h2>Remaining work</h2>
+<p>M3 greenhouse geometry, equipment capacities and editable initial states remain next. M4 reproducible result exports/public clean-install packaging and M5 measured-data calibration remain planned. Built-in recorded scenarios keep preset dates. Configurable warm-up, DST conversion and replay/scrubbing are not implemented. Some backend warning/error text is still English in the Chinese interface. The public synthetic day-number placeholder was left unchanged by the instruction-only workbook edit and is not consumed by the model; calendar calculations exclusively use the time column and explicit source year.</p>
+</body></html>

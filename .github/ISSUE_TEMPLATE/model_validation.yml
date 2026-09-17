@@ -1,0 +1,90 @@
+name: Model validation evidence
+description: Propose or report a reproducible model-evaluation case.
+title: "[Validation] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for calibration, held-out evaluation, sensitivity, or diagnostic process evidence. Do not upload private greenhouse or protected research data.
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Engine under evaluation
+      options:
+        - Browser approximation
+        - GreenLight-Gym2 full model
+        - Both engines
+    validations:
+      required: true
+  - type: dropdown
+    id: evaluation
+    attributes:
+      label: Evaluation layer
+      options:
+        - Software contract
+        - Diagnostic response
+        - Operational comparison with observations
+        - Dynamic comparison across conditions
+        - Sensitivity or uncertainty
+    validations:
+      required: true
+  - type: input
+    id: model_version
+    attributes:
+      label: Model version and commit
+      placeholder: browser 2026.07, commit abc1234
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Evaluation question
+      description: State the specific variable, condition, horizon, and intended use being evaluated.
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Dataset provenance and permission
+      description: Identify the source, license/permission, greenhouse/crop context, units, sampling interval, and missing-data handling. Link data instead of copying protected files.
+    validations:
+      required: true
+  - type: textarea
+    id: split
+    attributes:
+      label: Calibration and validation split
+      description: Explain which observations were used for tuning and which remained held out.
+    validations:
+      required: true
+  - type: textarea
+    id: recipe
+    attributes:
+      label: Reproduction recipe
+      description: Include initialization, seed, scenario, controls, targets, timestep, horizon, and exact commands.
+    validations:
+      required: true
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Metrics and baselines
+      description: Define metrics, units, acceptance criteria, and any naive or previous-version baseline.
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Results, uncertainty, and limitations
+      description: Report failures and counterexamples as well as successful cases.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Evidence integrity
+      options:
+        - label: I did not present calibration data as independent validation data.
+          required: true
+        - label: The shared evidence is licensed or authorized for public use and contains no protected research material.
+          required: true
+        - label: I stated whether the result is software-tested, calibrated, or independently validated.
+          required: true

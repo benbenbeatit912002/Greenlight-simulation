@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Industry-aligned decision workbench</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 940px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      h3 { color: #d6f4e3; font-size: 15px; } p, li, td { color: #b7ccc3; } th { color: #d9f8e6; text-align: left; }
+      table { width: 100%; border-collapse: collapse; } th, td { padding: 10px; border: 1px solid #24453a; vertical-align: top; }
+      code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">COMPLETED</span><h1>Align the side project with greenhouse decision support</h1><p class="meta"><time datetime="2026-07-21">2026-07-21</time> · GreenLight Simulation</p></header>
+
+    <section><h2>User request</h2><p>Continue thinking in detail about what the greenhouse industry needs, decide what is credible and useful as a side project, keep improving the public-facing project, and record every update in an English HTML work log.</p></section>
+
+    <section>
+      <h2>Industry evidence reviewed</h2>
+      <table>
+        <thead><tr><th>Evidence</th><th>Project implication</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://www.wur.nl/en/research/plant/autonomous-cultivation-greenhouse-horticulture">WUR: Autonomous cultivation in greenhouse horticulture</a> connects continuous monitoring, control, and decision support with resource efficiency and labour productivity in a tight labour market.</td><td>Support human decisions first; do not make direct actuator control the first side-project goal.</td></tr>
+          <tr><td><a href="https://research.wur.nl/en/publications/towards-optimization-of-tomato-cultivation-using-a-digital-twin/">WUR: Towards optimization of tomato cultivation using a digital twin (2025)</a> describes model calibration with sensors and manual observations, then a decision-support dashboard and scenario generator.</td><td>Use scenario comparison now, but do not call an uncalibrated simulator a live digital twin.</td></tr>
+          <tr><td><a href="https://research.wur.nl/en/projects/a-layered-explainable-approach-to-intelligent-greenhouse-horticul/">WUR: LEAP-AI</a> treats explainability as important for adoption of resource-efficient intelligent control.</td><td>Expose engine, horizon, settings, context, and invalid-comparison reasons instead of outputting a hidden winner score.</td></tr>
+          <tr><td><a href="https://www.ars.usda.gov/ARSUserFiles/np305/NP%20305%20Action%20Plan%202024-2029_Finalv2.pdf">USDA ARS National Program 305 Action Plan 2024–2029</a> calls for tools that model crop growth, energy, and resource use and that evaluate facility options before implementation.</td><td>Position the project as a pre-deployment experiment workbench that compares crop and resource trade-offs.</td></tr>
+        </tbody>
+      </table>
+      <p>The product direction below is a project-level inference from these sources, not a claim or endorsement made by WUR or USDA.</p>
+    </section>
+
+    <section><h2>Product decision</h2><p>The recommended side project is an <strong>explainable, pre-deployment greenhouse decision-support workbench</strong>. Its first user is a greenhouse-control student, researcher, technical adviser, or technically curious grower who needs to compare a baseline and a candidate strategy before a physical trial.</p><p>Direct real-greenhouse control, safety alarms, yield or profit guarantees, and black-box autonomous optimization remain out of scope. They require greenhouse-specific calibration, live sensor validation, hardware integration, fail-safe engineering, domain supervision, and clear accountability.</p><p>The detailed evidence, users, promise, boundaries, success measures, and staged roadmap were added to <a href="../PRODUCT_STRATEGY.md"><code>PRODUCT_STRATEGY.md</code></a>.</p></section>
+
+    <section>
+      <h2>Update sequence</h2>
+      <ol>
+        <li>Confirmed the simulator repository and preserved all existing unstaged public-showcase work.</li>
+        <li>Reviewed current authoritative greenhouse-industry and research sources.</li>
+        <li>Defined a narrow side-project position and a roadmap from experiment comparison to reproducibility, cost and carbon scenarios, uncertainty, calibration, and only then a supervised pilot.</li>
+        <li>Implemented the first high-value increment: a baseline-versus-candidate strategy comparison workbench.</li>
+        <li>Added bilingual copy, responsive styling, model and horizon guardrails, persisted baseline schema validation, documentation, and static contracts.</li>
+        <li>Ran software, scientific-model, and live-server validation; attempted the bounded reviewer workflow; then completed a focused primary-agent safety review.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Completed implementation</h2>
+      <ul>
+        <li>A result can be saved as a versioned baseline after at least one model step. It remains available through local browser storage, with an in-memory fallback when storage is unavailable.</li>
+        <li>A reset receives a new run identifier. Numeric deltas remain hidden until baseline and candidate are separate runs using the same model engine and exactly the same model-step horizon.</li>
+        <li>Different weather scenarios are allowed for broad scenario exploration but produce a visible warning that weather and control effects are combined.</li>
+        <li>Both runs show scenario, step, control mode, engine, and either automatic targets or all six manual actuator settings.</li>
+        <li>The comparison reports heating, supplemental lighting, CO₂, estimated cost, fruit dry mass, and end-state climate alerts.</li>
+        <li>Colour is not the only signal, and the interface states that favourable resource or crop direction is not an overall winner and is not production advice.</li>
+        <li>The feature is fully bilingual, responsive, keyboard-operable, and uses polite live status messages.</li>
+        <li>Stylesheet and script cache-busting identifiers were updated so an already-open local browser receives this iteration.</li>
+      </ul>
+    </section>
+
+    <section><h2>Files changed in this iteration</h2><p><code>PRODUCT_STRATEGY.md</code>, <code>README.md</code>, <code>index.html</code>, <code>app.js</code>, <code>styles.css</code>, <code>tests/test_static_contract.py</code>, <code>worklogs/index.html</code>, and this work log. Existing July 17 public-showcase changes in the same tracked files were preserved. No scientific backend, model equation, protected source repository, thesis file, dataset, experiment result, or research output was modified.</p></section>
+
+    <section><h2>Reviewer workflow</h2><p>One read-only reviewer and the permitted single follow-up reviewer were asked to inspect the current diff for scientific honesty, comparison fairness, industry fit, JavaScript correctness, persistence, accessibility, responsive layout, and test gaps. Both remained running beyond their bounded time limits and returned no findings, so they were stopped. Neither reviewer modified a file. No additional reviewer was started.</p><p>The primary agent then performed a focused safety review. It identified that the first version exposed scenario, horizon, mode, and engine but not the actual baseline control strategy. The implementation was strengthened to show the automatic targets or all six manual actuator settings for both runs, and persisted-baseline validation was expanded to cover those values.</p></section>
+
+    <section>
+      <h2>Validation</h2>
+      <ul>
+        <li><code>node --check app.js</code> passed.</li>
+        <li><code>git diff --check</code> passed; Git only reported the repository's existing LF-to-CRLF working-copy notices.</li>
+        <li>All 16 discovered tests passed, including the work-log link contract. The opt-in scientific integration test was skipped as designed in the default suite.</li>
+        <li>The separately enabled GreenLight-Gym2 CasADi reset-and-absolute-control-step integration test passed in 36.927 seconds.</li>
+        <li>The live server returned HTTP 200 and served the new workbench, strategy fields, and comparison guard code.</li>
+        <li><code>/api/status</code> reported the active <code>greenlight-gym2</code> scientific engine with 28 states, six controls, and a 15-minute model step.</li>
+        <li>No controllable in-app browser was available, so automated clicking, screenshot review, and visual-regression inspection could not be completed. This limitation is not hidden by the static and HTTP checks.</li>
+      </ul>
+    </section>
+
+    <section><h2>Cost and safety compliance</h2><p>No OpenAI API key, paid API, usage-billed AI service, Fast mode, additional credit, paid add-on, or external AI service was used. Commands and generated project files remained inside <code>Greenlight-simulation</code>. Python ran with <code>PYTHONDONTWRITEBYTECODE=1</code> and <code>-B</code> for the protected read-only scientific-source import.</p></section>
+
+    <section><h2>Known limitations and next evidence</h2><ul><li>The comparison has static contracts and live-delivery checks but still needs one real browser interaction and visual review when browser control is available.</li><li>The fixed cost assumptions need visible provenance and configurable tariff and carbon-intensity scenarios.</li><li>A reproducible experiment recipe and reviewable report should precede more optimization features.</li><li>Uncertainty and sensitivity ranges are more valuable than presenting additional deterministic point estimates.</li><li>Sensor import and greenhouse-specific calibration are required before describing the product as a live digital twin.</li><li>The repository owner must choose a software license before broad reuse is invited.</li></ul></section>
+
+    <section><h2>Git status</h2><p>The current branch remains <code>main</code> tracking <code>origin/main</code>. The public-showcase and decision-workbench tracked files are modified. <code>PRODUCT_STRATEGY.md</code>, the two July 17 logs, and this July 21 log are untracked. Nothing was staged, committed, reset, discarded, or pushed.</p></section>
+  </body>
+</html>

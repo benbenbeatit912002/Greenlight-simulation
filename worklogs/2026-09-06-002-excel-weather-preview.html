@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Excel weather upload and preview</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 920px; margin: 0 auto; padding: 36px 20px 60px; line-height: 1.7; }
+      a { color: #8be8b3; } header, section { padding: 20px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 14px; background: #0d1c17; }
+      h1 { line-height: 1.2; } h2 { color: #a9f0c6; font-size: 20px; } p, li { color: #b7ccc3; } code { color: #d9f8e6; overflow-wrap: anywhere; } .meta { color: #78988a; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">Back to the work-log index</a></p>
+    <header>
+      <h1>Excel weather upload and preview</h1>
+      <p class="meta"><time datetime="2026-09-06">2026-09-06</time> &middot; First implementation milestone completed</p>
+      <p>A bilingual upload panel, downloadable synthetic workbook, bounded validation and input preview are available. Uploaded weather is not yet connected to the scientific simulation.</p>
+    </header>
+    <section>
+      <h2>User request, decisions and safety</h2>
+      <p>The user asked to begin the weather-driven greenhouse project described in the preceding design assessment, then asked to continue after a quota-related tool interruption. The first milestone implements the input contract and preview before connecting arbitrary weather to GreenLight-Gym2. No model equations, actuator logic, or existing simulation behavior were changed.</p>
+      <p>All project commands used the explicitly authorized Greenlight-simulation working directory. Neither practice repository was searched, read, imported, tested or modified. No research observations, manuscripts, experiment outputs or other protected material were accessed. The previous design log and its index entry were preserved.</p>
+      <p>Free open-source dependencies were installed only into this project's virtual environment, with its own uv cache and temporary directory. Bundled authoring/browser libraries were used read-only. Build intermediates, browser profiles, screenshots and server logs were directed into the simulator. No additional credits, paid API, Fast mode or paid add-on was enabled or purchased, and no quota-reset credit was redeemed. Work resumed only after the included quota was available again.</p>
+    </section>
+    <section>
+      <h2>Delivered behavior</h2>
+      <ul>
+        <li>The <code>Import your outdoor weather</code> panel supports English and Traditional Chinese, local XLSX upload, progress feedback, error messages, coverage and range summaries, and a horizontally scrollable preview of the first five records.</li>
+        <li>The <a href="../templates/greenlight-weather-template.xlsx">Excel template</a> contains an English Instructions sheet and a Weather sheet with 97 synthetic, 15-minute records covering 24 hours. The example is explicitly labelled as invented, not measured or calibrated data. Extra model-input columns are left blank without inference.</li>
+        <li>Schema <code>weather-xlsx-v1</code> requires UTC timestamps, outdoor temperature, outdoor RH, global solar radiation and wind speed. Sky temperature, soil temperature and outdoor CO2 are optional for preview, but must each be entirely populated or entirely blank.</li>
+        <li>Timestamp, unit, numeric-range, missing-value, duplicate-time, ordering and regular-interval checks run before a preview is returned. Native Excel date cells are interpreted as UTC; timestamp text requires an explicit offset. No silent interpolation, filling or weather assumptions are applied.</li>
+        <li>The endpoint returns input ranges, coverage, missing additional columns, SHA-256 fingerprint and at most 30 structured issues. It never saves uploaded bytes, changes simulation state or increments the model revision.</li>
+        <li>The UI and response explicitly report preview-only status. Even complete columns return <code>simulationReady: false</code> and <code>stored: false</code>.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Security boundaries</h2>
+      <ul>
+        <li>Uploads are bounded to 2 MiB compressed, 16 MiB uncompressed, 256 package entries, 10,000 records and eight columns. Complete strings and diagnostics are bounded.</li>
+        <li>Formulas, macros, external links, embedded objects, unsafe package paths, non-XML attachments, duplicate cell coordinates and ambiguous worksheet row coordinates are rejected. XML parsing is hardened, and worksheet checks do not depend on conventional package locations.</li>
+        <li>Only one workbook is processed at a time. Local Host/Origin and a custom request header are checked, with no CORS allowance and a bounded upload-read timeout.</li>
+        <li>GET and HEAD serve only explicitly public assets, selected documentation, work-log HTML and the template. Directory listings, private runtime files, source files and paths resolving outside the simulator are blocked, including the root index selection.</li>
+        <li>This remains a local development server, not a hardened multi-user Internet service. Public deployment requires a separate authentication, isolation, resource-control and hosting review.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Review recommendations and disposition</h2>
+      <p>One read-only reviewer performed one initial review and one follow-up review. The two-round limit was respected.</p>
+      <ol>
+        <li>Bound assembled rich/shared strings and avoid exception messages echoing large input values: accepted, fixed and covered by fragmented-string and bounded-error tests.</li>
+        <li>Validate actual worksheet parts, row indices and row/cell consistency rather than conventional ZIP filenames: accepted, fixed and covered by moved-part and mismatched-row tests.</li>
+        <li>Reject duplicate coordinates that could overwrite an invalid reading: accepted, fixed and covered by an invalid-then-valid duplicate B2 regression.</li>
+        <li>Resolve and check the index file itself when serving the root route: accepted, fixed and covered for GET and HEAD by a mocked escaping-index test, without creating or reading external files.</li>
+        <li>The follow-up found that nonstandard part suffixes could still bypass inspection: accepted. The parser now rejects unsupported package parts, including uppercase .XML and .data variants, with regression coverage. This final correction was tested by the primary agent; no third review was requested.</li>
+      </ol>
+    </section>
+    <section>
+      <h2>Validation and runtime</h2>
+      <ul>
+        <li>Python: 41 tests discovered, 40 passed, one full-model integration test intentionally skipped. Tests ran with <code>-B</code>, bytecode disabled and protected-source integration disabled.</li>
+        <li>JavaScript: all seven browser-model and upload-contract tests passed. All three JavaScript syntax checks passed.</li>
+        <li>The saved workbook passed the actual upload parser. Every one of its 97 saved Excel timestamps matched the expected UTC schedule. An initial authoring-runtime Date conversion defect was caught by these checks and corrected using native Excel serial dates.</li>
+        <li>Both workbook sheets were rendered and visually inspected. The title clipping found in the first Instructions render was corrected.</li>
+        <li>A hidden local browser verified successful upload, invalid-workbook feedback clearing stale previews, language switching, a 390-pixel layout without page-level horizontal overflow, and no page-script errors. Checks were rerun after the reviewed server restart.</li>
+        <li><code>git diff --check</code> passed. Git emitted its existing LF-to-CRLF conversion warnings; these were not test failures.</li>
+        <li>The simulator is running at <a href="http://127.0.0.1:4173/">http://127.0.0.1:4173/</a> with <code>--engine browser</code>. The final status check reported available=true, scientific=false and revision=0. This deliberate mode avoids importing protected model source or reading protected weather data.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Files and Git status</h2>
+      <p>Added <code>backend/weather_upload.py</code>, <code>climate-upload.js</code>, <code>templates/greenlight-weather-template.xlsx</code>, <code>tests/weather_fixtures.py</code>, <code>tests/test_weather_upload.py</code>, <code>tests/climate_upload_contract.test.js</code> and this work log. Updated <code>backend/server.py</code>, <code>index.html</code>, <code>styles.css</code>, <code>README.md</code>, <code>pyproject.toml</code>, <code>uv.lock</code>, <code>.gitignore</code>, the static asset test, CI checks and the work-log index.</p>
+      <p>The existing <code>backend/greenlight_adapter.py</code>, <code>simulator-engine.js</code> and <code>app.js</code> remain unchanged. Scratch artifacts are ignored. Changes remain local and uncommitted on <code>agent/public-greenhouse-decision-workbench</code>; nothing was pushed, merged or published to GitHub in this task.</p>
+    </section>
+    <section>
+      <h2>Next milestone</h2>
+      <p>Verify the exact read-only source contract, then connect simulator-owned weather to the full model with explicit conversions, initialization and coverage checks. Add start/end-date selection, model-backed stepping and full-run history only after that integration is tested. A successful Excel preview must not be described as an uploaded-weather scientific simulation.</p>
+    </section>
+  </body>
+</html>

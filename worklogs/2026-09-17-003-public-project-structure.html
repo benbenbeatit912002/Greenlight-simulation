@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Readable public project structure and contributor workflow</title>
+  <style>
+    body { max-width: 960px; margin: 40px auto; padding: 0 24px; font: 16px/1.65 system-ui, sans-serif; color: #19352b; background: #f5faf7; }
+    h1, h2 { line-height: 1.25; } a { color: #086c48; } code { overflow-wrap: anywhere; }
+    section { margin: 28px 0; } li { margin: 8px 0; }
+    table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #bed4c7; padding: 10px; text-align: left; }
+  </style>
+</head>
+<body>
+  <header><p>2026-09-17 · Implementation and independent review</p><h1>Readable public project structure and contributor workflow</h1></header>
+  <section><h2>Request and scope</h2>
+    <p>The user authorized applying the recommended readable, maintainable GitHub project conventions only within Greenlight-simulation. The supplied historical path did not exist; the actual checkout is D:/Thesis_project/greeenlight-project/Greenlight-simulation. All modifications and dependency installations were confined to that repository. Protected sibling repositories and external research data were not modified or accessed by this task.</p>
+  </section>
+  <section><h2>Decisions</h2>
+    <ul>
+      <li>Adapt Scientific Python conventions in place. Keep the existing backend package and root server.py entry point rather than introducing an incomplete src/wheel layout that would omit browser assets.</li>
+      <li>Preserve existing uncommitted implementation work. Capture pre-refactor application source snapshots under ignored .runtime/before-public-layout for local comparison.</li>
+      <li>Replace automatic sibling-model discovery with explicit GREENLIGHT_GYM_PATH. Document this startup configuration change, supported model API and unresolved exact upstream-version requirement.</li>
+      <li>Ask the owner for citation author names and license choice. No answer was available at completion; no authors or software license were invented.</li>
+      <li>Keep scientific validation, calibration and complete result export distinct from this structural refactor. Do not claim predictive equivalence from software-only tests.</li>
+    </ul>
+  </section>
+  <section><h2>Changes</h2>
+    <ul>
+      <li>Moved browser scripts into frontend/ and isolated the inactive approximation under frontend/legacy/. Extracted translations and chart rendering into dedicated modules; updated HTML load order, static allowlist and tests.</li>
+      <li>Separated application/revision operations from HTTP transport into backend/application.py, with compatible re-exports from backend.server.</li>
+      <li>Extracted model defaults, source/array provenance and weather conversion. Split reset into named phases for state capture, scenario selection, initialization, configuration description, history startup and restoration.</li>
+      <li>Split workbook archive/XML checks and legacy-row validation into focused helpers while preserving existing size, formula and coordinate protections.</li>
+      <li>Installed Ruff as a locked Python development dependency and Prettier as a locked npm development dependency. Added formatting configuration, a complexity limit of 20, editor settings, LF checkout attributes and local cache exclusions.</li>
+      <li>Added scripts/check.py as the shared local/CI entry point. CI now targets Ubuntu, Windows and macOS with the existing pinned setup actions.</li>
+      <li>Reorganized README into a concise entry guide; added installation, user, architecture, API, weather-input and scientific-validation guides. Updated contributor, second-computer, model-card and implementation-plan references.</li>
+      <li>Added a public synthetic workbook validation example and expected JSON summary. It runs without a model checkout or research data.</li>
+      <li>Added reset transaction, explicit model-path, static access, translation and chart-rendering tests. Replaced a whitespace-dependent HTML assertion with parsed attribute checks.</li>
+    </ul>
+  </section>
+  <section><h2>Validation</h2>
+    <table>
+      <thead><tr><th>Check</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Python software suite</td><td>77 reported; 70 passed and 7 opt-in external full-model integration tests skipped.</td></tr>
+        <tr><td>JavaScript contracts</td><td>14 passed, including all three chart modes and bilingual translation keys/placeholders.</td></tr>
+        <tr><td>Ruff, Prettier and JavaScript syntax</td><td>Passed through the shared check runner.</td></tr>
+        <tr><td>Fresh Python environment</td><td>Created .runtime/clean-install from the lock with no development dependencies; the synthetic validation example passed with 433 records, five-minute intervals and 36 hours.</td></tr>
+        <tr><td>Browser smoke test</td><td>Started the interface-only server with the fresh environment. Chinese page loaded, English switch worked, no console errors were reported, and the public workbook upload displayed “Data checks passed · preview only” with 433 records.</td></tr>
+        <tr><td>Documentation and patch hygiene</td><td>Local Markdown file links resolved; git diff --check passed.</td></tr>
+        <tr><td>Cross-platform CI</td><td>Configured; Linux/macOS execution is not claimed as locally verified. GitHub workflow results await publication/run.</td></tr>
+      </tbody>
+    </table>
+    <p>Total executed software tests: 84 passed. No external weather observations were read and no external full-model simulation was run.</p>
+  </section>
+  <section><h2>Independent reviewer and disposition</h2>
+    <p>A read-only reviewer compared the implementation to the pre-refactor snapshots and found no concrete blocking regression. ApiError, SimulatorApplication, greenhouse configuration, run-window and weather-source implementations were AST-identical apart from their organization/import context. The reviewer confirmed preservation of reset ordering, numerical expressions, weather limits and rollback flow by source comparison, and alignment of asset URLs/load order with the server allowlist. No code corrections were requested and no follow-up review was needed.</p>
+    <p>The reviewer emphasized that exact compatible upstream source/version and authorized weather data remain external full-model prerequisites, while wrapper license and citation authors are unresolved. These limitations are retained in the public documentation and user-facing completion report. Source comparison is not independent scientific validation.</p>
+  </section>
+  <section><h2>Git status and remaining release work</h2>
+    <p>The worktree already contained substantial tracked modifications and untracked files before this request. Those changes were preserved; new modules, documentation, tests and lock/configuration files are present locally. Root JavaScript deletions correspond to relocation into frontend/. Nothing was staged, committed or pushed.</p>
+    <p>The root startup remains available. Full-model users must now set GREENLIGHT_GYM_PATH explicitly. Each server still owns one shared run: independent users should start separate instances. This is a better organized source application, not a fully packaged scientific distribution or a hosted multi-user service.</p>
+  </section>
+  <p><a href="index.html">Worklog index</a></p>
+</body>
+</html>

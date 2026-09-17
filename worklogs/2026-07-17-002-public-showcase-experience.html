@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Work Log | Public showcase experience</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background: #081310; color: #e7f5ee; }
+      body { max-width: 900px; margin: 0 auto; padding: 42px 22px 70px; line-height: 1.7; } a { color: #8be8b3; }
+      header, section { padding: 22px 24px; margin-bottom: 16px; border: 1px solid #24453a; border-radius: 16px; background: #0d1c17; }
+      h1 { margin: 4px 0 8px; line-height: 1.2; } h2 { margin-top: 0; color: #a9f0c6; font-size: 18px; }
+      p, li { color: #b7ccc3; } code { color: #d9f8e6; background: #132a21; padding: 2px 6px; border-radius: 5px; }
+      .meta { color: #78988a; font-size: 14px; } .status { display: inline-block; padding: 4px 9px; color: #9ef0be; border: 1px solid #32664f; border-radius: 999px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <p><a href="index.html">← Back to the work-log index</a></p>
+    <header><span class="status">COMPLETED</span><h1>Prepare a public showcase experience</h1><p class="meta"><time datetime="2026-07-17">2026-07-17</time> · GreenLight Simulation</p></header>
+    <section><h2>User request</h2><p>Continue improving the simulator with Codex recommendations until it becomes a project that can be confidently shown to other people.</p></section>
+    <section><h2>Decisions and assumptions</h2><ul><li>Focused this iteration on visitor onboarding, bilingual presentation, model transparency, shareable documentation, and accessibility rather than changing scientific equations or API behavior.</li><li>Kept every runtime dependency, temporary file, and log inside the simulator repository and used no API key, paid credit, Fast mode, or usage-billed AI service.</li><li>Did not add a software license because selecting legal terms requires an explicit owner decision.</li></ul></section>
+    <section><h2>Completed work</h2><ul><li>Added a responsive showcase introduction with a clear project promise, model facts, calls to action, and an accessible three-step walkthrough dialog.</li><li>Extended the language switch from the control panel to the full public-facing interface, including dynamic status, chart labels, metrics, scenarios, document title, metadata, and model explanations.</li><li>Added live, accessible scientific-engine transparency and prevented local backend error details from being exposed in public visitor copy.</li><li>Added theme, application, and Open Graph metadata without introducing external runtime assets.</li><li>Expanded <code>README.md</code> with an English overview, browser and scientific quick starts, engine-mode table, Mermaid architecture diagram, validation commands, and protected-source guidance.</li><li>Added static contracts covering public metadata, walkthrough controls, dialog semantics, full translation-key coverage, document language changes, and privacy behavior.</li></ul></section>
+    <section><h2>Files changed</h2><p><code>README.md</code>, <code>index.html</code>, <code>styles.css</code>, <code>app.js</code>, <code>tests/test_static_contract.py</code>, <code>worklogs/index.html</code>, and this work log. Scientific backend and model source files were not changed.</p></section>
+    <section><h2>Reviewer</h2><p>Two bounded attempts were made to obtain the single required read-only reviewer pass. Both reviewer processes remained running past their time limits without returning findings and were closed; neither modified any file. No follow-up review was started. The primary agent then completed a focused safety review and added the dialog description relationship, a polite live-engine announcement, translated project-highlight labelling, and suppression of raw local error details.</p></section>
+    <section><h2>Validation</h2><ul><li><code>node --check app.js</code> passed.</li><li>All 14 discovered tests passed, with the opt-in scientific integration test skipped as designed in the default suite.</li><li>The separately enabled GreenLight-Gym2 CasADi reset-and-step integration test passed in 35.743 seconds.</li><li><code>git diff --check</code>, HTML parsing, translation-key coverage, and README relative-link validation passed.</li><li>The persistent local server returned HTTP 200, served the new showcase and walkthrough, and reported <code>greenlight-gym2</code> version 0.3.1 with <code>scientific: true</code>.</li><li>A controllable in-app browser instance was unavailable, so automated visual screenshot inspection could not be performed.</li></ul></section>
+    <section><h2>Git status</h2><p>The public-showcase files and work-log index are modified, and the two July 17 work logs are untracked. Nothing was staged, committed, reset, or pushed.</p></section>
+  </body>
+</html>

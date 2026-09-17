@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M3: Run-local greenhouse settings and initial states</title>
+<style>body{font:16px/1.65 system-ui,sans-serif;max-width:960px;margin:36px auto;padding:0 22px;color:#20352b;background:#fafcfb}a{color:#16654b}h1{line-height:1.2}code{overflow-wrap:anywhere}th,td{border:1px solid #cedbd2;padding:10px;text-align:left;vertical-align:top}table{border-collapse:collapse;width:100%}li{margin-bottom:8px}</style></head>
+<body><p><a href="index.html">Work log index</a></p><h1>M3: Run-local greenhouse settings and initial states</h1><p>15 September 2026</p>
+<h2>Request and outcome</h2>
+<p>The user asked to continue after M2 custom simulation dates. Implemented the first bounded M3 release: 22 audited greenhouse, equipment, cover and initial-state inputs connected to the full GreenLight-Gym2 model. A bilingual panel separates draft edits from explicit initialization and distinguishes per-area resources from whole-greenhouse totals.</p>
+<h2>Decisions and assumptions</h2>
+<ul>
+<li>Operate only in the explicitly authorized Greenlight-simulation path. Preserve all previous dirty files and do not mutate either practice repository.</li>
+<li>Read exact upstream source interfaces for parameters, initialization, observations, rewards and auxiliary equations. The supported subset is documented in <code>GREENHOUSE_CONFIGURATION.md</code>; it does not pretend to expose every GreenLight parameter.</li>
+<li>Geometry: floor area, cover area, main/mean height and roof vent geometry. Area fields remain independent. Height-dependent air/CO₂ capacities are recomputed using upstream equations.</li>
+<li>Boiler and CO₂ inputs use capacity per floor area; model totals are recomputed from actual floor area. Lamp input remains electrical W/m². Zero capacity disables output but does not remove thermal hardware or leakage.</li>
+<li>Cover inputs expose PAR/NIR transmission, thickness and conductivity. Other optical/thermal properties and screens remain defaults. No complete glass/polycarbonate preset is claimed.</li>
+<li>Initial-state inputs expose main-air temperature/RH/CO₂, leaf/stem/fruit dry mass, canopy temperature, 24-hour canopy state and crop temperature sum. Top air, surfaces, soil, carbohydrate buffer and other unexposed states remain defaults. Main-air temperature-only changes retain default RH and ppm through upstream conversions. LAI is derived from leaf mass.</li>
+<li>Defaults describe an established tomato crop. There is no seedling preset, warm-up, parameter fitting or claim of measured-data accuracy. Bounds are supported software limits, not agronomic guidance.</li>
+<li>Every reset builds a candidate environment before replacing the healthy run. Effective parameter vectors are supplied through a run-local provider. Observations, x_prev and cached reward normalization are refreshed. Upstream source/default arrays remain untouched.</li>
+<li>Actual effective parameter and initial-state arrays are fingerprinted. Configuration identity also includes selected-window metadata. Numeric comparisons are blocked across differing settings/initial states and for old baselines lacking evidence.</li>
+</ul>
+<h2>Files and actions</h2>
+<table><thead><tr><th>Area</th><th>Implementation</th></tr></thead><tbody>
+<tr><td>Validated configuration</td><td>New <code>backend/greenhouse_config.py</code> centralizes 22 fields, strict schema/ranges, dependencies, unit conversions and state mapping.</td></tr>
+<tr><td>Full model/API</td><td><code>backend/greenlight_adapter.py</code> applies run-local parameters and initial states, updates provenance/reward caches, preserves candidate rollback and reports volumes/capacities/whole-greenhouse resources. <code>backend/server.py</code> validates requests and retains active uploaded weather/window for configuration-only resets.</td></tr>
+<tr><td>Interface</td><td>New <code>greenhouse-settings.js</code>, plus <code>app.js</code>, <code>index.html</code>, <code>styles.css</code> and <code>climate-upload.js</code>. Collapsible groups, inherited/default values, draft review, apply/default buttons, bilingual help, full-greenhouse totals and safer comparisons.</td></tr>
+<tr><td>Tests/CI</td><td>New <code>tests/test_greenhouse_config.py</code>; expanded <code>tests/test_greenlight_integration.py</code>, <code>tests/test_static_contract.py</code> and JavaScript syntax coverage in <code>.github/workflows/ci.yml</code>. Local headless-browser regression scripts/screenshots remain in the excluded runtime directory.</td></tr>
+<tr><td>Documentation</td><td>New <code>GREENHOUSE_CONFIGURATION.md</code>, updated README, model card, implementation plan, this English HTML log and its index. The Excel workbook was not edited in this task.</td></tr>
+</tbody></table>
+<h2>Read-only review and disposition</h2>
+<p>One initial review and one follow-up were performed. The reviewer did not edit files, run tests, create caches or access protected sibling paths.</p>
+<ol>
+<li><strong>Same-run reconnect left settings disabled.</strong> Accepted. Availability recovery refreshes the form/buttons/status while preserving the draft. Browser regression forces a failed step, reconnects to the same run and verifies settings become usable.</li>
+<li><strong>Configuration-only reset lost uploaded weather identity.</strong> Accepted. The server retains the active window and resolves omitted selection to the active upload. The adapter inherits weather ID/label. A real-model application test activates A, changes configuration only, stages B and successfully reselects A with unchanged weather identity/fingerprint.</li>
+<li><strong>Rebuilding the panel cleared incomplete numeric drafts.</strong> Accepted. Existing native number inputs are reused without resetting their value on language/new-run rebuilds. The browser verifies that an incomplete <code>1e</code> remains invalid and Apply stays disabled across both changes until corrected.</li>
+</ol>
+<p>The single follow-up found no new actionable issues in the fixes.</p>
+<h2>Verification</h2>
+<ul>
+<li>Baseline: 64 Python tests passed before implementation.</li>
+<li><strong>71 Python tests passed with full-model integration enabled and no skips</strong>, including seven real GreenLight integration tests.</li>
+<li>All 22 effective inputs were checked against the actual model vector/state/observations. Default parameter and initial-state arrays reproduce exactly; repeated default trajectories match at rtol 1e-10 / atol 1e-8.</li>
+<li>Proportional floor/cover/vent area scaling preserves per-m² resource results and indoor outputs while doubling whole-greenhouse totals within rounding tolerance. Zero boiler/lamp/CO₂ capacities produce zero corresponding cumulative resource use and cost.</li>
+<li>Tests cover derived heat/CO₂ capacities, mm-to-m and g-to-mg conversions, finite/range/schema rejection (including booleans and very large numbers), invalid geometry preserving an active run, immutable run fingerprints and uploaded-weather retention.</li>
+<li>An initial pure-unit test used exact equality for a floating-point multiplication yielding 7199.999999999999 instead of 7200; it was corrected to an appropriate numerical comparison. Model calculations were not altered to satisfy the test.</li>
+<li><strong>10 JavaScript behavioral tests passed</strong>; application/upload/date/settings syntax checks passed. Legacy browser-model tests remain historical only, not the active simulation engine.</li>
+<li>Headless Microsoft Edge passed draft versus applied state, dependent geometry validation, capacity and indoor/crop changes, resource totals, incompatible comparison blocking, API rejection, page reload, restore defaults, same-run reconnect and incomplete numeric draft regressions. No JavaScript page errors.</li>
+<li>English/Traditional Chinese layouts were checked at 1440px and 390px without horizontal overflow. The mobile initial-state panel was visually inspected. A redundant visible fieldset legend was hidden accessibly afterward.</li>
+<li>The previous M2 browser workflow also passed: public template upload, source-year/clock/date selection, exact three-step endpoint at 12x, pause while a request is in flight, network reconnect, failed candidate handling and completed-run reload.</li>
+<li>Git whitespace checks passed using the repository's normal Windows line-ending configuration.</li>
+</ul>
+<h2>Safety, runtime and Git</h2>
+<p>All edits, tests, logs, screenshots, temporary files and caches stayed inside Greenlight-simulation. Imports used Python -B with bytecode disabled. Only required protected source code and the previously authorized Amsterdam/2010.csv were read. No practice/research files were modified, and no other research artifacts were opened.</p>
+<p>The existing environment was reused. No paid API, API key, extra credits or add-on was used. Only verified simulator process IDs were restarted; other Python processes were not touched. The local server uses the full scientific model on <a href="http://127.0.0.1:4173/">http://127.0.0.1:4173/</a>.</p>
+<p>Changes remain local on <code>agent/public-greenhouse-decision-workbench</code>, alongside preserved prior modifications/untracked files. No commit, merge or push was performed.</p>
+<h2>Next work</h2>
+<p>The next public-project milestone is bounded full-series results and reproducible recipe/result export. Advanced M3 settings—named material presets, screen parameters, lamp efficiency and additional thermal initial states—remain separate increments. Parameter calibration still requires authorized synchronized measurements and held-out validation.</p>
+</body></html>

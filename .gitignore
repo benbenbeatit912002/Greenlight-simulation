@@ -1,7 +1,13 @@
 .venv/
 .uv-cache/
+.runtime/
+user_data/
+outputs/
+node_modules/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .coverage
 htmlcov/
+.ruff_cache/
+.npm-cache/

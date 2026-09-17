@@ -1,133 +1,93 @@
-# GreenLight 2 溫室模擬器
+# GreenLight 2 Greenhouse Simulator
 
-Project collaboration and validation records are available from [`worklogs/index.html`](worklogs/index.html). The ready-to-copy instructions for setting up another computer are in [`SECOND_COMPUTER_PROMPT.md`](SECOND_COMPUTER_PROMPT.md).
+An interactive greenhouse simulation and decision-support workbench connecting a bilingual browser interface to the GreenLight-Gym2 scientific model. Explore greenhouse settings, weather, control strategies, climate and resource use.
 
-> **Protected research mode:** GreenLight practice and GreenLight 2 source code outside this repository may be loaded read-only, but it must never be modified. Keep `.venv`, downloads, caches, logs, and outputs inside this repository; set `PYTHONDONTWRITEBYTECODE=1` and launch with Python `-B`. Thesis manuscripts, datasets, experiment outputs, and other non-source research artifacts remain out of scope.
+[![CI](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml)
 
-獨立的 GreenLight 2 互動溫室與科學模型橋接器：
+**Status:** research/education prototype. The public interface uses the full scientific model or hides results when it is unavailable. Independent predictive validation, full-series result export and parameter calibration are not yet complete.
+
+## Acknowledgements and citation
+
+This work builds on **GreenLight**, developed by **David Katzin and collaborators**, and uses the **GreenLight-Gym2** implementation by **Bart van Laatum and contributors**. We gratefully acknowledge their scientific and software contributions.
+
+- **Original GreenLight model:** David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. van Henten (2020). *GreenLight – An open source model for greenhouses with supplemental lighting: Evaluation of heat requirements under LED and HPS lamps*. Biosystems Engineering, 194, 61–81. [Paper](https://doi.org/10.1016/j.biosystemseng.2020.03.010) · [Original repository](https://github.com/davkat1/GreenLight).
+- **GreenLight-Gym / GreenLight-Gym2:** Bart van Laatum, Eldert J. van Henten, and Sjoerd Boersma (2025). *GreenLight-Gym: Reinforcement learning benchmark environment for control of greenhouse production systems*. IFAC-PapersOnLine, 59(23), 437–442. [Paper](https://doi.org/10.1016/j.ifacol.2025.11.827) · [Upstream repository](https://github.com/BartvLaatum/GreenLight-Gym2).
+
+This repository contributes the browser interface and local integration layer; the underlying greenhouse model and upstream environment are credited to their original authors. Please cite the relevant upstream publications when using this work in research. See [CITATION.md](CITATION.md) for BibTeX and attribution details.
+
+## Quick start
+
+Install Git and [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+
+```sh
+git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
+cd Greenlight-simulation
+uv sync --locked --python 3.12 --cache-dir .uv-cache
+uv run --no-sync python -B examples/validate_weather.py
+uv run --no-sync python -B server.py --engine browser
+```
+
+Open <http://127.0.0.1:4173/>. This setup displays the interface and validates the bundled synthetic weather without accessing a model checkout or private research data. No Node.js installation is needed to use the app. The example expects 433 records covering 36 hours and reports a successful validation.
+
+To run actual simulations, install the `greenlight` extra and explicitly set `GREENLIGHT_GYM_PATH` to a compatible source checkout. Follow [the full Windows/Linux/macOS installation guide](docs/installation.md). The model source is read-only and is not bundled here; its exact compatible version remains a separate setup requirement.
+
+## What you can do
+
+- Use English or Traditional Chinese controls and explanations.
+- Validate an Excel weather workbook, select source-clock simulation dates and review supported ranges.
+- Configure supported greenhouse dimensions, equipment and initial conditions.
+- Run the full model with automatic or manual controls at fixed 15-minute steps.
+- Compare compatible baseline/candidate runs at matching horizons.
+
+Each server process owns one shared simulation. For independent work, different users run separate local instances. This release is not a hosted multi-user service or production greenhouse controller.
+
+## Find the right guide
+
+| Goal | Read |
+| --- | --- |
+| Install on another computer | [Installation and troubleshooting](docs/installation.md) |
+| Operate the interface | [User guide](docs/user-guide.md) |
+| Run the public example | [Synthetic example](examples/README.md) |
+| Prepare weather or settings | [Weather input](docs/weather-input.md), [greenhouse configuration](GREENHOUSE_CONFIGURATION.md) |
+| Understand or modify code | [Architecture](docs/architecture.md), [contributing](CONTRIBUTING.md) |
+| Call the local API | [API contract](docs/api.md) |
+| Interpret scientific results | [Model card](MODEL_CARD.md), [validation](docs/scientific-validation.md) |
+| See planned capabilities | [Implementation plan](IMPLEMENTATION_PLAN.md), [product direction](PRODUCT_STRATEGY.md) |
+
+## Repository map
 
 ```text
-C:\Project\greenlight-project\greenlight-2-simulator
+server.py           Stable local startup entry point
+backend/            HTTP, application operations and scientific adapter
+frontend/           Browser controls, translations, charts and upload UI
+frontend/legacy/    Inactive approximation retained for regression tests
+index.html          Public page and explicit browser-script load order
+styles.css          Interface styling
+docs/               Installation, user, architecture and scientific guides
+examples/           Public validation example and expected summary
+templates/          Synthetic Excel weather template
+tests/              Software contracts and opt-in full-model integration
+scripts/check.py    Shared local/CI quality-check entry point
+worklogs/           English project change records
 ```
 
-它不在 `greenlight-practice` 或 `GreenLight-Gym2-practice` 裡。後端以唯讀方式載入同層的 GL-Gym2 原始碼，並禁止在 practice 專案產生 Python bytecode。
+## Contributing and checks
 
-## 現在直接啟動完整模型
+After the Python setup, install Node.js 22+ for development:
 
-依賴已安裝在本資料夾自己的 `.venv`：
-
-```powershell
-cd C:\Project\greenlight-project\greenlight-2-simulator
-& '.\.venv\Scripts\python.exe' -B .\server.py --engine glgym
+```sh
+npm ci --ignore-scripts --cache .npm-cache
+uv run --no-sync python -B scripts/check.py
 ```
 
-開啟 <http://127.0.0.1:4173/>。控制面板右上角應顯示「GreenLight 2 完整模型」。
+Checks include Ruff formatting/lint/complexity, Prettier formatting, JavaScript syntax, Python and JavaScript contracts, and the public example. Default checks do not run external-model integration or establish scientific accuracy. See [CONTRIBUTING](CONTRIBUTING.md) before submitting a focused pull request. Report sensitive issues through [SECURITY](SECURITY.md).
 
-伺服器模式：
+## Model provenance and license status
 
-- `--engine glgym`：必須使用完整 GreenLight-Gym2，初始化失敗就停止。
-- `--engine auto`：優先使用完整模型；不可用時讓網頁使用瀏覽器近似模型。
-- `--engine browser`：只提供網頁與 API 狀態，強制使用瀏覽器近似模型。
+GreenLight-Gym2 supplies the scientific model; this repository supplies the local interface and adapter. Model attribution and references are in [CITATION.md](CITATION.md) and [MODEL_CARD](MODEL_CARD.md). Source, parameter and weather fingerprints help explain which model/configuration produced a run.
 
-## 從乾淨環境重新安裝
+No software license has been selected for this wrapper yet. Public visibility does not grant broad reuse rights. The owner must confirm the license and citation authors before those metadata can be finalized; upstream model and data permissions remain separate.
 
-使用 Python 3.12，所有環境與下載快取都留在模擬器資料夾：
+## Change records
 
-```powershell
-$env:UV_CACHE_DIR = "$PWD\.uv-cache"
-uv sync --extra greenlight --python 3.12
-```
-
-這會安裝 CasADi、NumPy、SciPy、Pandas、Gymnasium、PyYAML 與 pytz，但不會安裝或修改 sibling GL-Gym2 source package；後端會透過 `sys.path` 唯讀載入它。
-
-## 模型與畫面
-
-- 左側 2.5D 溫室會反映：
-  - 日夜與阿姆斯特丹實測天氣
-  - 屋頂通風窗、保溫幕、遮光幕
-  - 補光燈、暖氣管與 CO₂ 注入
-  - 冠層、果實乾物質、葉面積與凝結提示
-- 右側控制 GreenLight 2 六項絕對開度：
-  - `uBoil` 鍋爐加熱
-  - `uCO2` CO₂ 注入
-  - `uThScr` 保溫幕
-  - `uVent` 屋頂通風
-  - `uLamp` 補光燈
-  - `uBlScr` 遮光幕
-- 完整模式直接驅動：
-  - 28-state CasADi/CVODES GreenLight 模型
-  - 每步 900 秒（15 分鐘）
-  - Amsterdam 2008–2012 weather repository
-  - GL-Gym2 rule-based controller 或手動 0–1 絕對控制
-  - 溫度、RH、CO₂、管道溫度、冠層與作物狀態
-  - 能源、CO₂ 與成本累計
-- Python 後端停止時，前端會自動暫停並切回瀏覽器近似模型，不會讓播放迴圈卡死。
-
-## API
-
-同源 API，不開放 CORS，預設只綁定 `127.0.0.1`：
-
-- `GET /api/status`
-- `POST /api/reset`
-- `POST /api/step`
-
-所有 mutation 都有單調遞增的 `revision`；前端傳送 `expectedRevision`，避免多分頁或重複請求互相覆蓋。CasADi 環境由後端鎖定成單一序列操作。
-
-手動 step 範例：
-
-```json
-{
-  "steps": 1,
-  "mode": "manual",
-  "controls": {
-    "uBoil": 0.35,
-    "uCO2": 0.15,
-    "uThScr": 0.4,
-    "uVent": 0.05,
-    "uLamp": 0.25,
-    "uBlScr": 0.0
-  },
-  "targets": {
-    "dayTemp": 21.5,
-    "nightTemp": 17.5,
-    "co2": 900,
-    "maxRh": 82
-  },
-  "expectedRevision": 1
-}
-```
-
-## 驗證
-
-一般測試：
-
-```powershell
-& '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
-```
-
-實際建構 CasADi 模型並跑一次 reset／step：
-
-```powershell
-$env:RUN_GREENLIGHT_INTEGRATION = '1'
-& '.\.venv\Scripts\python.exe' -B -m unittest tests.test_greenlight_integration -v
-```
-
-## 結構
-
-```text
-greenlight-2-simulator/
-├─ backend/
-│  ├─ greenlight_adapter.py  # 28-state GL-Gym2 adapter
-│  └─ server.py              # 靜態伺服器、API、驗證與 revision lock
-├─ tests/
-│  ├─ test_api_server.py
-│  ├─ test_greenlight_integration.py
-│  └─ test_static_contract.py
-├─ index.html
-├─ styles.css
-├─ simulator-engine.js       # 瀏覽器安全回退模型
-├─ app.js                    # UI、API 偵測與無重疊播放迴圈
-├─ server.py
-├─ pyproject.toml
-└─ uv.lock
-```
+[Worklog index](worklogs/index.html) records implementation and verification. Existing root startup remains supported; browser assets moved to `frontend/`, and full-model startup now requires explicit `GREENLIGHT_GYM_PATH` instead of automatic sibling discovery.

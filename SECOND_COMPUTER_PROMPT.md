@@ -97,19 +97,22 @@ Perform these steps in order:
    this repository's `.venv`. If `.venv` does not exist, run in PowerShell:
    $env:PYTHONDONTWRITEBYTECODE = '1'
    $env:UV_CACHE_DIR = "$PWD\.uv-cache"
-   uv sync --extra greenlight --python 3.12
+   uv sync --locked --python 3.12
+   uv run --no-sync python -B examples/validate_weather.py
 
 6. Run the tests:
    & '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
 
 7. Start the simulator:
    $env:PYTHONDONTWRITEBYTECODE = '1'
-   & '.\.venv\Scripts\python.exe' -B .\server.py --engine auto
+   & '.\.venv\Scripts\python.exe' -B .\server.py --engine browser
 
 8. Verify that http://127.0.0.1:4173/ opens and report whether it is using the
-   full GreenLight 2 model or the browser approximation model.
+   full GreenLight 2 model or interface-only mode. There is no browser approximation
+   fallback. Full-model setup requires an explicit GREENLIGHT_GYM_PATH and the
+   greenlight extra; follow docs/installation.md.
 
-9. The simulator may read/import the exact sibling GreenLight-Gym2 source path,
+9. The simulator may read/import an explicitly configured GreenLight-Gym2 source path,
    but it must not write there. Do not run installers, formatters, tests, Git
    mutations, or broad searches in that repository. If full-model startup would
    require any write outside Greenlight-simulation, stop and report the safety

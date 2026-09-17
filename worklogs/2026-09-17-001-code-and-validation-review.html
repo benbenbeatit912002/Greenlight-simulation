@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code maintainability and scientific validation review</title>
+  <style>
+    body { max-width: 900px; margin: 40px auto; padding: 0 24px; font: 16px/1.65 system-ui, sans-serif; color: #19352b; background: #f5faf7; }
+    h1, h2 { line-height: 1.25; } a { color: #086c48; } code { overflow-wrap: anywhere; }
+    section { margin: 28px 0; } li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <header><p>2026-09-17 · Question-only repository review</p><h1>Code maintainability and scientific validation review</h1></header>
+  <section><h2>Request and scope</h2>
+    <p>The user asked whether the cloned GreenLight project has problems similar to the previously discussed code readability and research-validation concerns. The task titled “Clone Greenlight-simulation repo” identified this repository as the target. This was a bounded source and documentation review, not a refactoring request or a new scientific experiment.</p>
+  </section>
+  <section><h2>Findings and decisions</h2>
+    <ul>
+      <li>Maintainability concerns are present: app.js has 1,482 lines; backend/greenlight_adapter.py has 969 lines, with a 181-line reset method combining validation, configuration, weather selection, initialization, provenance and rollback. greenhouse-settings.js includes multiple state and DOM operations on single lines. These are review and maintenance risks, not evidence of incorrect numerical outputs.</li>
+      <li>Separate weather, time-window and greenhouse-configuration modules and regression tests already provide useful boundaries. CI checks syntax and software contracts but does not currently enforce formatting or complexity limits.</li>
+      <li>No implemented parameter-fitting pipeline or evidence of 2012 observations being used for model selection was found in the reviewed simulator code. Built-in scenarios specify 2010; uploaded weather is simulation input. M5 calibration and held-out validation remain planned. This review does not certify the entire historical research process as free of leakage.</li>
+      <li>MODEL_CARD.md explicitly identifies a prototype whose adapter has not been validated here against an independent greenhouse dataset. M4 reproducible output/export and M5 calibration remain planned in IMPLEMENTATION_PLAN.md. Passing software tests does not establish predictive accuracy or thesis readiness for scientific claims.</li>
+    </ul>
+  </section>
+  <section><h2>Actions and files changed</h2>
+    <p>Read repository instructions, relevant source, tests, CI configuration, model card and implementation plan. Inspected the existing worktree and ran software-only tests inside this repository. No application source, scientific data, or project configuration was modified. The only files changed for this request are this worklog and worklogs/index.html.</p>
+    <p>No protected sibling files were modified. No external full-model simulation was run, and no external datasets were opened for this review.</p>
+  </section>
+  <section><h2>Validation</h2>
+    <ul>
+      <li>Python unittest discovery: 71 tests reported, 64 passed and 7 opt-in full-model integration tests skipped; exit status 0. Bytecode writing was disabled and temporary/cache paths were directed inside this repository.</li>
+      <li>Node contract tests: browser_model_contract.test.js, climate_upload_contract.test.js and run_window.test.js; 10 passed, 0 failed. Legacy browser-model contract tests do not validate the active full-model adapter against observations.</li>
+      <li>Combined executed software checks: 74 passed. The 7 skipped full-model checks and independent scientific validation remain outside this review.</li>
+    </ul>
+  </section>
+  <section><h2>Reviewer disposition</h2><p>A separate reviewer was not started because this was a question-only review with no non-trivial code implementation. The repository requirement for a reviewer after non-trivial code changes was not triggered.</p></section>
+  <section><h2>Git status</h2><p>The repository already contained tracked modifications and untracked implementation, test and worklog files before this review, including an already modified worklogs/index.html. Those unrelated changes were preserved. No files were staged or committed.</p></section>
+  <p><a href="index.html">Worklog index</a></p>
+</body>
+</html>

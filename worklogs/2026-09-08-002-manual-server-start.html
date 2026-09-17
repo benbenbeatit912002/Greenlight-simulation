@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Manual simulator startup instructions</title><style>body{font:16px/1.6 system-ui;max-width:900px;margin:40px auto;padding:0 24px}a{color:#176743}pre{padding:16px;background:#eef5f0;overflow:auto}</style></head><body>
+<a href="index.html">Work log index</a><h1>Manual simulator startup instructions</h1><p>8 September 2026</p>
+<h2>Request</h2><p>Explain how to manually start the local GreenLight simulator and whether it consumes Codex tokens or computer resources.</p>
+<h2>Instructions prepared</h2><p>The user should open PowerShell, enter the dedicated Greenlight-simulation directory, set project-local runtime paths and launch the existing virtual environment with the full GreenLight-Gym2 engine on port 4173. The server remains in the foreground until Ctrl+C. The browser opens the local address http://127.0.0.1:4173/ on the same computer.</p>
+<h2>Resource explanation</h2><p>Running the local simulator does not consume OpenAI or Codex tokens and does not use an API key. It uses local CPU memory and project-local logs/cache. The first dependency installation may use network bandwidth and disk space; starting an existing environment does not normally download dependencies.</p>
+<h2>Actions and validation</h2><p>The local server was started once with the existing project virtual environment, Python -B, project-local runtime paths, the authorized read-only GreenLight-Gym2 source path, and --engine glgym --port 4173. No source files, protected repositories, research data or Git history were changed. This was an instruction and startup request, so no reviewer was needed.</p>
+<h2>Git status</h2><p>This log and its index entry are the only documentation changes for this request. Existing local worktree changes remain uncommitted and were preserved. No commit, merge or push was performed.</p>
+</body></html>
