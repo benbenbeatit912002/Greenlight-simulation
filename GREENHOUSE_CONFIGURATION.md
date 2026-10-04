@@ -10,6 +10,14 @@ Open **Step 3 · Greenhouse and initial state** below the weather panel. Expand 
 
 All values are validated by the backend. A rejected candidate preserves the existing environment, state, configuration and revision. Each reset creates a candidate environment; overrides live in its parameter provider, never in an upstream source file.
 
+### Manual dimensions and space preview
+
+Use **Set greenhouse dimensions** near the top of the page. The dimensions group opens by default. For a rectangular floor, the optional **length × width** calculator converts metres to square metres. Select **Copy floor area to draft** to update only `floorArea`, then review the independent cover and roof-vent areas. Larger floors may require a larger actual cover area; smaller floors may require a smaller actual vent area. Vents are in the Installed equipment group. The tool does not guess these values or overwrite other settings.
+
+The space preview uses the next-run draft: main volume = floor area × main-compartment height; top volume = floor area × (mean greenhouse height − main-compartment height); total volume = floor area × mean greenhouse height. Mean height is total volume divided by floor area, **not the roof ridge's maximum height**. Cover area includes the roof and walls. Invalid settings hide the preview until corrected. Applied settings remain separately identified above the form.
+
+Length and width are only a convenience calculator, not new model parameters or a spatial/3D simulation. They are not inferred from a saved area and are not retained across page reloads. Only the copied area and the other explicitly applied settings reach the model. Reloading restores the applied model settings, not an unfinished draft. **Use model defaults** also clears the calculator, without changing the active run until Apply is selected.
+
 ## Parameter mapping
 
 Indices below refer to the exact vector in `gl_gym/configs/default_params.py`. Existing upstream named-registry entries include floor area, boiler power, CO₂ dosing and lamp power. Other verified indices are consolidated in `backend/greenhouse_config.py` because the upstream registry does not yet name them. The fixed provider receives a copied, effective vector; the source registry/default vectors are not patched.

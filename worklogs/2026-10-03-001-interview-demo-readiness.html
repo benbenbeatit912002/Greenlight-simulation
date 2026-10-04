@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirm existing interactive dashboard for an interview</title>
+  <style>body{max-width:900px;margin:40px auto;padding:0 24px;font:16px/1.65 system-ui,sans-serif;color:#20352b;background:#fafcfb}a{color:#16654b}code{overflow-wrap:anywhere}</style>
+</head>
+<body>
+  <h1>Confirm existing interactive dashboard for an interview</h1>
+  <p>3 October 2026</p>
+  <h2>Request and clarification</h2>
+  <p>The user shared a CV description and requested an interactive version for an upcoming interview. When asked about local versus public demonstration, the user emphasized that substantial functionality already exists. Confirmed that the current project is already an interactive dashboard; a rebuild is unnecessary. The immediate task became checking and opening the existing implementation, not adding new features or deploying it publicly.</p>
+  <h2>Existing capabilities and honest boundaries</h2>
+  <ul>
+    <li>Project documentation and implementation identify Excel weather upload, source-clock simulation start/end selection, 22 greenhouse/equipment/initial-state settings, automatic/manual controls, playback/pause, climate/crop/resource visualization and compatible baseline comparisons.</li>
+    <li>The running backend reports the full GreenLight 2 / GreenLightTomato-v0 scientific engine, not a browser approximation.</li>
+    <li>Measured-data parameter calibration, independent predictive validation and full-series result export remain future work. Weather adaptation must not be described as completed regional calibration.</li>
+    <li>A local demonstration is not a public multi-user deployment. No hosting, account, tunnel or paid service was enabled.</li>
+    <li>The interview walkthrough can use the existing workflow: weather input, simulation dates, greenhouse settings, a control adjustment, and interpretation of climate/resource/crop outputs. This task did not add a new guided-demo feature.</li>
+  </ul>
+  <h2>Actions and validation</h2>
+  <p>Read the current project instructions, README, handoff prompt, implementation plan, user/architecture/installation guides and latest merge log. The checkout is on main with origin pointing to the expected Greenlight-simulation GitHub repository. The initial default-sandbox Git query failed; a scoped permitted query confirmed a clean worktree before this log was added.</p>
+  <p>No process was listening on port 4173. Started the existing project server with the required scientific engine and explicitly configured read-only model source. Python used -B and PYTHONDONTWRITEBYTECODE=1; temporary files, caches and fresh server logs were directed into this repository.</p>
+  <p>Live verification: /api/status reported scientific=true, active engine greenlight-gym2, 22 settings, model step zero and Amsterdam recorded weather. The root page and frontend/app.js both returned HTTP 200. No simulation steps were submitted and no full regression suite was rerun, because application code was unchanged. Requested opening the local URL in the Codex browser panel.</p>
+  <h2>Files, review and Git</h2>
+  <p>Only this English HTML work log and worklogs/index.html were edited; ignored runtime logs were generated during startup. No application or model code was changed. A reviewer was not spawned because this was a readiness check, server startup and documentation-only clarification.</p>
+  <p>No Git fetch, pull, stage, commit, merge or push was performed. No protected practice source or research artifacts were modified. Only the explicitly permitted model source and Amsterdam/2010.csv were used for startup. No API key, usage-billed AI service or paid add-on was used.</p>
+  <p><a href="index.html">Work log index</a></p>
+</body>
+</html>

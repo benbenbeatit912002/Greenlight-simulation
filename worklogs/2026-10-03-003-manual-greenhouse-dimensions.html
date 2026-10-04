@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual greenhouse dimensions and air-volume preview</title>
+  <style>body{max-width:960px;margin:40px auto;padding:0 24px;font:16px/1.65 system-ui,sans-serif;color:#20352b;background:#fafcfb}a{color:#16654b}code{overflow-wrap:anywhere}li{margin-bottom:8px}</style>
+</head>
+<body>
+  <h1>Manual greenhouse dimensions and air-volume preview</h1>
+  <p>3 October 2026</p>
+  <h2>Request and outcome</h2>
+  <p>The user requested manual greenhouse size and space design inputs. The existing 22-field panel already exposed floor/cover area and main/mean height. This update makes those inputs easier to discover, adds an optional rectangular length-by-width calculator, and previews main/top/total air volume for the settings draft.</p>
+  <h2>Decisions and interaction</h2>
+  <ul>
+    <li>A bilingual Set greenhouse dimensions link jumps directly from the introduction to the settings panel. Its dimensions group opens initially; later language changes retain the user's group-open choices.</li>
+    <li>Length and width are entered in metres. Their product must satisfy the server-advertised floor-area bounds (currently 1–2000 m²). The explicit copy action updates only the floor-area draft; editing or copying does not reset the simulation.</li>
+    <li>Cover and roof-vent areas remain independent, as required by the model. The helper never invents a roof type, resizes vents or overwrites other settings. Existing dependent validation blocks incompatible combinations.</li>
+    <li>Main volume = floor area × main-compartment height. Top volume = floor area × (mean height − main height). Total volume = floor area × mean height. The interface explains that mean height is not maximum ridge height.</li>
+    <li>The volume cards are labelled as draft values, separate from the existing applied-settings summary. Invalid settings suppress the preview. Apply settings and initialize remains the only path from the form to a new model run.</li>
+    <li>Length/width are a calculator, not new scientific parameters or a 3D spatial simulation. They are intentionally not inferred from floor area and are cleared on page reload. Applied area/heights are restored from the server. Model defaults clears the calculator and settings draft without immediately changing the active run.</li>
+    <li>Native number inputs are reused across language changes and new-run rebuilds, preserving incomplete input such as 1e. Calculator input errors disable Copy, without invalidating unrelated valid model settings.</li>
+  </ul>
+  <h2>Files changed</h2>
+  <ul>
+    <li><code>frontend/greenhouse-settings.js</code>: pure geometry helpers, optional calculator, input validation, draft-volume cards and bilingual explanatory text.</li>
+    <li><code>frontend/translations.js</code>, <code>index.html</code>, <code>styles.css</code>: prominent settings link, cache versions and responsive calculator/volume styling.</li>
+    <li><code>tests/greenhouse_geometry.test.js</code>: four pure-function regression tests for valid, boundary, invalid and overflowing dimensions/volumes.</li>
+    <li><code>tests/test_static_contract.py</code>: dimension-link contract.</li>
+    <li><code>GREENHOUSE_CONFIGURATION.md</code> and <code>docs/user-guide.md</code>: usage, formulas and limits.</li>
+    <li>This English HTML log and its index. Local browser scripts and screenshots are in the ignored runtime directory.</li>
+  </ul>
+  <h2>Read-only review</h2>
+  <p>One independent read-only reviewer inspected the implementation, tests and documentation after the initial change. It reported no concrete actionable findings. No follow-up review was needed. After visual inspection, the preview heading was clarified to Settings draft so it does not incorrectly imply that values matching the applied configuration are necessarily unapplied.</p>
+  <h2>Verification</h2>
+  <ul>
+    <li>Before changes, 15 relevant Python tests and all 14 existing JavaScript tests passed.</li>
+    <li>The shared repository check passed: Ruff lint and formatting, Prettier, JavaScript syntax, 70 ordinary Python tests (seven external-model checks deliberately skipped in that command), 18 JavaScript tests and the synthetic weather validation example.</li>
+    <li>All seven opt-in full GreenLight integration tests then passed separately. Together, 77 Python tests passed across the standard and integration runs.</li>
+    <li>An isolated full-model server on port 4174 passed browser interaction checks: length/width entry, explicit copy, independent areas, draft-only edits, Apply, invalid dimensions/heights, reload, incomplete numeric input across language/reset, offline/reconnect, playback and restoring defaults.</li>
+    <li>For a 20 m × 10 m floor, 4 m main height and 5 m mean height, the actual model snapshot reported 200 m² floor area, 800 m³ main volume, 200 m³ top volume and 26 kW total boiler capacity at inherited 130 W/m². The parameter fingerprint changed after Apply.</li>
+    <li>English and Traditional Chinese layouts were checked at 1440 px and 390 px without horizontal overflow or JavaScript page errors. The mobile Chinese screenshot was visually inspected.</li>
+    <li>The user's original port-4173 server was not reset or used for test mutations. A final read-only check confirmed the scientific engine remained available with its original 144 m² default floor area at step zero. The isolated test server was identified by exact command line before cleanup.</li>
+    <li>Git whitespace and worklog-link checks passed. No scientific equations or backend schema were changed.</li>
+  </ul>
+  <h2>Safety and Git</h2>
+  <p>All edits, caches, temporary files, test scripts, screenshots and logs stayed inside Greenlight-simulation. Required scientific imports and the previously authorized Amsterdam/2010.csv were read-only, with Python -B and bytecode disabled. No practice repository or other research material was modified. Existing uncommitted worklogs 001 and 002 were preserved.</p>
+  <p>The existing environments and local free tools were reused. No paid AI API, API key, additional credits, deployment or dependency installation was used. Changes remain local on main; no staging, commit or push was performed.</p>
+  <p><a href="index.html">Work log index</a> · <a href="../GREENHOUSE_CONFIGURATION.md">Configuration reference</a></p>
+</body>
+</html>

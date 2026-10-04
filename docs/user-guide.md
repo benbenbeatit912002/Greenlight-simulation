@@ -5,7 +5,7 @@
 3. Check the model badge. Interface-only mode permits workbook validation but hides simulation results.
 4. For your own weather, download the template, retain its headers and units, upload, and review validation feedback. The bundled records are synthetic examples.
 5. With a configured full model, choose the source year and time convention, then select a valid start/end window. Steps are fixed at 15 minutes; provide full-day context and 12 hours of look-ahead.
-6. Review greenhouse defaults. Apply edits explicitly to initialize a new run; changing a draft field does not alter the current model.
+6. Select **Set greenhouse dimensions** near the top of the page. Enter length and width in the optional rectangular-floor calculator, copy the area to the draft, and review cover area, main/mean height and roof vents. The space preview shows draft main/top/total air volumes. Review the remaining greenhouse defaults. Apply edits explicitly to initialize a new run; changing a draft field does not alter the current model.
 7. Start/pause, choose automatic or manual control, and inspect climate and resource outputs.
 8. Save a baseline and compare a candidate at the same horizon. Incompatible model, weather or configuration identities prevent numerical comparison.
 

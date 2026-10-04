@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Explain manual upload to the existing GitHub repository</title>
+  <style>body{max-width:900px;margin:40px auto;padding:0 24px;font:16px/1.65 system-ui,sans-serif;color:#20352b;background:#fafcfb}a{color:#16654b}</style>
+</head>
+<body>
+  <h1>Explain manual upload to the existing GitHub repository</h1>
+  <p>3 October 2026</p>
+  <h2>User request</h2>
+  <p>The user asked how they can manually upload local Greenlight-simulation changes to GitHub. They requested instructions, not an upload action.</p>
+  <h2>Findings and guidance</h2>
+  <ul>
+    <li>The existing local checkout points to https://github.com/benbenbeatit912002/Greenlight-simulation.git and was previously confirmed on main. The ongoing feature and worklog changes are local until they are committed and pushed.</li>
+    <li>Recommended the visual GitHub Desktop workflow: add the exact existing local repository, confirm the existing origin and main branch, review the Changes list for project files, enter a commit summary, commit locally, then select Push origin. Do not choose Publish Repository because the remote already exists.</li>
+    <li>Before pushing, verify that .venv, .runtime, caches and all protected practice/research files are absent from the Changes list. Never force-push. If a fetch, branch mismatch or conflict prompt appears, pause and review its exact message.</li>
+    <li>Browser-only upload is appropriate for a small number of individual files, but the GitHub website is less suitable than Desktop for an existing multi-file project because a commit and push preserve the repository's normal version history and directory structure.</li>
+  </ul>
+  <h2>Actions and validation</h2>
+  <p>Read the repository instructions and checked the configured remote URL. A scoped Git status/diff query failed with "must be run in a work tree" even though the repository metadata exists, so this response does not claim a fresh working-tree status. Earlier in this task sequence, the checkout was confirmed on main with local changes. No commit, stage, upload, push or application change was made.</p>
+  <p>Consulted official GitHub documentation for <a href="https://docs.github.com/en/desktop/adding-and-cloning-repositories/adding-an-existing-project-to-github-using-github-desktop">adding an existing repository to GitHub Desktop</a> and <a href="https://docs.github.com/en/desktop/making-changes-in-a-branch/pushing-changes-to-github-from-github-desktop">pushing changes</a>.</p>
+  <h2>Files, safety and Git</h2>
+  <p>Created this English HTML log and its index entry. No other project files were changed. No reviewer or tests were needed for this instructions-only task. Work remains local; no external changes were made. Protected repositories and research materials were not accessed.</p>
+  <p><a href="index.html">Work log index</a></p>
+</body>
+</html>

@@ -30,6 +30,7 @@
       showcaseBody:
         "以實測天氣、28-state GreenLight 模型與六項致動器，探索控制策略如何改變溫度、濕度、CO₂、作物與資源使用。",
       exploreControls: "開始探索控制",
+      greenhouseDesign: "設定溫室尺寸",
       howItWorks: "了解運作方式",
       stateVariables: "狀態變數",
       stepDuration: "每個模型步長",
@@ -217,6 +218,7 @@
       showcaseBody:
         "Explore how control strategies change temperature, humidity, CO₂, crop state, and resource use with measured weather, a 28-state GreenLight model, and six actuators.",
       exploreControls: "Explore the controls",
+      greenhouseDesign: "Set greenhouse dimensions",
       howItWorks: "How it works",
       stateVariables: "state variables",
       stepDuration: "per model step",

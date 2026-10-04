@@ -1,13 +1,54 @@
 /* Draft settings are local UI state; only explicit initialization changes a run. */
 (function () {
   "use strict";
+  // Geometry helpers use the same aggregate areas/heights as the full model.
+  // Length and width are calculator inputs, not extra spatial model parameters.
+  function rectangleArea(length, width, bounds = { min: 1, max: 2000 }) {
+    if (![length, width].every((v) => Number.isFinite(v) && v > 0)) return null;
+    const area = length * width;
+    return Number.isFinite(area) && area >= bounds.min && area <= bounds.max ? area : null;
+  }
+  function airVolumes({ floorArea, mainHeight, totalHeight }) {
+    if (
+      ![floorArea, mainHeight, totalHeight].every((v) => Number.isFinite(v) && v > 0) ||
+      totalHeight - mainHeight < 0.1 - 1e-9
+    )
+      return null;
+    const main = floorArea * mainHeight;
+    const top = floorArea * (totalHeight - mainHeight);
+    const total = floorArea * totalHeight;
+    return [main, top, total].every(Number.isFinite) ? { main, top, total } : null;
+  }
+  if (typeof module === "object" && module.exports) module.exports = { rectangleArea, airVolumes };
+  if (typeof document === "undefined") return;
   const panel = document.getElementById("greenhouseSettings");
   const text = {
     en: {
       title: "Step 3 · Greenhouse and initial state",
       intro:
         "Review model defaults or enter overrides. Leave a field blank to inherit its default. Apply settings only when you want to initialize a new run.",
-      geometry: "Geometry",
+      geometry: "Greenhouse dimensions and air volume",
+      sizeCalculator: "Start with length × width",
+      sizeIntro:
+        "For a rectangular floor, enter its length and width in metres. This tool changes only the floor-area draft, not the active simulation.",
+      length: "Floor length (m)",
+      width: "Floor width (m)",
+      sizeButton: "Copy floor area to draft",
+      sizeEmpty: "Enter both dimensions to calculate floor area.",
+      sizeInvalid: "Use positive dimensions with a floor area inside the supported range:",
+      sizeResult: "Calculated floor area",
+      sizeCopied: "This area is in the draft. Review cover/vent areas, then apply settings below.",
+      sizeNotCopied: "Not copied to the draft. Select Copy floor area to draft.",
+      sizeNote:
+        "Length and width are a calculator only and are not saved on reload. GreenLight uses aggregate areas and heights, not a 3D floor plan. Cover and vent areas are never guessed or resized.",
+      spacePreview: "Space preview · settings draft",
+      previewInvalid: "Correct the greenhouse settings to preview air volumes.",
+      floorPreview: "Floor area",
+      mainVolume: "Main-compartment volume",
+      topVolume: "Top-compartment volume",
+      totalVolume: "Total air volume",
+      heightHelp:
+        "Main-compartment height defines the lower air volume. Mean greenhouse height = total air volume ÷ floor area; it is not the roof-ridge height. Total volume = floor area × mean height. Cover area includes the roof and walls; enter your actual design.",
       equipment: "Installed equipment",
       cover: "Cover properties",
       initial: "Initial main-air conditions",
@@ -49,7 +90,27 @@
     zh: {
       title: "第三階段 · 溫室設定與初始狀態",
       intro: "查看模型預設值或輸入自訂值；欄位留空即沿用預設值。按下套用後才會初始化新的模擬。",
-      geometry: "溫室尺寸",
+      geometry: "溫室尺寸與空間",
+      sizeCalculator: "從長 × 寬開始設定",
+      sizeIntro: "矩形地板可直接輸入長、寬（公尺）。換算只填入地板面積草稿，不會立刻改變目前模擬。",
+      length: "地板長度（m）",
+      width: "地板寬度（m）",
+      sizeButton: "將地板面積填入草稿",
+      sizeEmpty: "輸入長、寬後即可計算地板面積。",
+      sizeInvalid: "長、寬須為正數，換算地板面積須在支援範圍內：",
+      sizeResult: "換算地板面積",
+      sizeCopied: "此面積已在草稿中。請確認覆蓋與通風口面積，再按下方套用。",
+      sizeNotCopied: "尚未填入草稿，請按「將地板面積填入草稿」。",
+      sizeNote:
+        "長、寬只是換算工具，重新整理後不保留。GreenLight 使用總面積與高度，不解析三維平面配置；覆蓋與通風口面積不會被猜測或自動縮放。",
+      spacePreview: "空間預覽 · 設定草稿",
+      previewInvalid: "請修正溫室設定後再預覽空氣體積。",
+      floorPreview: "地板面積",
+      mainVolume: "主空氣室體積",
+      topVolume: "頂部空氣室體積",
+      totalVolume: "總空氣體積",
+      heightHelp:
+        "主空氣室高度決定下層空間；溫室平均高度＝總空氣體積 ÷ 地板面積，不是屋脊最高點。總體積＝地板面積 × 平均高度。覆蓋面積包含屋頂與牆面，請填寫你的實際設計。",
       equipment: "已安裝設備",
       cover: "覆蓋材料參數",
       initial: "主空氣室初始條件",
@@ -100,7 +161,11 @@
     status,
     review,
     applyButton,
-    defaultsButton;
+    defaultsButton,
+    sizeButton,
+    sizeStatus,
+    volumePreview;
+  const sizeInputs = new Map();
   const language = () => (document.documentElement.lang.startsWith("zh") ? "zh" : "en");
   const t = (key) => text[language()][key];
   const label = (field) => field[language()];
@@ -188,7 +253,104 @@
     }
     table.append(body);
     review.append(table);
+    refreshGeometry(checked);
     refreshActive();
+  }
+  function sizeArea() {
+    if ([...sizeInputs.values()].some((input) => input.validity.badInput || !input.value.trim()))
+      return null;
+    return rectangleArea(
+      Number(sizeInputs.get("length").value),
+      Number(sizeInputs.get("width").value),
+      config.fields.find((field) => field.key === "floorArea"),
+    );
+  }
+  function refreshGeometry(checked) {
+    if (!sizeButton) return;
+    const area = sizeArea();
+    const empty = [...sizeInputs.values()].every(
+      (input) => !input.value && !input.validity.badInput,
+    );
+    sizeInputs.forEach((input) =>
+      input.setAttribute("aria-invalid", String(!empty && area === null)),
+    );
+    sizeButton.disabled = busy || !available || area === null;
+    const bounds = config.fields.find((field) => field.key === "floorArea");
+    sizeStatus.textContent = empty
+      ? t("sizeEmpty")
+      : area === null
+        ? `${t("sizeInvalid")} ${bounds.min}–${number(bounds.max)} m².`
+        : `${t("sizeResult")}: ${number(area)} m². ${t(Number(raw.floorArea) === area ? "sizeCopied" : "sizeNotCopied")}`;
+    sizeStatus.classList.toggle("run-window-error", !empty && area === null);
+    volumePreview.replaceChildren(node("h3", t("spacePreview")));
+    const volumes = checked.error ? null : airVolumes(checked.values);
+    if (!volumes) {
+      volumePreview.append(node("p", t("previewInvalid")));
+      return;
+    }
+    const list = node("dl");
+    list.className = "greenhouse-volume-grid";
+    for (const [key, value, unit] of [
+      ["floorPreview", checked.values.floorArea, "m²"],
+      ["mainVolume", volumes.main, "m³"],
+      ["topVolume", volumes.top, "m³"],
+      ["totalVolume", volumes.total, "m³"],
+    ]) {
+      const item = node("div");
+      const valueNode = node("dd", `${number(value)} ${unit}`);
+      valueNode.id = `gh-preview-${key}`;
+      item.append(node("dt", t(key)), valueNode);
+      list.append(item);
+    }
+    volumePreview.append(list);
+  }
+  function buildSizeCalculator() {
+    const calculator = node("section");
+    calculator.className = "greenhouse-size-calculator";
+    calculator.setAttribute("aria-labelledby", "greenhouseSizeTitle");
+    const title = node("h3", t("sizeCalculator"));
+    title.id = "greenhouseSizeTitle";
+    calculator.append(title, node("p", t("sizeIntro")));
+    const grid = node("div");
+    grid.className = "run-window-grid";
+    for (const key of ["length", "width"]) {
+      let input = sizeInputs.get(key);
+      if (!input) {
+        input = node("input");
+        input.id = `gh-size-${key}`;
+        input.type = "number";
+        input.min = "0";
+        input.step = "any";
+        input.addEventListener("input", () => refresh());
+        sizeInputs.set(key, input);
+      }
+      input.setAttribute("aria-describedby", "greenhouseSizeStatus greenhouseSizeNote");
+      const wrapper = node("label", t(key));
+      wrapper.htmlFor = input.id;
+      wrapper.append(input);
+      grid.append(wrapper);
+    }
+    calculator.append(grid);
+    sizeStatus = node("p");
+    sizeStatus.id = "greenhouseSizeStatus";
+    sizeStatus.setAttribute("role", "status");
+    sizeButton = node("button", t("sizeButton"));
+    sizeButton.id = "greenhouseCopyArea";
+    sizeButton.type = "button";
+    sizeButton.className = "showcase-secondary";
+    sizeButton.addEventListener("click", () => {
+      const area = sizeArea();
+      if (area === null || busy || !available) return;
+      raw.floorArea = String(area);
+      fields.get("floorArea").value = raw.floorArea;
+      dirty = true;
+      message = "";
+      refresh();
+    });
+    const note = node("p", t("sizeNote"));
+    note.id = "greenhouseSizeNote";
+    calculator.append(sizeStatus, sizeButton, note);
+    return calculator;
   }
   function refreshActive() {
     const active = document.getElementById("greenhouseActive"),
@@ -223,8 +385,9 @@
     for (const group of ["geometry", "equipment", "cover", "initial", "crop"]) {
       const details = node("details");
       details.dataset.group = group;
-      details.open = openGroups.has(group);
+      details.open = openGroups.has(group) || (previousFields.size === 0 && group === "geometry");
       details.append(node("summary", t(group)));
+      if (group === "geometry") details.append(buildSizeCalculator());
       const grid = node("div");
       grid.className = "run-window-grid";
       for (const field of config.fields.filter((f) => f.group === group)) {
@@ -259,6 +422,12 @@
         grid.append(wrapper);
       }
       details.append(grid);
+      if (group === "geometry") {
+        details.append(node("p", t("heightHelp")));
+        volumePreview = node("section");
+        volumePreview.id = "greenhouseVolumePreview";
+        details.append(volumePreview);
+      }
       form.append(details);
     }
     panel.append(form, node("p", t("assumptions")), node("p", t("initialNote")));
@@ -286,6 +455,9 @@
       dirty = true;
       message = "";
       fields.forEach((input) => {
+        input.value = "";
+      });
+      sizeInputs.forEach((input) => {
         input.value = "";
       });
       refresh();

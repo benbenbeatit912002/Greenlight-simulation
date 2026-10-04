@@ -6,6 +6,7 @@ import math
 import os
 import threading
 import unittest
+from copy import deepcopy
 from typing import Any
 from unittest.mock import patch
 
@@ -379,6 +380,135 @@ class GreenLightIntegrationTests(unittest.TestCase):
                 default["configurationFingerprint"],
                 baseline["configurationFingerprint"],
             )
+        finally:
+            adapter.close()
+
+    def test_blank_overrides_restore_defaults_after_custom_run(self):
+        adapter = GreenLightGymAdapter()
+        empty = {"schemaVersion": 1, "overrides": {}}
+        try:
+            baseline = adapter.reset({"scenario": "spring", "seed": 42, "greenhouseConfig": empty})
+            base_p = adapter.core.p.copy()
+            initial_x = adapter.core.x.copy()
+            changed = adapter.reset(
+                {
+                    "greenhouseConfig": {
+                        "schemaVersion": 1,
+                        "overrides": {
+                            "floorArea": 200,
+                            "coverArea": 480,
+                            "mainHeight": 4,
+                            "totalHeight": 5,
+                            "initialAirTemp": 22,
+                            "initialRh": 70,
+                            "initialCo2": 800,
+                        },
+                    }
+                }
+            )
+            self.assertEqual(changed["indoor"]["airTemp"], 22)
+            self.assertEqual(changed["indoor"]["rh"], 70)
+            self.assertEqual(changed["indoor"]["co2"], 800)
+            adapter.step({"steps": 3, "mode": "auto"})
+            # Sending only RH models clearing all other fields in the form.
+            partial = adapter.reset(
+                {"greenhouseConfig": {"schemaVersion": 1, "overrides": {"initialRh": 70}}}
+            )
+            self.assertTrue(adapter._np.array_equal(adapter.core.p, base_p))
+            self.assertEqual(partial["greenhouse"]["floorAreaM2"], 144)
+            self.assertEqual(partial["indoor"]["airTemp"], baseline["indoor"]["airTemp"])
+            self.assertEqual(partial["indoor"]["co2"], baseline["indoor"]["co2"])
+            self.assertEqual(partial["indoor"]["rh"], 70)
+            for index in range(28):
+                if index != 15:
+                    self.assertEqual(adapter.core.x[index], initial_x[index])
+            # Omitting the entire config differs from explicitly blank fields:
+            # a normal reset preserves the applied RH override.
+            preserved = adapter.reset({})
+            self.assertEqual(preserved["greenhouse"]["request"]["overrides"], {"initialRh": 70})
+            restored = adapter.reset({"greenhouseConfig": empty})
+            self.assertTrue(adapter._np.array_equal(adapter.core.p, base_p))
+            self.assertTrue(adapter._np.array_equal(adapter.core.x, initial_x))
+            self.assertEqual(
+                restored["configurationFingerprint"], baseline["configurationFingerprint"]
+            )
+            self.assertEqual(restored["modelStep"], 0)
+            self.assertEqual(len(restored["history"]), 1)
+            self.assertTrue(all(value == 0 for value in restored["resources"].values()))
+        finally:
+            adapter.close()
+
+    def test_applied_dimensions_remain_consistent_over_one_simulated_day(self):
+        adapter = GreenLightGymAdapter()
+        try:
+            for overrides in (
+                {},
+                {
+                    "floorArea": 200,
+                    "coverArea": 480,
+                    "mainHeight": 4,
+                    "totalHeight": 5,
+                    "initialAirTemp": 22,
+                    "initialRh": 70,
+                    "initialCo2": 800,
+                },
+            ):
+                with self.subTest(overrides=overrides):
+                    initial = adapter.reset(
+                        {
+                            "scenario": "spring",
+                            "seed": 42,
+                            "greenhouseConfig": {"schemaVersion": 1, "overrides": overrides},
+                        }
+                    )
+                    geometry = deepcopy(initial["greenhouse"])
+                    for key, index in (
+                        ("floorArea", 46),
+                        ("coverArea", 47),
+                        ("mainHeight", 48),
+                        ("totalHeight", 49),
+                    ):
+                        self.assertAlmostEqual(
+                            adapter.core.p[index],
+                            overrides.get(key, geometry["defaults"][key]),
+                        )
+                    applied_p = adapter.core.p.copy()
+                    floor = geometry["floorAreaM2"]
+                    values = geometry["effective"]
+                    self.assertAlmostEqual(
+                        geometry["mainAirVolumeM3"], floor * values["mainHeight"]
+                    )
+                    self.assertAlmostEqual(
+                        geometry["topAirVolumeM3"],
+                        floor * (values["totalHeight"] - values["mainHeight"]),
+                    )
+                    previous_resources = initial["resources"]
+                    for expected_step in range(1, 97):
+                        result = adapter.step({"steps": 1, "mode": "auto"})
+                        self.assertEqual(result["modelStep"], expected_step)
+                        self.assertFalse(result["episode"]["truncated"])
+                        self.assertTrue(adapter._np.isfinite(adapter.core.x).all())
+                        self.assertTrue(adapter._np.array_equal(adapter.core.p, applied_p))
+                        assert_finite_numbers(self, result)
+                        self.assertEqual(
+                            result["configurationFingerprint"], initial["configurationFingerprint"]
+                        )
+                        self.assertEqual(result["greenhouse"], geometry)
+                        for value in result["controls"].values():
+                            self.assertGreaterEqual(value, 0)
+                            self.assertLessEqual(value, 1)
+                        for key in ("rh", "co2", "insideRadiation", "canopyAbsorbedPar"):
+                            self.assertGreaterEqual(result["indoor"][key], 0)
+                        self.assertTrue((adapter.core.x[23:26] >= 0).all())
+                        for key, value in result["resources"].items():
+                            self.assertGreaterEqual(value, previous_resources[key])
+                            self.assertAlmostEqual(
+                                result["wholeGreenhouseResources"][key],
+                                value * floor,
+                                delta=floor * 0.0005 + 0.0006,
+                            )
+                        previous_resources = result["resources"]
+                    self.assertEqual(result["elapsedMinutes"], 1440)
         finally:
             adapter.close()
 

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test applied greenhouse state and blank-field defaults</title>
+  <style>body{max-width:1000px;margin:40px auto;padding:0 24px;font:16px/1.65 system-ui,sans-serif;color:#20352b;background:#fafcfb}a{color:#16654b}code{overflow-wrap:anywhere}table{border-collapse:collapse;width:100%}th,td{border:1px solid #cedbd2;padding:8px;text-align:left} .table-scroll{overflow-x:auto}li{margin-bottom:8px}</style>
+</head>
+<body>
+  <h1>Test applied greenhouse state and blank-field defaults</h1>
+  <p>3 October 2026</p>
+  <h2>Request and conclusion</h2>
+  <p>The user requested testing after Apply to check whether the greenhouse state is reasonable and asked whether empty inputs use defaults. Verified that Apply uses the requested parameters/states and empty greenhouse fields inherit model defaults, not zero. Numerical and software checks passed. However, day-long simulations crossed existing climate warning thresholds: these results do not establish suitable growing conditions, calibrated predictions or robust automatic control.</p>
+  <h2>Default behavior verified in the browser and model</h2>
+  <ul>
+    <li>All 22 fields blank produces an empty override dictionary and reproduces the default parameter/state identity for the same weather and seed.</li>
+    <li>After applying custom settings, clearing only initial air temperature restores the default temperature while preserving still-filled RH, CO₂ and geometry overrides.</li>
+    <li>Clearing other fields and retaining only RH restores the full default parameter vector and every initial state except vapor pressure, verified against the live model arrays.</li>
+    <li>The ordinary top Reset command omits a new configuration and preserves applied overrides. This differs from clearing form inputs and explicitly applying the resulting sparse configuration.</li>
+    <li>Use model defaults changes the draft only; Apply initializes the default run. Successful initialization resets step/resource counters and history. Reload retains applied settings.</li>
+    <li>Length/width remain optional calculator inputs. Blank calculator values do not set the model floor area to zero.</li>
+    <li>Defaults can conflict with an override: 300 m² floor area with the inherited 216.6 m² cover is rejected. Browser Apply is disabled, a forced API reset returns 400, and the healthy prior run is preserved.</li>
+    <li>Current built-in default examples: 144 m² floor, approximately 216.6 m² cover, 5.7 m main height, 6.2 m mean height, 16.5°C initial main air and 90% initial RH. The initial RH already exceeds the dashboard's 85% warning threshold. Defaults are inherited model assumptions, not guarantees of ideal conditions.</li>
+  </ul>
+  <h2>Applied state and day-long observations</h2>
+  <p>Custom test configuration: 200 m² floor, 480 m² cover, 4 m main height, 5 m mean height, 22°C initial air, 70% initial RH and 800 ppm initial CO₂. Other parameters remained inherited. Apply produced 800 m³ main air, 200 m³ top air and the requested initial climate. The test configuration is not a calibrated construction design.</p>
+  <p>Six runs used the authorized recorded Amsterdam weather presets, automatic control and seed 42, with 96 fixed 15-minute steps each. Ranges below include the initial sample plus all 96 step endpoints. An alert sample means at least one existing dashboard warning; it is not a separate integration failure.</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Preset</th><th>Settings</th><th>Air temperature °C</th><th>RH %</th><th>CO₂ ppm</th><th>Alert samples / 97</th></tr></thead>
+    <tbody>
+      <tr><td>Spring</td><td>Defaults</td><td>9.39–23.65</td><td>73.32–95.23</td><td>398–1146</td><td>29</td></tr>
+      <tr><td>Spring</td><td>Custom</td><td>14.39–22.00</td><td>70.00–98.14</td><td>465–1244</td><td>23</td></tr>
+      <tr><td>Summer</td><td>Defaults</td><td>14.07–35.35</td><td>55.58–94.61</td><td>408–1079</td><td>24</td></tr>
+      <tr><td>Summer</td><td>Custom</td><td>13.78–35.24</td><td>58.04–98.68</td><td>390–1251</td><td>32</td></tr>
+      <tr><td>Winter</td><td>Defaults</td><td>13.85–21.91</td><td>72.60–95.39</td><td>432–1151</td><td>33</td></tr>
+      <tr><td>Winter</td><td>Custom</td><td>12.50–22.00</td><td>69.52–98.01</td><td>669–1241</td><td>19</td></tr>
+    </tbody>
+  </table></div>
+  <p>No HTTP/model-step failures or nonfinite reported climate values occurred in those six runs. Additional direct integration tests checked finite 28-state vectors, nonnegative crop dry masses and concentrations, bounded actuators, monotonic cumulative resources, whole-house/per-area accounting and unchanged live parameters over a day.</p>
+  <p>A separate trace located the default spring minimum at step 51 (765 elapsed minutes): 9.39°C indoor air, 5.5°C outdoor forcing, 0.9415 heating command and 0.8873 ventilation command. This establishes that warnings cannot all be attributed to startup. It is an observation, not proof of a specific controller defect. Existing dashboard limits flag temperature below 15°C/above 34°C and RH above 85%. Controller behavior, equipment assumptions and initialization warrant a separate diagnostic/tuning task; numerical correctness is not agronomic validation.</p>
+  <h2>Changes and review</h2>
+  <p>Added two persistent tests in <code>tests/test_greenlight_integration.py</code>: blank/partial override restoration after a custom run, and live parameter/state/resource consistency over 24 simulated hours. No production UI, model, controller or parameter defaults were changed in this request. Prior uncommitted UI changes were preserved.</p>
+  <p>One read-only reviewer identified that comparing cached configuration fingerprints and a shared metadata dictionary alone could miss live parameter drift. Accepted: deep-copied expected metadata, asserted requested geometry against actual <code>core.p</code>, copied the applied vector and compared it after each step. The single follow-up found no further issues. No additional review rounds were used.</p>
+  <h2>Validation and runtime safety</h2>
+  <ul>
+    <li>79 Python tests passed with full-model integration enabled and no skips, including the two new regression tests.</li>
+    <li>18 JavaScript tests passed. Ruff lint and formatting checks passed for the changed test file.</li>
+    <li>Headless browser checks passed for blank/partial/default inputs, explicit Apply, exact restored configuration identity, invalid geometry preservation, reset counters and reload, without JavaScript page errors.</li>
+    <li>All test mutations used an isolated server on port 4174 or independent model instances. Port 4173 was only read; its original active run was not reset. Only verified test-process command lines were eligible for cleanup.</li>
+    <li>All test scripts, temporary files, logs and caches stayed in Greenlight-simulation. Model imports used Python -B with bytecode disabled; only authorized source and Amsterdam/2010.csv were read externally. Neither practice repository was modified.</li>
+    <li>The local browser exercise remains in the ignored runtime directory. This English report and worklog index are the only documentation changes in this request. No dependencies or paid services were added.</li>
+  </ul>
+  <h2>Git and next step</h2>
+  <p>Changes remain local on main alongside preserved earlier work. No staging, commit, push or deployment was performed. Recommended next work: investigate automatic-controller behavior and initialization under these recorded warning cases before making stronger claims about climate suitability. Do not hide warnings or alter measured/reporting values merely to make tests look better.</p>
+  <p><a href="index.html">Work log index</a></p>
+</body>
+</html>

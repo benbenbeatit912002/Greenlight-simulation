@@ -112,6 +112,9 @@ class StaticContractTests(unittest.TestCase):
         ):
             self.assertIn(element_id, self.parser.ids)
 
+        self.assertIn('href="#greenhouseSettings"', self.html)
+        self.assertIn('data-i18n="greenhouseDesign"', self.html)
+
         self.assertIn('aria-haspopup="dialog"', self.html)
         self.assertIn('aria-describedby="tourIntro"', self.html)
         model_card = self.parser.elements["tourModelCard"]
