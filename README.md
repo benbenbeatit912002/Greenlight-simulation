@@ -36,8 +36,12 @@ To run actual simulations, install the `greenlight` extra and explicitly set `GR
 - Use English or Traditional Chinese controls and explanations.
 - Validate an Excel weather workbook, select source-clock simulation dates and review supported ranges.
 - Configure supported greenhouse dimensions, equipment and initial conditions.
-- Run the full model with automatic or manual controls at fixed 15-minute steps.
-- Compare compatible baseline/candidate runs at matching horizons.
+- Run the full model with automatic, manual or scheduled open-loop controls at fixed 15-minute steps.
+- Edit a daily six-actuator schedule and inspect planned/applied equipment timelines.
+- Compare compatible runs at matching horizons using whole-run climate, heating energy and time-outside-limit metrics.
+- Try three attributed NASA POWER weather workbooks for Amsterdam, Almería and Taipei. See [public weather examples and limitations](docs/public-weather-examples.md).
+
+See the [scheduled control guide and research references](docs/controller-schedules.md) for the baseline-comparison workflow. The included schedule is a teaching example, not an optimized or safe growing strategy.
 
 Each server process owns one shared simulation. For independent work, different users run separate local instances. This release is not a hosted multi-user service or production greenhouse controller.
 

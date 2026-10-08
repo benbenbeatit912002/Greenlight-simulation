@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scheduled controls, full-model comparison and public weather tests</title>
+    <style>
+      body{font:16px/1.6 system-ui,sans-serif;max-width:1050px;margin:40px auto;padding:0 24px;color:#172f29;background:#f4f8f5}h1,h2{line-height:1.25}section{background:white;border:1px solid #d4e0d9;border-radius:12px;padding:22px;margin:20px 0}a{color:#08674e}code{overflow-wrap:anywhere}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:10px;border-bottom:1px solid #d4e0d9}.scroll{overflow:auto}.note{border-left:4px solid #be8500;padding-left:16px}li{margin:8px 0}
+    </style>
+  </head>
+  <body>
+    <a href="index.html">All work logs</a>
+    <h1>Scheduled controls, full-model comparison and public weather tests</h1>
+    <p><time datetime="2026-10-08">8 October 2026</time> · Research and implementation · Local branch: <code>codex/scheduled-control-comparison</code></p>
+    <section>
+      <h2>User request</h2>
+      <p>Find primary research on greenhouse open-loop control; clarify upstream GreenLight/GreenLight-Gym2 support; explain changes before implementation; build an editable schedule and equipment timeline; compare against automatic control under identical conditions; obtain public weather examples and test full-model numerical robustness.</p>
+      <p>The implementation plan was explained before code changes. Work was confined to Greenlight-simulation using its explicit path, as authorized despite the app's different workspace root. Protected source was imported read-only with Python <code>-B</code> and <code>PYTHONDONTWRITEBYTECODE=1</code>. Only the previously authorized Amsterdam/2010.csv was used from protected data. No protected files were modified and all generated artifacts, caches and logs stayed within the simulation project.</p>
+    </section>
+    <section>
+      <h2>Research and design decisions</h2>
+      <ul>
+        <li><a href="https://doi.org/10.17660/ActaHortic.2008.801.72">Van Henten and Bontsema (2008), Open-loop optimal temperature control in greenhouses</a> establishes a relevant greenhouse heating-profile reference. Its optimized strategy and model are not implemented or claimed to validate this dashboard.</li>
+        <li><a href="https://doi.org/10.1016/B978-0-08-041273-3.50010-0">Optimal control of greenhouse climate (1991)</a> supplies earlier optimal-control context and cautions about weather/model error.</li>
+        <li>GreenLight-Gym2 already accepts external actuator actions and includes rule-based control. The inspected components did not include a ready daily schedule editor. GreenLight also includes prescribed constant-control examples (including a separate Van Henten 2003 model). Therefore, upstream open-loop execution is possible; this work supplies the scheduling UI/integration and evaluation workflow.</li>
+        <li>All six devices are explicitly scheduled. Commands hold until the next source-clock row and repeat daily; the first row is 00:00 and boundaries align to the fixed 15-minute model step. Thermal and blackout values mean percent closed.</li>
+        <li>Applying a schedule initializes a new run. Draft edits do not alter the active schedule. The existing automatic controller and scientific physics were retained; no approximation, optimizer, hidden safety override or regional calibration was introduced.</li>
+        <li>Fair comparisons require matching full-model identity, effective weather, greenhouse/initial state, scoring limits, resource accounting and duration. Whole-run metrics use duration-weighted end-of-step samples; exposure has 15-minute resolution and includes initialization transients.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Files and behavior changed</h2>
+      <ul>
+        <li><code>backend/control_schedule.py</code> and <code>backend/climate_metrics.py</code>: strict schedule validation, piecewise-constant daily commands, cumulative means/extrema and temperature/RH/union exposure.</li>
+        <li><code>backend/application.py</code>, <code>greenlight_adapter.py</code>, <code>model_defaults.py</code>: reset/step integration, transactional schedule state, actual/requested command history, strategy-change detection and versioned snapshots.</li>
+        <li><code>frontend/control-plan.js</code>, <code>controller-panel.js</code>, <code>app.js</code>, <code>translations.js</code>, <code>index.html</code>, <code>styles.css</code>: bilingual editor, draft/applied timelines, applied-limit readout, guarded whole-run comparison, exact-duration playback and connection recovery.</li>
+        <li><code>backend/server.py</code>: exact public allowlisting for new scripts, guides and example downloads. Runtime/source files remain private.</li>
+        <li><code>examples/fetch_public_weather.py</code>, <code>scripts/check_controller_weather.py</code>: bounded public data download, documented conversion and opt-in numerical experiments.</li>
+        <li>Three <code>templates/weather-*.xlsx</code> files with provenance sidecars were created using the spreadsheet skill's bundled artifact runtime. Workbook previews were visually checked and the saved files passed the real upload validator. The original template and research weather were not overwritten.</li>
+        <li>Tests cover schedule boundaries, midnight, applied commands, malformed inputs, reset rollback, cumulative metrics, comparison provenance, reset-error classification, published weather and static-asset privacy.</li>
+        <li><code>README.md</code>, <code>docs/user-guide.md</code>, <code>docs/api.md</code>, <a href="../docs/controller-schedules.md">controller guide</a> and <a href="../docs/public-weather-examples.md">public weather guide</a> document operation, references and limitations.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Public weather and numerical results</h2>
+      <p><a href="https://power.larc.nasa.gov/docs/services/api/temporal/hourly/">NASA POWER</a> hourly gridded data was obtained for Amsterdam winter, Almería summer and Taipei summer, with no API key or paid service. Each workbook contains 1,153 five-minute-format records over 96 hours. Source year is 2023 and the convention is fixed local standard time. Hourly values are held between source hours; missing values are rejected rather than invented.</p>
+      <p>Sky temperature is derived from downward longwave radiation; outdoor CO₂ is assumed to be 400 ppm; wind remains at NASA's 2 m reference height. Soil temperature retains upstream <code>soilTempNl</code>, a material limitation for foreign climates. Open-Meteo historical reanalysis and EnergyPlus EPW were researched as alternatives, but not downloaded.</p>
+      <div class="scroll"><table>
+        <thead><tr><th>72-hour case</th><th>Auto / scheduled mean T</th><th>Auto / scheduled heat</th><th>Auto / scheduled outside either limit</th></tr></thead>
+        <tbody>
+          <tr><td>Amsterdam winter</td><td>18.84 / 8.53 °C</td><td>7.936 / 2.886 kWh/m²</td><td>19.25 / 72.00 h</td></tr>
+          <tr><td>Almería summer</td><td>27.73 / 32.54 °C</td><td>0.302 / 2.886 kWh/m²</td><td>43.50 / 65.25 h</td></tr>
+          <tr><td>Taipei summer</td><td>30.41 / 34.18 °C</td><td>0.032 / 2.886 kWh/m²</td><td>53.75 / 68.25 h</td></tr>
+        </tbody>
+      </table></div>
+      <p>Limits: 15–34 °C and 50–85% RH. Default greenhouse, seed 42, 288 steps per run. Each scheduled case was repeated in 48-step batches: indoor outputs, cumulative resources, climate metrics and command history matched one-step execution exactly. All nine runs had finite model states, no solver truncation, bounded controls, monotonic resources and exact endpoint stopping.</p>
+      <p class="note"><strong>These are robustness checks, not predictive validation.</strong> The demonstration schedule is deliberately untuned and performed poorly. Taipei's scheduled temperature reached 44.64 °C; Amsterdam stayed below the chosen range. Automatic control also exceeded limits. Numerical success must not be interpreted as agronomic safety, optimality or regional calibration.</p>
+      <p>Raw downloads, processed records and complete snapshots are retained locally under <code>.runtime/controller-weather/</code>. Published source sidecars contain query URLs, units, provenance and response hashes; runtime output is ignored by Git.</p>
+    </section>
+    <section>
+      <h2>Bounded independent review</h2>
+      <p>A read-only reviewer completed one initial review and one follow-up, with no file writes or additional agents.</p>
+      <ol>
+        <li><strong>Playback cap persisted after comparison:</strong> accepted. The target now clears at completion and when clearing a baseline. Live UI verification confirmed stopping at 480 matched steps, then ordinary playback advancing beyond 480.</li>
+        <li><strong>Controller reset errors bypassed reconnect handling:</strong> accepted. Confirmed non-mutating rejections preserve the active run; uncertain transport/model/revision failures invoke existing recovery. A second local API client advanced the revision; the UI then hid stale values, showed Reconnect, and recovered successfully.</li>
+      </ol>
+      <p>The follow-up confirmed both fixes and reported no additional concrete regressions in the reviewed changes. The primary agent additionally exposed applied scoring limits to distinguish them from editable draft values.</p>
+    </section>
+    <section>
+      <h2>Final validation</h2>
+      <ul>
+        <li><code>python -B scripts/check.py</code>: passed Ruff lint/format, Prettier, JavaScript syntax checks, 79 offline Python tests (89 discovered, 10 opt-in integration tests skipped), 22 JavaScript tests, and synthetic workbook validation.</li>
+        <li><code>RUN_GREENLIGHT_INTEGRATION=1 python -B -m unittest tests.test_greenlight_integration -v</code>: all 10 full-model tests passed, including exact six-command scheduling across midnight.</li>
+        <li><code>python -B scripts/check_controller_weather.py</code>: nine successful 72-hour full-model runs across three public-weather cases.</li>
+        <li>Browser verification: English panel, invalid 06:07 rejection without mutation, automatic baseline/save, schedule initialization, exact matched-duration stop, metrics/timelines, ordinary resume, stale-revision recovery, and visible applied scoring limits. No unexpected browser console errors before the deliberate stale-revision test.</li>
+        <li>All three Excel files passed numeric/schema/coverage validation and visual preview checks. Public downloads are explicitly allowlisted; private runtime files return 404.</li>
+        <li>Local server started with <code>--engine glgym</code> and confirmed <code>greenlight-gym2</code>. The dashboard is left paused on a matched comparison at <a href="http://127.0.0.1:4173/#controllerPlanner">the local simulator</a>.</li>
+      </ul>
+      <p>The computer-use skill guided live UI verification. Screenshot persistence was blocked by the UI tool's filesystem sandbox; no screenshot was written outside the project as a workaround. Visual inspection itself completed.</p>
+    </section>
+    <section>
+      <h2>Git and cost status</h2>
+      <p>The completed change set is being prepared on <code>codex/scheduled-control-comparison</code>. Remote upload verification will be recorded here after it completes. The pre-existing <code>2026-10-08-001-controller-panel-design.html</code> and its index entry were preserved. No paid add-ons, extra credits, OpenAI API keys or usage-billed AI services were used.</p>
+      <p>Remaining limitations: regional calibration and independent predictive validation, optimized/MPC scheduling, non-repeating multi-day schedule editing, full trajectory export/overlay, and field-device safety integration are not provided by this update.</p>
+    </section>
+  </body>
+</html>

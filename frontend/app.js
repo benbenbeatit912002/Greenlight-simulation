@@ -25,8 +25,10 @@
   let resetBusy = false;
   let pendingStep = Promise.resolve();
   let selectedGreenhouseConfig = { schemaVersion: 1, overrides: {} };
+  let controllerPanel = null;
+  let comparisonStopStep = null;
 
-  const BASELINE_STORAGE_KEY = "greenlight-decision-baseline-v2";
+  const BASELINE_STORAGE_KEY = "greenlight-decision-baseline-v3";
   const PROVENANCE_SENTINELS = ["unknown", "unversioned", "local-source"];
 
   const translations = window.GreenlightTranslations;
@@ -76,6 +78,7 @@
     byId("languageToggleTop").setAttribute("aria-label", toggle.getAttribute("aria-label"));
     updateEngineStatus(engineDisplayState, engineDisplayReason);
     updateRunStateCopy();
+    controllerPanel?.translate();
     render(currentSnapshot);
   }
 
@@ -128,7 +131,7 @@
 
   function createRunSummary(snapshot) {
     return {
-      schemaVersion: 2,
+      schemaVersion: 3,
       runId: currentRunId,
       savedAt: new Date().toISOString(),
       modelStep: Number(snapshot.modelStep),
@@ -141,6 +144,10 @@
       costModelId: String(snapshot.costModelId || "unknown"),
       weatherFingerprint: String(snapshot.weatherFingerprint || "unknown"),
       configurationFingerprint: String(snapshot.configurationFingerprint || "unknown"),
+      initialStateFingerprint: String(snapshot.initialStateFingerprint || "unknown"),
+      climateMetrics: snapshot.climateMetrics ? { ...snapshot.climateMetrics } : null,
+      schedule: snapshot.schedule ? JSON.parse(JSON.stringify(snapshot.schedule)) : null,
+      strategyChanged: Boolean(snapshot.strategyChanged),
       targets: { ...snapshot.targets },
       controls: { ...snapshot.controls },
       resources: {
@@ -155,13 +162,28 @@
   }
 
   function isRunSummary(value) {
-    if (!value || value.schemaVersion !== 2 || typeof value.runId !== "string") return false;
-    if (typeof value.scenario !== "string" || !["auto", "manual"].includes(value.mode))
+    if (!value || value.schemaVersion !== 3 || typeof value.runId !== "string") return false;
+    if (typeof value.scenario !== "string" || !["auto", "manual", "schedule"].includes(value.mode))
       return false;
     if (!["browser", "greenlight2"].includes(value.engine)) return false;
     if (typeof value.modelVersion !== "string" || !value.modelVersion) return false;
     if (typeof value.costModelId !== "string" || !value.costModelId) return false;
     if (typeof value.weatherFingerprint !== "string" || !value.weatherFingerprint) return false;
+    if (!value.climateMetrics || typeof value.climateMetrics.limitsFingerprint !== "string")
+      return false;
+    if (
+      ![
+        "meanTemperature",
+        "meanHumidity",
+        "minTemperature",
+        "maxTemperature",
+        "temperatureOutsideMinutes",
+        "humidityOutsideMinutes",
+        "eitherOutsideMinutes",
+        "evaluatedMinutes",
+      ].every((key) => Number.isFinite(value.climateMetrics[key]))
+    )
+      return false;
     const numericValues = [
       value.modelStep,
       value.elapsedMinutes,
@@ -215,7 +237,13 @@
   function comparisonRunMeta(summary) {
     return formatTranslation("comparisonMeta", {
       step: String(summary.modelStep).padStart(4, "0"),
-      mode: t(summary.mode === "manual" ? "manualControl" : "autoControl"),
+      mode: t(
+        summary.mode === "schedule"
+          ? "scheduledControl"
+          : summary.mode === "manual"
+            ? "manualControl"
+            : "autoControl",
+      ),
       engine: comparisonEngineLabel(summary.engine),
       version: displayModelVersion(summary.modelVersion),
     });
@@ -251,6 +279,8 @@
   }
 
   function comparisonStrategy(summary) {
+    if (summary.mode === "schedule")
+      return `${t("scheduledControl")} · ${summary.schedule?.entries.map((row) => row.time).join(", ") || "—"}`;
     if (summary.mode === "manual") {
       return formatTranslation("comparisonManualStrategy", {
         boil: Math.round(summary.controls.uBoil * 100),
@@ -309,6 +339,7 @@
   }
 
   function renderComparison(snapshot) {
+    controllerPanel?.render(snapshot, baselineRun, createRunSummary(snapshot));
     const saveButton = byId("saveBaselineButton");
     const clearButton = byId("clearBaselineButton");
     const empty = byId("comparisonEmpty");
@@ -342,15 +373,17 @@
 
     const status = byId("comparisonStatus");
     const sameEngine = baselineRun.engine === candidate.engine;
-    const sameWeatherEvidence =
-      baselineRun.scenario !== candidate.scenario ||
-      baselineRun.weatherFingerprint === candidate.weatherFingerprint;
+    const sameWeatherEvidence = baselineRun.weatherFingerprint === candidate.weatherFingerprint;
     const sameModel =
       hasComparableProvenance(baselineRun) &&
       hasComparableProvenance(candidate) &&
       baselineRun.modelVersion === candidate.modelVersion &&
       baselineRun.costModelId === candidate.costModelId &&
       baselineRun.configurationFingerprint === candidate.configurationFingerprint &&
+      baselineRun.initialStateFingerprint === candidate.initialStateFingerprint &&
+      !["conditions", "limits", "strategy"].includes(
+        window.GreenlightControlPlan.comparisonIssue(baselineRun, candidate),
+      ) &&
       sameWeatherEvidence;
     const sameRun = baselineRun.runId === candidate.runId;
     const sameHorizon = baselineRun.modelStep === candidate.modelStep && candidate.modelStep > 0;
@@ -599,12 +632,13 @@
     return response.snapshot;
   }
 
-  async function resetActiveEngine(greenhouseConfig = selectedGreenhouseConfig) {
+  async function resetActiveEngine(greenhouseConfig = selectedGreenhouseConfig, strategy = {}) {
     if (activeEngine !== "greenlight2" || !currentSnapshot) throw new Error(t("offlineModelNote"));
     if (resetBusy) throw new Error(t("simulationInitializing"));
     resetBusy = true;
     window.GreenlightSettings.setBusy(true);
     setRunning(false);
+    comparisonStopStep = null;
     try {
       await pendingStep;
       if (activeEngine !== "greenlight2" || !currentSnapshot)
@@ -619,6 +653,10 @@
         targets: readTargets(),
         expectedRevision: remoteRevision,
         greenhouseConfig,
+        ...(currentSnapshot.schedule ? { schedule: currentSnapshot.schedule } : {}),
+        evaluationLimits:
+          currentSnapshot.climateMetrics?.limits || window.GreenlightControlPlan.limits,
+        ...strategy,
       });
       remoteRevision = response.revision;
       requireScientificResponse(response);
@@ -637,6 +675,7 @@
     activeEngine = "unavailable";
     remoteRevision = null;
     currentSnapshot = null;
+    controllerPanel?.render(null, baselineRun, null);
     window.GreenlightSettings.unavailable();
     byId("runProgressPanel").hidden = true;
     root.classList.add("model-unavailable");
@@ -725,7 +764,7 @@
       const name = input.dataset.control;
       const percent = Math.round(snapshot.controls[name] * 100);
       input.value = String(percent);
-      input.disabled = snapshot.mode === "auto";
+      input.disabled = snapshot.mode !== "manual";
       input.style.setProperty("--range-value", `${percent}%`);
       setText(`${name}Output`, `${percent}%`);
     });
@@ -735,7 +774,14 @@
     });
 
     byId("targetSection").classList.toggle("hidden", snapshot.mode !== "auto");
-    setText("actuatorModeHint", snapshot.mode === "auto" ? t("autoAdjusting") : t("dragSliders"));
+    setText(
+      "actuatorModeHint",
+      snapshot.mode === "schedule"
+        ? t("scheduleActiveHint")
+        : snapshot.mode === "auto"
+          ? t("autoAdjusting")
+          : t("dragSliders"),
+    );
   }
 
   function updateAlert(snapshot) {
@@ -855,7 +901,14 @@
     if (!isRunning || remoteBusy || resetBusy) return;
     remoteBusy = true;
     try {
-      const stepRequest = stepActiveEngine(speed);
+      const remaining =
+        comparisonStopStep === null ? speed : comparisonStopStep - currentSnapshot.modelStep;
+      if (remaining <= 0) {
+        comparisonStopStep = null;
+        setRunning(false);
+        return;
+      }
+      const stepRequest = stepActiveEngine(Math.min(speed, remaining));
       // Settlement-only barrier: a past rejected step cannot poison later resets.
       pendingStep = stepRequest.then(
         () => undefined,
@@ -863,6 +916,10 @@
       );
       render(await stepRequest);
       if (currentSnapshot.episode?.terminated) setRunning(false);
+      if (comparisonStopStep !== null && currentSnapshot.modelStep >= comparisonStopStep) {
+        comparisonStopStep = null;
+        setRunning(false);
+      }
     } catch (error) {
       setRunning(false);
       showModelUnavailable(error instanceof Error ? error.message : String(error));
@@ -980,7 +1037,10 @@
     byId("retryModelButton").addEventListener("click", () => probeBackend(true));
     byId("playButton").addEventListener("click", () => setRunning(!isRunning));
     byId("saveBaselineButton").addEventListener("click", saveBaseline);
-    byId("clearBaselineButton").addEventListener("click", clearBaseline);
+    byId("clearBaselineButton").addEventListener("click", () => {
+      comparisonStopStep = null;
+      clearBaseline();
+    });
     byId("showcaseStartButton").addEventListener("click", focusSimulatorControls);
     byId("tourButton").addEventListener("click", openProjectDialog);
     byId("tourCloseButton").addEventListener("click", closeProjectDialog);
@@ -1090,8 +1150,19 @@
 
     modeButtons.forEach((button) => {
       button.addEventListener("click", () => {
+        if (button.dataset.mode === "schedule") {
+          byId("controllerPlanner").scrollIntoView({ block: "start" });
+          byId("applyScheduleButton").focus({ preventScroll: true });
+          return;
+        }
         if (!currentSnapshot) return;
-        render({ ...currentSnapshot, mode: button.dataset.mode });
+        render({
+          ...currentSnapshot,
+          mode: button.dataset.mode,
+          strategyChanged:
+            currentSnapshot.strategyChanged ||
+            (currentSnapshot.modelStep > 0 && currentSnapshot.mode !== button.dataset.mode),
+        });
       });
     });
 
@@ -1108,6 +1179,9 @@
         render({
           ...currentSnapshot,
           targets: { ...currentSnapshot.targets, [targetName]: value },
+          strategyChanged:
+            currentSnapshot.strategyChanged ||
+            (currentSnapshot.modelStep > 0 && currentSnapshot.targets[targetName] !== value),
         });
       });
     });
@@ -1131,6 +1205,33 @@
     });
   }
 
+  controllerPanel = window.GreenlightControllerPanel.create({
+    byId,
+    t,
+    initialize: async (strategy) => {
+      if (resetBusy) throw new Error(t("simulationInitializing"));
+      try {
+        render(await resetActiveEngine(selectedGreenhouseConfig, strategy));
+      } catch (error) {
+        if (!window.GreenlightControlPlan.isNonMutatingRejection(error)) showResetFailure(error);
+        throw error;
+      }
+    },
+    replay: () => {
+      if (
+        !baselineRun ||
+        !currentSnapshot ||
+        window.GreenlightControlPlan.comparisonIssue(
+          baselineRun,
+          createRunSummary(currentSnapshot),
+          { ignoreHorizon: true },
+        )
+      )
+        return;
+      comparisonStopStep = baselineRun.modelStep;
+      setRunning(true);
+    },
+  });
   restoreBaselineRun();
   applyLanguage();
   bindEvents();

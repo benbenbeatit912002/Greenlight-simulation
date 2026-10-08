@@ -2,6 +2,68 @@
   "use strict";
   const translations = {
     zh: {
+      controllerPlannerTitle: "控制排程與結果比較",
+      appliedEvaluationLimits: "目前運算使用的評估界限",
+      controllerGuide: "控制操作教學與論文",
+      publicWeatherGuide: "公開氣候資料：來源、年份與假設",
+      publicWeatherExamples: "下載公開氣候範例（.xlsx）",
+      publicWeatherInstructions:
+        "下載後在氣候面板上傳，選擇來源年份 2023 與來源當地標準時間。範例為 NASA POWER 每小時數據轉成五分鐘格式，不是五分鐘現地量測。",
+      scheduleIntro:
+        "設定每日設備命令。套用會重新初始化完整模型；範例是操作示範，並非最佳化栽培策略。",
+      scheduleEditorTitle: "每日開迴路排程",
+      scheduleClockNote:
+        "時間使用氣候資料來源時鐘，每日重複，以 15 分鐘為間隔。每列命令持續到下一列；六項設備均依排程運作，不使用室內溫度回授。",
+      screenClosureNote:
+        "幕布數值為關閉比例：0% 全開、100% 全關。加熱百分比是設備命令，不是溫度設定。",
+      scheduleTime: "時間",
+      scheduleActions: "操作",
+      addScheduleRow: "新增時間區段",
+      removeScheduleRow: "移除",
+      evaluationLimitsTitle: "比較用氣候界限",
+      temperatureMinimum: "最低溫度",
+      temperatureMaximum: "最高溫度",
+      humidityMinimum: "最低相對濕度",
+      humidityMaximum: "最高相對濕度",
+      evaluationLimitsNote:
+        "此界限僅用於評估結果，不控制設備。初始化後保持固定；超限時間以每步結束的狀態計算，解析度為 15 分鐘。",
+      automaticBaselineButton: "初始化自動控制基準",
+      applyScheduleButton: "套用排程並初始化",
+      runToBaselineButton: "執行至已儲存的基準時長",
+      controllerWorkflow:
+        "先初始化自動控制、執行並在下方儲存基準，再套用排程並執行至基準時長。氣候、溫室設定、初始狀態和評估界限必須相同。",
+      scheduleTimelineTitle: "草稿每日設備命令",
+      appliedTimelineTitle: "實際套用命令・最近 24 小時",
+      climateComparisonTitle: "整次模擬氣候比較",
+      comparisonMetric: "指標",
+      comparisonBaselineLabel: "已儲存基準",
+      comparisonCandidateLabel: "目前模擬",
+      comparisonDifference: "目前 − 基準",
+      scheduledControl: "排程控制",
+      scheduleValuesError: "請填寫所有設備欄位，數值須為 0 至 100 的整數。",
+      scheduleLimitsError: "請填寫有效的氣候界限，且下限須小於上限。",
+      timelineNoSteps: "尚無模型運算步驟。",
+      scheduleDraftReady: "排程草稿有效。套用後才會改變模型控制。",
+      scheduleApplied: "排程已套用並初始化。請開始模擬或執行至基準時長。",
+      automaticInitialized: "自動控制已初始化。請開始模擬，再儲存基準。",
+      scheduleDayFull: "請調整現有列的時間，騰出當日新增區段。",
+      elapsedTime: "已模擬時間",
+      activeController: "作用中的控制器",
+      meanTemperature: "平均室溫",
+      minTemperature: "最低室溫",
+      maxTemperature: "最高室溫",
+      meanHumidity: "平均相對濕度",
+      temperatureOutside: "溫度超限時間",
+      humidityOutside: "濕度超限時間",
+      eitherOutside: "溫度或濕度超限時間",
+      scheduleCompare_missing: "執行並儲存基準，然後初始化另一個控制方案。",
+      scheduleCompare_conditions: "氣候、模型、溫室設定或初始狀態不同，無法比較。",
+      scheduleCompare_limits: "比較界限或指標版本不同，請重新儲存相同界限的基準。",
+      scheduleCompare_strategy: "此模擬中途更改了模式或自動控制目標。請重新初始化以比較固定策略。",
+      scheduleCompare_sameRun: "基準已儲存。請初始化排程以建立獨立的候選模擬。",
+      scheduleCompare_horizon: "請執行至基準的相同步數，才能顯示比較結果。",
+      scheduleCompareReady: "條件與時長相同。較少能源用量仍需連同氣候超限時間一起評估。",
+      scheduleActiveHint: "依已套用排程控制；上方編輯器可設定下一次模擬。",
       documentTitle: "GreenLight 2 溫室模擬器",
       metaDescription: "直接使用 GreenLight 2 科學 Python 後端的互動溫室氣候與控制模擬器。",
       brandSubtitle: "溫室模擬器",
@@ -189,6 +251,78 @@
       outdoorSeries: "室外",
     },
     en: {
+      controllerPlannerTitle: "Controller schedules and comparison",
+      appliedEvaluationLimits: "Applied evaluation limits",
+      controllerGuide: "Controller guide and papers",
+      publicWeatherGuide: "Public weather: source, year and assumptions",
+      publicWeatherExamples: "Download public weather examples (.xlsx)",
+      publicWeatherInstructions:
+        "Upload a file below using the weather panel. Select source year 2023 and source-local-standard. These are NASA POWER hourly values resampled to five minutes, not five-minute site observations.",
+      scheduleIntro:
+        "Set daily actuator commands. Apply starts a new full-model run. The example is a demonstration, not an optimized growing strategy.",
+      scheduleEditorTitle: "Daily open-loop schedule",
+      scheduleClockNote:
+        "Times follow the weather source clock, repeat daily, and align to 15-minute steps. Commands hold until the next row. All six devices follow this schedule without indoor-temperature feedback.",
+      screenClosureNote:
+        "Screen values mean closure: 0% fully open; 100% fully closed. Heating is a command percentage, not a temperature.",
+      scheduleTime: "Time",
+      scheduleActions: "Actions",
+      addScheduleRow: "Add time block",
+      removeScheduleRow: "Remove",
+      evaluationLimitsTitle: "Comparison limits",
+      temperatureMinimum: "Minimum temperature",
+      temperatureMaximum: "Maximum temperature",
+      humidityMinimum: "Minimum RH",
+      humidityMaximum: "Maximum RH",
+      evaluationLimitsNote:
+        "These limits score results; they do not control equipment. They are fixed when you initialize a run. Exposure uses end-of-step samples at 15-minute resolution.",
+      automaticBaselineButton: "Initialize automatic baseline",
+      applyScheduleButton: "Apply schedule and initialize",
+      runToBaselineButton: "Run to saved baseline duration",
+      controllerWorkflow:
+        "Initialize automatic control, run and save a baseline below. Then apply your schedule and run to the saved baseline duration. Weather, greenhouse settings, initial state and comparison limits must match.",
+      scheduleTimelineTitle: "Draft daily commands",
+      appliedTimelineTitle: "Applied commands · latest 24 hours",
+      climateComparisonTitle: "Whole-run climate comparison",
+      comparisonMetric: "Metric",
+      comparisonBaselineLabel: "Saved baseline",
+      comparisonCandidateLabel: "Current run",
+      comparisonDifference: "Candidate − baseline",
+      scheduledControl: "Scheduled control",
+      scheduleValuesError: "Fill every actuator field with a whole number from 0 to 100.",
+      scheduleLimitsError: "Enter valid climate limits, with each minimum below its maximum.",
+      timelineNoSteps: "No model steps have been run yet.",
+      scheduleDraftReady: "Valid draft. Apply it to change model control.",
+      scheduleApplied:
+        "Schedule applied and initialized. Start simulation or run to the baseline duration.",
+      automaticInitialized:
+        "Automatic control initialized. Start simulation, then save the baseline.",
+      scheduleDayFull: "Adjust existing row times to make room for another block today.",
+      elapsedTime: "Elapsed simulation time",
+      activeController: "Active controller",
+      meanTemperature: "Mean indoor temperature",
+      minTemperature: "Minimum indoor temperature",
+      maxTemperature: "Maximum indoor temperature",
+      meanHumidity: "Mean relative humidity",
+      temperatureOutside: "Temperature outside limits",
+      humidityOutside: "Humidity outside limits",
+      eitherOutside: "Either climate variable outside limits",
+      scheduleCompare_missing:
+        "Run and save a baseline, then initialize a different control strategy.",
+      scheduleCompare_conditions:
+        "Weather, model, greenhouse settings or initial state differ. Comparison is blocked.",
+      scheduleCompare_limits:
+        "Comparison limits or metric versions differ. Save a new baseline with matching limits.",
+      scheduleCompare_strategy:
+        "Control mode or automatic targets changed during a run. Reinitialize to compare fixed strategies.",
+      scheduleCompare_sameRun:
+        "Baseline saved. Initialize the schedule to create a separate candidate run.",
+      scheduleCompare_horizon:
+        "Run to the same number of steps as the baseline to see the comparison.",
+      scheduleCompareReady:
+        "Conditions and duration match. Evaluate energy use together with climate exposure.",
+      scheduleActiveHint:
+        "Following the applied schedule; use the editor above to configure the next run.",
       documentTitle: "GreenLight 2 Greenhouse Simulator",
       metaDescription:
         "Interactive GreenLight 2 greenhouse climate and control simulator using the scientific Python model.",

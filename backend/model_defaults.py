@@ -74,4 +74,4 @@ RULE_BASED_DEFAULTS = {
 }
 
 
-ADAPTER_VERSION = "2026.09-run-local-greenhouse"
+ADAPTER_VERSION = "2026.10-scheduled-control"

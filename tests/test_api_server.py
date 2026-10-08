@@ -7,6 +7,7 @@ import unittest
 from typing import Any, Mapping
 
 from backend.server import create_server
+from backend.weather_upload import XLSX_MIME
 
 
 class FakeEngine:
@@ -75,7 +76,7 @@ class ApiServerTests(unittest.TestCase):
         *,
         raw_body: bytes | None = None,
         content_type: str = "application/json",
-    ) -> tuple[int, dict[str, Any] | str, Mapping[str, str]]:
+    ) -> tuple[int, dict[str, Any] | str | bytes, Mapping[str, str]]:
         connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=3)
         headers: dict[str, str] = {}
         body = raw_body
@@ -91,6 +92,8 @@ class ApiServerTests(unittest.TestCase):
         connection.close()
         if response_headers.get("content-type", "").startswith("application/json"):
             return response.status, json.loads(data), response_headers
+        if response_headers.get("content-type", "").startswith(XLSX_MIME):
+            return response.status, data, response_headers
         return response.status, data.decode("utf-8"), response_headers
 
     def test_static_index_is_served(self) -> None:
@@ -107,6 +110,13 @@ class ApiServerTests(unittest.TestCase):
             "/frontend/climate-upload.js",
             "/frontend/greenhouse-settings.js",
             "/frontend/run-window.js",
+            "/frontend/control-plan.js",
+            "/frontend/controller-panel.js",
+            "/templates/weather-amsterdam-winter.xlsx",
+            "/templates/weather-almeria-summer.xlsx",
+            "/templates/weather-taipei-summer.xlsx",
+            "/docs/controller-schedules.md",
+            "/docs/public-weather-examples.md",
         ):
             with self.subTest(path=path):
                 status, body, _ = self.request("GET", path)
@@ -116,6 +126,8 @@ class ApiServerTests(unittest.TestCase):
             "/backend/application.py",
             "/node_modules/prettier/package.json",
             "/frontend/",
+            "/.runtime/controller-weather/full-model-results.json",
+            "/templates/not-public.xlsx",
         ):
             with self.subTest(path=path):
                 self.assertEqual(self.request("GET", path)[0], 404)

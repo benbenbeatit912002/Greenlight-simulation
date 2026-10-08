@@ -8,6 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+from backend.climate_metrics import DEFAULT_LIMITS, ClimateMetrics
 from backend.greenlight_adapter import (
     GreenLightGymAdapter,
     PreservedRunResetError,
@@ -47,6 +48,12 @@ def fake_adapter():
         "_uploaded_prepared": None,
         "_pending_previous_environment": None,
         "_default_weather_repository": object(),
+        "schedule": None,
+        "evaluation_limits": dict(DEFAULT_LIMITS),
+        "climate_metrics": ClimateMetrics(DEFAULT_LIMITS),
+        "control_history": [],
+        "strategy_changed": False,
+        "_previous_strategy": None,
     }
     for name, value in values.items():
         setattr(adapter, name, value)

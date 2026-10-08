@@ -10,6 +10,7 @@ from copy import deepcopy
 from typing import Any
 from unittest.mock import patch
 
+from backend.control_schedule import scheduled_controls
 from backend.greenhouse_config import FIELDS
 from backend.greenlight_adapter import GreenLightGymAdapter, _array_fingerprint
 from backend.server import ApiError, SimulatorApplication, create_server
@@ -44,6 +45,30 @@ def assert_finite_numbers(test: unittest.TestCase, value: Any, path: str = "snap
     "set RUN_GREENLIGHT_INTEGRATION=1 to construct the CasADi model",
 )
 class GreenLightIntegrationTests(unittest.TestCase):
+    def test_scheduled_controls_follow_each_physical_step_and_midnight(self):
+        from scripts.check_controller_weather import schedule
+
+        plan = schedule()
+        adapter = GreenLightGymAdapter()
+        try:
+            adapter.reset({"scenario": "spring", "mode": "schedule", "schedule": plan})
+            for step in range(1, 101):
+                result = adapter.step({"steps": 1, "mode": "schedule"})
+                last = result["controlHistory"][-1]
+                self.assertEqual(last["elapsedMinutes"], (step - 1) * 15)
+                expected = scheduled_controls(plan, ((step - 1) * 15) % 1440)
+                for name, command in expected.items():
+                    self.assertAlmostEqual(last["requested"][name], command, places=6)
+                    self.assertAlmostEqual(last["applied"][name], command, places=6)
+                self.assertEqual(result["climateMetrics"]["samples"], step)
+                self.assertFalse(result["strategyChanged"])
+            self.assertEqual(len(result["controlHistory"]), 96)
+            self.assertEqual(result["climateMetrics"]["evaluatedMinutes"], 1500)
+            changed = adapter.step({"steps": 1, "mode": "auto"})
+            self.assertTrue(changed["strategyChanged"])
+        finally:
+            adapter.close()
+
     def test_real_model_reset_and_absolute_control_step(self) -> None:
         adapter = GreenLightGymAdapter()
         try:

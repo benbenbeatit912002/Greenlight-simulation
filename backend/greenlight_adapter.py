@@ -7,9 +7,12 @@ import math
 import os
 import sys
 import uuid
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from backend.climate_metrics import DEFAULT_LIMITS, ClimateMetrics, validate_limits
+from backend.control_schedule import fingerprint, scheduled_controls, validate_schedule
 from backend.greenhouse_config import (
     apply_initial_state,
     apply_parameters,
@@ -180,6 +183,12 @@ class GreenLightGymAdapter:
         self.run_window: dict[str, Any] | None = None
         self._uploaded_prepared: Mapping[str, Any] | None = None
         self.mode = "auto"
+        self.schedule = None
+        self.evaluation_limits = dict(DEFAULT_LIMITS)
+        self.climate_metrics = ClimateMetrics(self.evaluation_limits)
+        self.control_history = []
+        self.strategy_changed = False
+        self._previous_strategy = None
         self.targets = dict(DEFAULT_TARGETS)
         self.scenario_key = "spring"
         self.history: list[dict[str, float]] = []
@@ -313,8 +322,15 @@ class GreenLightGymAdapter:
             config = validate_config(request.get("greenhouseConfig", self.greenhouse_config))
             effective_parameters = apply_parameters(self.core.base_p, config)
             self.mode = str(request.get("mode", self.mode))
-            if self.mode not in {"auto", "manual"}:
-                raise ValueError("mode must be 'auto' or 'manual'")
+            if self.mode not in {"auto", "manual", "schedule"}:
+                raise ValueError("mode must be auto, manual or schedule")
+            if "schedule" in request:
+                self.schedule = validate_schedule(request["schedule"])
+            if self.mode == "schedule" and self.schedule is None:
+                raise ValueError("Apply a schedule when initializing scheduled control.")
+            self.evaluation_limits = validate_limits(
+                request.get("evaluationLimits", self.evaluation_limits)
+            )
 
             scenario = self._select_reset_scenario(request)
             seed = int(request.get("seed", 42))
@@ -387,6 +403,12 @@ class GreenLightGymAdapter:
             "last_info": dict(self.last_info),
             "run_window": self.run_window,
             "uploaded_prepared": self._uploaded_prepared,
+            "schedule": deepcopy(self.schedule),
+            "evaluation_limits": dict(self.evaluation_limits),
+            "climate_metrics": self.climate_metrics,
+            "control_history": list(self.control_history),
+            "strategy_changed": self.strategy_changed,
+            "_previous_strategy": self._previous_strategy,
         }
         return previous_state
 
@@ -536,6 +558,10 @@ class GreenLightGymAdapter:
             "costEur": 0.0,
         }
         self.history = []
+        self.control_history = []
+        self.climate_metrics = ClimateMetrics(self.evaluation_limits)
+        self.strategy_changed = False
+        self._previous_strategy = None
         self.terminated = False
         self.truncated = False
         self.last_reward = 0.0
@@ -569,6 +595,12 @@ class GreenLightGymAdapter:
             "initial_state_fingerprint",
             "configuration_fingerprint",
             "model_identifier",
+            "schedule",
+            "evaluation_limits",
+            "climate_metrics",
+            "control_history",
+            "strategy_changed",
+            "_previous_strategy",
         ):
             setattr(self, name, previous_state[name])
 
@@ -578,8 +610,10 @@ class GreenLightGymAdapter:
             raise ValueError("steps must be between 1 and 192")
 
         mode = str(request.get("mode", self.mode))
-        if mode not in {"auto", "manual"}:
-            raise ValueError("mode must be 'auto' or 'manual'")
+        if mode not in {"auto", "manual", "schedule"}:
+            raise ValueError("mode must be auto, manual or schedule")
+        if mode == "schedule" and self.schedule is None:
+            raise ValueError("Apply a schedule and initialize before running scheduled control.")
         self.mode = mode
         self._apply_targets(request.get("targets"))
 
@@ -593,9 +627,15 @@ class GreenLightGymAdapter:
 
             if self.mode == "auto":
                 action = self._controller_action()
+            elif self.mode == "schedule":
+                action = self._manual_action(
+                    scheduled_controls(self.schedule, int(round(float(self.core.hour_of_day) * 60)))
+                )
             else:
                 action = self._manual_action(manual_controls)
 
+            command_minute = int(round(float(self.core.hour_of_day) * 60)) % 1440
+            command_start = int(self.core.timestep * self.step_minutes)
             self.obs, reward, terminated, truncated, info = self.env.step(action)
             self.terminated = bool(terminated)
             if self.run_window and self.core.timestep >= self.run_window["totalSteps"]:
@@ -610,9 +650,34 @@ class GreenLightGymAdapter:
             self.last_reward = float(reward)
             self.last_info = dict(info)
             self._accumulate_resources(action, info)
+            self._record_control_step(action, command_minute, command_start)
             self._record_history()
 
         return self.snapshot()
+
+    def _record_control_step(self, action, minute, elapsed):
+        climate = self._np.asarray(self.obs["IndoorClimateObservations"], dtype=self._np.float64)
+        self.climate_metrics.record(float(climate[1]), float(climate[2]), self.step_minutes)
+        strategy = fingerprint(
+            {
+                "mode": self.mode,
+                "targets": self.targets if self.mode == "auto" else None,
+                "schedule": self.schedule if self.mode == "schedule" else None,
+            }
+        )
+        if self._previous_strategy is not None and self._previous_strategy != strategy:
+            self.strategy_changed = True
+        self._previous_strategy = strategy
+        self.control_history.append(
+            {
+                "elapsedMinutes": elapsed,
+                "minuteOfDay": minute,
+                "mode": self.mode,
+                "requested": {key: float(action[i]) for i, key in enumerate(CONTROL_NAMES)},
+                "applied": {key: float(self.core.u[i]) for i, key in enumerate(CONTROL_NAMES)},
+            }
+        )
+        self.control_history = self.control_history[-96:]
 
     def _apply_targets(self, targets: Any) -> None:
         if targets is None:
@@ -777,6 +842,11 @@ class GreenLightGymAdapter:
             "hour": hour,
             "minuteOfDay": minute_of_day,
             "mode": self.mode,
+            "schedule": deepcopy(self.schedule),
+            "scheduleFingerprint": fingerprint(self.schedule) if self.schedule else None,
+            "climateMetrics": self.climate_metrics.snapshot(),
+            "controlHistory": deepcopy(self.control_history),
+            "strategyChanged": self.strategy_changed,
             "scenario": self.scenario_key,
             "scenarioLabel": scenario["label"],
             "weatherId": self.weather_id,

@@ -1,0 +1,67 @@
+{
+  "provider": "NASA POWER",
+  "url": "https://power.larc.nasa.gov/api/temporal/hourly/point?parameters=ALLSKY_SFC_SW_DWN%2CALLSKY_SFC_LW_DWN%2CT2M%2CRH2M%2CWS2M%2CCLOUD_AMT&community=AG&latitude=25.03&longitude=121.57&start=20230714&end=20230719&format=JSON&time-standard=UTC",
+  "retrievedAt": "2026-10-08T12:48:47.221416+00:00",
+  "rawSha256": "3b3cbdf98e88eacf7493de081ed96467590d424873be7f9bb191cd08e10becbf",
+  "site": {
+    "latitude": 25.03,
+    "longitude": 121.57,
+    "start": "2023-07-15",
+    "utcOffsetHours": 8
+  },
+  "sourceYear": 2023,
+  "timeConvention": "source-local-standard",
+  "sourceCadenceMinutes": 60,
+  "outputCadenceMinutes": 5,
+  "conversion": "Hourly values held on 5-minute grid; no gap filling or extrapolation. Fixed standard offset, no DST.",
+  "radiationConversion": "NASA MJ/hr to W/m²: multiply by 1e6/3600.",
+  "skyTemperature": "Effective sky temperature derived from downward longwave irradiance using Stefan-Boltzmann law, emissivity convention 1.",
+  "co2Ppm": 400,
+  "co2Assumption": "Fixed example assumption, not a NASA measurement.",
+  "wind": "NASA wind at 2 m; no height correction.",
+  "soilTemperature": "The current simulator retains upstream soilTempNl; this is not a calibrated local soil model.",
+  "unusedColumn": "?? retains NASA cloud fraction; the simulator does not consume it.",
+  "dataType": "Gridded satellite/reanalysis product, not a greenhouse-site station observation.",
+  "sourceHeader": {
+    "title": "NASA/POWER Source Native Resolution Hourly Data",
+    "api": {
+      "version": "v2.10.2",
+      "name": "POWER Hourly API"
+    },
+    "sources": [
+      "MERRA2",
+      "SYN1DEG",
+      "POWER"
+    ],
+    "fill_value": -999,
+    "time_standard": "UTC",
+    "start": "20230714",
+    "end": "20230719"
+  },
+  "sourceUnits": {
+    "ALLSKY_SFC_SW_DWN": {
+      "units": "MJ/hr",
+      "longname": "All Sky Surface Shortwave Downward Irradiance"
+    },
+    "ALLSKY_SFC_LW_DWN": {
+      "units": "MJ/hr",
+      "longname": "All Sky Surface Longwave Downward Irradiance"
+    },
+    "T2M": {
+      "units": "C",
+      "longname": "Temperature at 2 Meters"
+    },
+    "RH2M": {
+      "units": "%",
+      "longname": "Relative Humidity at 2 Meters"
+    },
+    "WS2M": {
+      "units": "m/s",
+      "longname": "Wind Speed at 2 Meters"
+    },
+    "CLOUD_AMT": {
+      "units": "%",
+      "longname": "Cloud Amount"
+    }
+  }
+}

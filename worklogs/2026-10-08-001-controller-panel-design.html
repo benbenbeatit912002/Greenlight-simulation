@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Plan adjustable rule-based and scheduled greenhouse controls</title>
+    <style>
+      body { max-width: 900px; margin: 40px auto; padding: 0 24px; font: 16px/1.65 system-ui, sans-serif; color: #20352b; background: #fafcfb; }
+      a { color: #16654b; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 10px; border: 1px solid #ccdcd3; text-align: left; }
+    </style>
+  </head>
+  <body>
+    <h1>Plan adjustable rule-based and scheduled greenhouse controls</h1>
+    <p><time datetime="2026-10-08">8 October 2026</time></p>
+    <h2>User request</h2>
+    <p>Assess adding editable rule-based and open-loop controller panels, including time-dependent heating commands and opening or closing thermal and blackout screens. This request asks for design advice.</p>
+    <h2>Verified current capabilities</h2>
+    <p>The simulator already exposes automatic and manual modes. Its scientific adapter imports the upstream RuleBasedController, supplies greenhouse and weather state, and uses its actions in the full model. The automatic panel exposes day/night temperature, carbon dioxide and maximum humidity targets. Manual sliders supply all six normalized actuator commands, including uBoil, uThScr and uBlScr. The inspected API and adapter accept only auto and manual; no scheduled mode was found there.</p>
+    <h2>Recommended design and assumptions</h2>
+    <ul>
+      <li>Retain manual control, expand the existing rule-based settings, and introduce a scheduled open-loop mode. Start with heating, thermal-screen and blackout-screen schedules.</li>
+      <li>Distinguish a scheduled actuator command, such as 60 percent heating, from a scheduled temperature target, such as 20 degrees Celsius. The latter needs feedback and remains closed-loop control.</li>
+      <li>Keep thermal and blackout screens separate. Label their schedules as screen closure, with 0 percent fully open and 100 percent fully closed, and verify that mapping against the connected model during implementation.</li>
+      <li>Provide a daily schedule editor, an actuator timeline and an explicit initial value for each scheduled channel. Hold each value until the next event. Make the treatment of unscheduled channels visible; automatic control of those channels makes the overall strategy hybrid.</li>
+      <li>Use the weather source's simulation clock, validate daily wraparound and align events with the current 15-minute physical control interval. Playback speed must not change when model actions take effect.</li>
+      <li>Apply actions through the scientific adapter so climate and crop responses come from the full model. Preserve existing weather coverage and exact end-time validation.</li>
+      <li>Compare strategies from identical weather, greenhouse configuration, initial state and run duration. Show climate trajectories, actuator histories, heat use and time outside selected temperature or humidity limits. Do not claim energy savings before running a valid comparison.</li>
+      <li>For a first release, require an explicit Apply action and log any mid-run strategy changes. Keep saved schedules and applied commands in run metadata for reproducibility.</li>
+    </ul>
+    <h2>Actions and files changed</h2>
+    <p>Read AGENTS.md and inspected README.md, docs/user-guide.md, backend/model_defaults.py, backend/greenlight_adapter.py, backend/application.py, frontend/app.js and the controller markup in index.html. Consulted the upstream repository documentation. Created this English HTML entry and updated worklogs/index.html. No simulator code, controller parameters, research files or model inputs were changed.</p>
+    <h2>Review and validation</h2>
+    <p>A reviewer was skipped because this is an advice-only task with documentation changes. Application tests and full-model simulations were not run; no new controller has been implemented or validated. The work-log entry and its index link were checked. Two scoped Git status attempts reported that the operation must be run in a work tree, so current Git cleanliness and synchronization were not verified. No staging, commit, fetch or push was performed.</p>
+    <h2>Source</h2>
+    <p><a href="https://github.com/BartvLaatum/GreenLight-Gym2">GreenLight-Gym2 upstream documentation</a> describes its rule-based greenhouse controller and supported actuators.</p>
+    <p><a href="index.html">Work log index</a></p>
+  </body>
+</html>

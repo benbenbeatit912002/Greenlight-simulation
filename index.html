@@ -23,7 +23,9 @@
     <script defer src="frontend/greenhouse-settings.js?v=20261003-dimensions"></script>
     <script defer src="frontend/charts.js"></script>
     <script defer src="frontend/translations.js"></script>
-    <script defer src="frontend/app.js?v=20260915-greenhouse"></script>
+    <script defer src="frontend/control-plan.js?v=20261008"></script>
+    <script defer src="frontend/controller-panel.js?v=20261008"></script>
+    <script defer src="frontend/app.js?v=20261008-controllers"></script>
     <script defer src="frontend/climate-upload.js?v=20260915-greenhouse"></script>
   </head>
   <body>
@@ -320,6 +322,208 @@
         id="greenhouseSettings"
         aria-label="Greenhouse configuration"
       ></section>
+
+      <section
+        class="weather-import controller-planner"
+        id="controllerPlanner"
+        aria-labelledby="controllerPlannerTitle"
+      >
+        <h2 id="controllerPlannerTitle" data-i18n="controllerPlannerTitle">
+          Controller schedules and comparison
+        </h2>
+        <p data-i18n="scheduleIntro">
+          Set daily actuator commands. Apply starts a new full-model run. The example is a
+          demonstration, not an optimized growing strategy.
+        </p>
+        <p id="activeControllerText" role="status"></p>
+        <p id="appliedComparisonLimits"></p>
+        <p class="controller-reference-links">
+          <a
+            href="docs/controller-schedules.md"
+            target="_blank"
+            rel="noopener"
+            data-i18n="controllerGuide"
+            >Controller guide and papers</a
+          >
+          ·
+          <a
+            href="docs/public-weather-examples.md"
+            target="_blank"
+            rel="noopener"
+            data-i18n="publicWeatherGuide"
+            >Public weather: source, year and assumptions</a
+          >
+        </p>
+        <details>
+          <summary data-i18n="publicWeatherExamples">
+            Download public weather examples (.xlsx)
+          </summary>
+          <p data-i18n="publicWeatherInstructions">
+            Upload a file below using the weather panel. Select source year 2023 and
+            source-local-standard. These are NASA POWER hourly values resampled to five minutes, not
+            five-minute site observations.
+          </p>
+          <p class="controller-reference-links">
+            <a href="templates/weather-amsterdam-winter.xlsx" download>Amsterdam · January 2023</a>
+            · <a href="templates/weather-almeria-summer.xlsx" download>Almería · July 2023</a> ·
+            <a href="templates/weather-taipei-summer.xlsx" download>Taipei · July 2023</a>
+          </p>
+        </details>
+        <details open>
+          <summary data-i18n="scheduleEditorTitle">Daily schedule editor</summary>
+          <p data-i18n="scheduleClockNote">
+            Times follow the weather source clock, repeat daily, and align to 15-minute steps.
+            Commands hold until the next row. All six devices follow this schedule without
+            temperature feedback.
+          </p>
+          <p data-i18n="screenClosureNote">
+            Screen values mean closure: 0% fully open; 100% fully closed. Heating is a command
+            percentage, not a temperature.
+          </p>
+          <div
+            class="schedule-table-scroll"
+            tabindex="0"
+            data-i18n-aria-label="scheduleEditorTitle"
+          >
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th scope="col" data-i18n="scheduleTime">Time</th>
+                  <th scope="col"><span data-i18n="boilerHeating">Heating</span> (%)</th>
+                  <th scope="col"><span data-i18n="thermalScreen">Thermal screen</span> (%)</th>
+                  <th scope="col"><span data-i18n="blackoutScreen">Blackout screen</span> (%)</th>
+                  <th scope="col"><span data-i18n="roofVentilation">Ventilation</span> (%)</th>
+                  <th scope="col"><span data-i18n="co2Injection">CO₂</span> (%)</th>
+                  <th scope="col"><span data-i18n="supplementalLighting">Lighting</span> (%)</th>
+                  <th scope="col" data-i18n="scheduleActions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleRows"></tbody>
+            </table>
+          </div>
+          <button
+            type="button"
+            class="showcase-secondary"
+            id="addScheduleRow"
+            data-i18n="addScheduleRow"
+          >
+            Add time block
+          </button>
+          <p id="scheduleMessage" role="status" aria-live="polite"></p>
+        </details>
+        <fieldset class="evaluation-limits">
+          <legend data-i18n="evaluationLimitsTitle">Comparison limits</legend>
+          <label for="limittemperatureMin"
+            ><span data-i18n="temperatureMinimum">Minimum temperature</span> (°C)<input
+              id="limittemperatureMin"
+              type="number"
+              min="-50"
+              max="70"
+              step="0.5"
+              value="15"
+              required
+          /></label>
+          <label for="limittemperatureMax"
+            ><span data-i18n="temperatureMaximum">Maximum temperature</span> (°C)<input
+              id="limittemperatureMax"
+              type="number"
+              min="-50"
+              max="70"
+              step="0.5"
+              value="34"
+              required
+          /></label>
+          <label for="limithumidityMin"
+            ><span data-i18n="humidityMinimum">Minimum RH</span> (%)<input
+              id="limithumidityMin"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              value="50"
+              required
+          /></label>
+          <label for="limithumidityMax"
+            ><span data-i18n="humidityMaximum">Maximum RH</span> (%)<input
+              id="limithumidityMax"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              value="85"
+              required
+          /></label>
+        </fieldset>
+        <p data-i18n="evaluationLimitsNote">
+          These limits score results; they do not control equipment. They are fixed when you
+          initialize a run. Exposure uses end-of-step samples at 15-minute resolution.
+        </p>
+        <div class="schedule-actions">
+          <button
+            type="button"
+            class="showcase-secondary"
+            id="automaticBaselineButton"
+            data-i18n="automaticBaselineButton"
+            disabled
+          >
+            Initialize automatic baseline
+          </button>
+          <button
+            type="button"
+            class="showcase-primary"
+            id="applyScheduleButton"
+            data-i18n="applyScheduleButton"
+            disabled
+          >
+            Apply schedule and initialize
+          </button>
+          <button
+            type="button"
+            class="showcase-secondary"
+            id="runToBaselineButton"
+            data-i18n="runToBaselineButton"
+            disabled
+          >
+            Run to saved baseline duration
+          </button>
+        </div>
+        <p data-i18n="controllerWorkflow">
+          Initialize automatic control, run and save a baseline below. Then apply your schedule and
+          run to the saved baseline duration. Weather, greenhouse settings, initial state and
+          comparison limits must match.
+        </p>
+        <div class="equipment-columns">
+          <section>
+            <h3 data-i18n="scheduleTimelineTitle">Draft daily commands</h3>
+            <p class="timeline-scale">00:00 · 06:00 · 12:00 · 18:00 · 24:00</p>
+            <div id="scheduleTimeline"></div>
+          </section>
+          <section>
+            <h3 data-i18n="appliedTimelineTitle">Applied commands · latest 24 hours</h3>
+            <p id="appliedTimelineClock" class="timeline-scale"></p>
+            <div id="appliedTimeline"></div>
+          </section>
+        </div>
+        <h3 data-i18n="climateComparisonTitle">Whole-run climate comparison</h3>
+        <p id="controllerCompareNote" role="status"></p>
+        <div
+          class="schedule-table-scroll"
+          tabindex="0"
+          data-i18n-aria-label="climateComparisonTitle"
+        >
+          <table class="schedule-table climate-comparison-table">
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="comparisonMetric">Metric</th>
+                <th scope="col" data-i18n="comparisonBaselineLabel">Saved baseline</th>
+                <th scope="col" data-i18n="comparisonCandidateLabel">Current run</th>
+                <th scope="col" data-i18n="comparisonDifference">Candidate − baseline</th>
+              </tr>
+            </thead>
+            <tbody id="climateComparisonRows"></tbody>
+          </table>
+        </div>
+      </section>
 
       <main class="dashboard">
         <section
@@ -970,6 +1174,9 @@
                 <path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-6h6m2 8h6" />
               </svg>
               <span data-i18n="manualControl">手動控制</span>
+            </button>
+            <button type="button" data-mode="schedule" aria-pressed="false">
+              <span data-i18n="scheduledControl">Scheduled control</span>
             </button>
           </div>
 

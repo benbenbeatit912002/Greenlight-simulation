@@ -6,6 +6,8 @@ import threading
 import uuid
 from typing import Any, Mapping
 
+from .climate_metrics import validate_limits
+from .control_schedule import validate_schedule
 from .greenhouse_config import validate_config
 from .greenlight_adapter import PreservedRunResetError
 from .model_defaults import CONTROL_NAMES, DEFAULT_TARGETS, SCENARIOS
@@ -140,6 +142,8 @@ class SimulatorApplication:
             "weatherId",
             "runWindow",
             "greenhouseConfig",
+            "schedule",
+            "evaluationLimits",
         }
         self._reject_unknown(payload, allowed)
         self._validate_reset(payload)
@@ -291,6 +295,19 @@ class SimulatorApplication:
                 )
 
     def _validate_reset(self, payload: Mapping[str, Any]) -> None:
+        for key, validator in (
+            ("schedule", validate_schedule),
+            ("evaluationLimits", validate_limits),
+        ):
+            if key in payload:
+                try:
+                    validator(payload[key])
+                except ValueError as exc:
+                    raise ApiError(400, "INVALID_REQUEST", str(exc), key) from exc
+        if payload.get("mode") == "schedule" and "schedule" not in payload:
+            raise ApiError(
+                400, "INVALID_REQUEST", "Scheduled mode requires a schedule.", "schedule"
+            )
         if "greenhouseConfig" in payload:
             try:
                 validate_config(payload["greenhouseConfig"])
@@ -321,8 +338,8 @@ class SimulatorApplication:
                 "runWindow",
             )
         mode = payload.get("mode")
-        if mode is not None and mode not in {"auto", "manual"}:
-            raise ApiError(400, "INVALID_REQUEST", "mode must be auto or manual", "mode")
+        if mode is not None and mode not in {"auto", "manual", "schedule"}:
+            raise ApiError(400, "INVALID_REQUEST", "mode must be auto, manual or schedule", "mode")
         seed = payload.get("seed")
         if seed is not None and (isinstance(seed, bool) or not isinstance(seed, int)):
             raise ApiError(400, "INVALID_REQUEST", "seed must be an integer", "seed")
@@ -338,8 +355,8 @@ class SimulatorApplication:
                 "steps",
             )
         mode = payload.get("mode")
-        if mode is not None and mode not in {"auto", "manual"}:
-            raise ApiError(400, "INVALID_REQUEST", "mode must be auto or manual", "mode")
+        if mode is not None and mode not in {"auto", "manual", "schedule"}:
+            raise ApiError(400, "INVALID_REQUEST", "mode must be auto, manual or schedule", "mode")
         self._validate_targets(payload.get("targets"))
 
         controls = payload.get("controls")

@@ -54,6 +54,8 @@ class StaticContractTests(unittest.TestCase):
                 "frontend/greenhouse-settings.js",
                 "frontend/charts.js",
                 "frontend/translations.js",
+                "frontend/control-plan.js",
+                "frontend/controller-panel.js",
                 "frontend/app.js",
                 "frontend/climate-upload.js",
                 "styles.css",
@@ -157,7 +159,7 @@ class StaticContractTests(unittest.TestCase):
         ):
             self.assertIn(element_id, self.parser.ids)
 
-        self.assertIn("greenlight-decision-baseline-v2", self.app_js)
+        self.assertIn("greenlight-decision-baseline-v3", self.app_js)
         self.assertIn("function createRunSummary", self.app_js)
         self.assertIn("function renderComparison", self.app_js)
         self.assertIn("function comparisonStrategy", self.app_js)

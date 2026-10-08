@@ -191,6 +191,8 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             self.path = path
         public = {
             "/frontend/charts.js",
+            "/frontend/control-plan.js",
+            "/frontend/controller-panel.js",
             "/frontend/translations.js",
             "/index.html",
             "/frontend/app.js",
@@ -203,9 +205,19 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             "/MODEL_CARD.md",
             "/PRODUCT_STRATEGY.md",
             "/GREENHOUSE_CONFIGURATION.md",
+            "/docs/controller-schedules.md",
+            "/docs/public-weather-examples.md",
         }
         worklog = path.startswith("/worklogs/") and path.count("/") == 2 and path.endswith(".html")
-        template = path == "/templates/greenlight-weather-template.xlsx"
+        template = path in {
+            "/templates/greenlight-weather-template.xlsx",
+            "/templates/weather-amsterdam-winter.xlsx",
+            "/templates/weather-almeria-summer.xlsx",
+            "/templates/weather-taipei-summer.xlsx",
+            "/templates/weather-amsterdam-winter.source.json",
+            "/templates/weather-almeria-summer.source.json",
+            "/templates/weather-taipei-summer.source.json",
+        }
         resolved = Path(self.translate_path(path)).resolve()
         if (
             (path not in public and not worklog and not template)
