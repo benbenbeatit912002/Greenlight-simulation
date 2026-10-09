@@ -25,7 +25,14 @@
       const tr = document.createElement("tr");
       const td = document.createElement("td");
       const time = document.createElement("input");
-      Object.assign(time, { type: "time", step: "900", required: true, value: row.time });
+      Object.assign(time, {
+        type: "text",
+        maxLength: 5,
+        pattern: "(?:[01]\\d|2[0-3]):[0-5]\\d",
+        placeholder: "HH:MM",
+        required: true,
+        value: row.time,
+      });
       time.dataset.scheduleTime = "true";
       td.append(time);
       tr.append(td);

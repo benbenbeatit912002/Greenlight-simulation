@@ -27,6 +27,7 @@
   let selectedGreenhouseConfig = { schemaVersion: 1, overrides: {} };
   let controllerPanel = null;
   let comparisonStopStep = null;
+  let pages = null;
 
   const BASELINE_STORAGE_KEY = "greenlight-decision-baseline-v3";
   const PROVENANCE_SENTINELS = ["unknown", "unversioned", "local-source"];
@@ -79,6 +80,7 @@
     updateEngineStatus(engineDisplayState, engineDisplayReason);
     updateRunStateCopy();
     controllerPanel?.translate();
+    pages?.translate();
     render(currentSnapshot);
   }
 
@@ -1009,6 +1011,7 @@
   function focusSimulatorControls() {
     const dialog = byId("projectDialog");
     if (dialog?.open) dialog.close();
+    pages.navigate("simulation", { focus: false });
     if (!currentSnapshot) {
       byId("retryModelButton").focus();
       return;
@@ -1151,6 +1154,7 @@
     modeButtons.forEach((button) => {
       button.addEventListener("click", () => {
         if (button.dataset.mode === "schedule") {
+          pages.navigate("controllerPlanner", { focus: false });
           byId("controllerPlanner").scrollIntoView({ block: "start" });
           byId("applyScheduleButton").focus({ preventScroll: true });
           return;
@@ -1205,6 +1209,15 @@
     });
   }
 
+  pages = window.GreenlightPages.create({
+    t,
+    onChange: (page) => {
+      if (page === "simulation")
+        window.requestAnimationFrame(() => {
+          if (currentSnapshot) drawChart(currentSnapshot.history, currentSnapshot.targets);
+        });
+    },
+  });
   controllerPanel = window.GreenlightControllerPanel.create({
     byId,
     t,

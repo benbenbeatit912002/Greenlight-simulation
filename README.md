@@ -6,6 +6,17 @@ An interactive greenhouse simulation and decision-support workbench connecting a
 
 **Status:** research/education prototype. The public interface uses the full scientific model or hides results when it is unavailable. Independent predictive validation, full-series result export and parameter calibration are not yet complete.
 
+## Dashboard pages
+
+The interface is organized into four pages so each workflow has its own space:
+
+- **Live simulation** — greenhouse visualization, climate charts, crop responses and live controls.
+- **Weather & dates** — Excel upload, public weather examples and simulation time selection.
+- **Greenhouse settings** — dimensions, equipment capacities and initial conditions.
+- **Controllers & comparison** — daily actuator schedules, equipment timelines and matched-run comparisons.
+
+Switching pages preserves the active simulation and unsaved settings. The greenhouse drawing is illustrative; numerical simulation outputs come from the full GreenLight model. See the [user guide](docs/user-guide.md) for details.
+
 ## Acknowledgements and citation
 
 This work builds on **GreenLight**, developed by **David Katzin and collaborators**, and uses the **GreenLight-Gym2** implementation by **Bart van Laatum and contributors**. We gratefully acknowledge their scientific and software contributions.

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Use English 24-hour schedule times</title>
+    <style>
+      body{font:16px/1.6 system-ui,sans-serif;max-width:860px;margin:40px auto;padding:0 24px;color:#172f29;background:#f4f8f5}h1,h2{line-height:1.25}section{background:white;border:1px solid #d4e0d9;border-radius:12px;padding:22px;margin:20px 0}a{color:#08674e}code{background:#eef4ef;padding:2px 5px;border-radius:4px}
+    </style>
+  </head>
+  <body>
+    <a href="index.html">All work logs</a>
+    <h1>Use English 24-hour schedule times</h1>
+    <p><time datetime="2026-10-09">9 October 2026</time></p>
+    <section>
+      <h2>Request</h2>
+      <p>When the dashboard is in English, schedule inputs should not show locale-specific 上午/下午 clock labels.</p>
+    </section>
+    <section>
+      <h2>Change</h2>
+      <p>Replaced the browser-localized native time picker in the schedule editor with a text field that explicitly displays and accepts 24-hour <code>HH:MM</code> values. The browser locale can no longer render the field as AM/PM. Input validation still requires a valid 15-minute boundary; the instructions and column heading now identify the format in both languages. Existing schedule data and model time semantics are unchanged.</p>
+      <p>Changed <code>frontend/controller-panel.js</code>, <code>frontend/translations.js</code>, <code>styles.css</code>, <code>index.html</code> (cache version), this log and its index. No tests were requested or run. No GitHub changes were made.</p>
+    </section>
+  </body>
+</html>

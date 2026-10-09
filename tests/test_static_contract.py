@@ -56,6 +56,7 @@ class StaticContractTests(unittest.TestCase):
                 "frontend/translations.js",
                 "frontend/control-plan.js",
                 "frontend/controller-panel.js",
+                "frontend/pages.js",
                 "frontend/app.js",
                 "frontend/climate-upload.js",
                 "styles.css",

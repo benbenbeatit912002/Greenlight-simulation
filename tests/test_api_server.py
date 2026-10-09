@@ -112,6 +112,7 @@ class ApiServerTests(unittest.TestCase):
             "/frontend/run-window.js",
             "/frontend/control-plan.js",
             "/frontend/controller-panel.js",
+            "/frontend/pages.js",
             "/templates/weather-amsterdam-winter.xlsx",
             "/templates/weather-almeria-summer.xlsx",
             "/templates/weather-taipei-summer.xlsx",

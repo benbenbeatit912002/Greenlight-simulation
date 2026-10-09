@@ -2,6 +2,16 @@
   "use strict";
   const translations = {
     zh: {
+      workspaceNavigation: "工作區頁面",
+      pageSimulation: "即時模擬",
+      pageWeather: "氣候與日期",
+      pageGreenhouse: "溫室設定",
+      pageControllers: "控制器與比較",
+      pageSimulationDescription:
+        "查看溫室氣候、作物與資源使用，並調整即時控制。切換頁面會保留目前運算與未套用的設定。",
+      pageWeatherDescription: "上傳氣候資料、確認可用日期，再選擇模擬起訖時間。",
+      pageGreenhouseDescription: "設定溫室尺寸、設備與作物初始狀態，準備完成後再套用。",
+      pageControllersDescription: "編輯設備排程、儲存基準，並比較相同條件下的控制結果。",
       controllerPlannerTitle: "控制排程與結果比較",
       appliedEvaluationLimits: "目前運算使用的評估界限",
       controllerGuide: "控制操作教學與論文",
@@ -13,10 +23,10 @@
         "設定每日設備命令。套用會重新初始化完整模型；範例是操作示範，並非最佳化栽培策略。",
       scheduleEditorTitle: "每日開迴路排程",
       scheduleClockNote:
-        "時間使用氣候資料來源時鐘，每日重複，以 15 分鐘為間隔。每列命令持續到下一列；六項設備均依排程運作，不使用室內溫度回授。",
+        "請用 24 小時制 HH:MM 輸入時間（例如 06:00）。時間使用氣候資料來源時鐘，每日重複，以 15 分鐘為間隔。每列命令持續到下一列；六項設備均依排程運作，不使用室內溫度回授。",
       screenClosureNote:
         "幕布數值為關閉比例：0% 全開、100% 全關。加熱百分比是設備命令，不是溫度設定。",
-      scheduleTime: "時間",
+      scheduleTime: "時間（24 小時制）",
       scheduleActions: "操作",
       addScheduleRow: "新增時間區段",
       removeScheduleRow: "移除",
@@ -31,7 +41,7 @@
       applyScheduleButton: "套用排程並初始化",
       runToBaselineButton: "執行至已儲存的基準時長",
       controllerWorkflow:
-        "先初始化自動控制、執行並在下方儲存基準，再套用排程並執行至基準時長。氣候、溫室設定、初始狀態和評估界限必須相同。",
+        "先初始化自動控制、執行並在本頁儲存基準，再套用排程並執行至基準時長。氣候、溫室設定、初始狀態和評估界限必須相同。",
       scheduleTimelineTitle: "草稿每日設備命令",
       appliedTimelineTitle: "實際套用命令・最近 24 小時",
       climateComparisonTitle: "整次模擬氣候比較",
@@ -251,6 +261,19 @@
       outdoorSeries: "室外",
     },
     en: {
+      workspaceNavigation: "Workspace pages",
+      pageSimulation: "Live simulation",
+      pageWeather: "Weather & dates",
+      pageGreenhouse: "Greenhouse settings",
+      pageControllers: "Controllers & comparison",
+      pageSimulationDescription:
+        "Watch greenhouse climate, crop state and resource use, and adjust live controls. Changing pages keeps the current run and your settings drafts.",
+      pageWeatherDescription:
+        "Upload climate data, check its available dates and choose the simulation period.",
+      pageGreenhouseDescription:
+        "Configure greenhouse dimensions, equipment and initial crop state, then apply when ready.",
+      pageControllersDescription:
+        "Edit equipment schedules, save a baseline and compare control strategies under the same conditions.",
       controllerPlannerTitle: "Controller schedules and comparison",
       appliedEvaluationLimits: "Applied evaluation limits",
       controllerGuide: "Controller guide and papers",
@@ -262,10 +285,10 @@
         "Set daily actuator commands. Apply starts a new full-model run. The example is a demonstration, not an optimized growing strategy.",
       scheduleEditorTitle: "Daily open-loop schedule",
       scheduleClockNote:
-        "Times follow the weather source clock, repeat daily, and align to 15-minute steps. Commands hold until the next row. All six devices follow this schedule without indoor-temperature feedback.",
+        "Enter time in 24-hour HH:MM format (for example, 06:00). Times follow the weather source clock, repeat daily, and align to 15-minute steps. Commands hold until the next row. All six devices follow this schedule without indoor-temperature feedback.",
       screenClosureNote:
         "Screen values mean closure: 0% fully open; 100% fully closed. Heating is a command percentage, not a temperature.",
-      scheduleTime: "Time",
+      scheduleTime: "Time (24-hour)",
       scheduleActions: "Actions",
       addScheduleRow: "Add time block",
       removeScheduleRow: "Remove",
@@ -280,7 +303,7 @@
       applyScheduleButton: "Apply schedule and initialize",
       runToBaselineButton: "Run to saved baseline duration",
       controllerWorkflow:
-        "Initialize automatic control, run and save a baseline below. Then apply your schedule and run to the saved baseline duration. Weather, greenhouse settings, initial state and comparison limits must match.",
+        "Initialize automatic control, run and save a baseline on this page. Then apply your schedule and run to the saved baseline duration. Weather, greenhouse settings, initial state and comparison limits must match.",
       scheduleTimelineTitle: "Draft daily commands",
       appliedTimelineTitle: "Applied commands · latest 24 hours",
       climateComparisonTitle: "Whole-run climate comparison",

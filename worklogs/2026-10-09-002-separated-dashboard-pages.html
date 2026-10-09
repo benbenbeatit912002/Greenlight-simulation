@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Separate the simulator into focused pages — 2026-10-09</title>
+    <style>
+      body { max-width: 920px; margin: 40px auto; padding: 0 24px; background: #081310; color: #e7f5ee; font: 16px/1.65 system-ui, sans-serif; }
+      h1, h2 { color: #a9f0c6; line-height: 1.25; }
+      a { color: #a9f0c6; } code { overflow-wrap: anywhere; }
+      section { border-top: 1px solid #24453a; margin-top: 28px; padding-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p><a href="index.html">All work logs</a> · <time datetime="2026-10-09">2026-10-09</time></p>
+      <h1>Separate the simulator into focused pages</h1>
+      <p>Request: split the crowded single-screen interface into different pages to make it easier to read.</p>
+    </header>
+    <section>
+      <h2>Decisions and implementation</h2>
+      <ul>
+        <li>Added four hash-addressable pages: Live simulation, Weather &amp; dates, Greenhouse settings, and Controllers &amp; comparison.</li>
+        <li>Keep one mounted application and full-model session. Page changes hide inactive sections without recreating forms, clearing drafts, or restarting the scientific model.</li>
+        <li>Retain global start/pause controls, model connection status and run-progress host. Redraw the live chart when returning to its page.</li>
+        <li>Move existing baseline controls and comparison results onto the controller page. Move downloadable public weather examples onto the weather page.</li>
+        <li>Support active-page indication, heading focus, direct links, browser Back/Forward, and English/Traditional Chinese labels. Preserve existing English 24-hour schedule edits.</li>
+        <li>No model equations, physical parameters, weather files or protected research files were modified. Draft retention applies to in-app page navigation, not browser reload.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Files changed</h2>
+      <p>Added <code>frontend/pages.js</code>. Updated <code>index.html</code>, <code>styles.css</code>, <code>frontend/app.js</code>, <code>frontend/translations.js</code>, the static asset allowlist in <code>backend/server.py</code>, corresponding asset tests in <code>tests/test_api_server.py</code> and <code>tests/test_static_contract.py</code>, and <code>docs/user-guide.md</code>. Added this log and its index link.</p>
+      <p>Existing changes to <code>frontend/controller-panel.js</code> and the earlier English-time work log were preserved.</p>
+    </section>
+    <section>
+      <h2>Bounded review</h2>
+      <p>One read-only reviewer identified that relocating the comparison panel bypassed the old dashboard-only offline hiding rule. Accepted: expanded the offline CSS rule to hide the relocated comparison workspace after model failure while retaining the saved baseline. Browser failure testing confirmed stale comparison results and baseline buttons disappear. One follow-up review reported no additional actionable findings. No further review rounds were run.</p>
+    </section>
+    <section>
+      <h2>Validation</h2>
+      <ul>
+        <li><code>scripts/check.py</code> passed: lint, formatting, JavaScript syntax, 79 passing Python tests with 10 optional integration tests skipped (89 discovered), 22 passing JavaScript tests, and synthetic workbook validation.</li>
+        <li>Browser verified each page, active navigation, greenhouse floor-area draft retention, schedule-time draft retention, Back/Forward, a reloaded weather deep link, bilingual navigation, and a rendered live chart. Test drafts were restored without applying them.</li>
+        <li>The full GreenLight-Gym2 engine ran 12 physical steps. The run identifier remained unchanged across page navigation, and pausing remained available.</li>
+        <li>No browser console errors before the intentional connection-loss check. Stopping the temporary server and attempting playback correctly showed the unavailable-model state, hid stale comparisons and disabled model actions.</li>
+        <li>Visual preview inspected in the browser. Saving the screenshot inside the repository was blocked by the browser runtime's filesystem permissions; no screenshot was written elsewhere.</li>
+        <li><code>git diff --check</code> passed. The existing CRLF-to-LF notice for the work-log index is a line-ending warning, not a test failure.</li>
+      </ul>
+      <p>The temporary server used Python <code>-B</code> and disabled bytecode generation. All runtime cache/log paths were inside this project. Only the previously authorized GreenLight source and Amsterdam weather input were used externally. The temporary server was stopped and port 4173 verified closed, respecting the earlier shutdown request.</p>
+    </section>
+    <section>
+      <h2>Git status</h2>
+      <p>Branch: <code>codex/scheduled-control-comparison</code>, tracking the matching origin branch. Changes remain local and uncommitted. No staging, commit, merge or GitHub upload was performed.</p>
+    </section>
+  </body>
+</html>

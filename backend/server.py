@@ -193,6 +193,7 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             "/frontend/charts.js",
             "/frontend/control-plan.js",
             "/frontend/controller-panel.js",
+            "/frontend/pages.js",
             "/frontend/translations.js",
             "/index.html",
             "/frontend/app.js",

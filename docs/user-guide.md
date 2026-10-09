@@ -1,5 +1,14 @@
 # User guide
 
+Use the top navigation to switch between four focused pages:
+
+- **Live simulation**: greenhouse visualization, live charts, manual controls and model outputs.
+- **Weather & dates**: upload and validate weather, then choose the simulation period.
+- **Greenhouse settings**: edit geometry, equipment and initial-state drafts.
+- **Controllers & comparison**: edit schedules, inspect equipment timelines, save a baseline and compare runs.
+
+Switching pages does not restart the model or discard unsaved form edits. Start/pause and run progress stay available across pages. Browser Back/Forward and direct page links are supported. Reloading the browser is different from switching pages: unsaved drafts are not guaranteed to survive a reload.
+
 1. Follow [installation](installation.md) and open the printed local URL.
 2. Choose English or Traditional Chinese using the language button.
 3. Check the model badge. Interface-only mode permits workbook validation but hides simulation results.

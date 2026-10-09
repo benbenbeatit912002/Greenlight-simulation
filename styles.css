@@ -2398,8 +2398,10 @@ h3 {
   background: var(--surface);
   font: inherit;
 }
-.schedule-table input[type="time"] {
+.schedule-table input[data-schedule-time] {
   min-width: 110px;
+  direction: ltr;
+  font-variant-numeric: tabular-nums;
 }
 .schedule-remove {
   border: 1px solid var(--border);
@@ -2479,6 +2481,76 @@ h3 {
   outline: 2px solid var(--green);
   outline-offset: 3px;
 }
+
+.page-navigation {
+  position: sticky;
+  top: 8px;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 24px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.page-navigation a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 10px 12px;
+  color: var(--muted);
+  text-decoration: none;
+  text-align: center;
+  border-radius: 9px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.page-navigation a[aria-current="page"] {
+  color: #092316;
+  background: var(--green);
+}
+.page-navigation a:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+.workspace-heading {
+  margin: 0 0 22px;
+}
+.workspace-heading h2 {
+  margin: 0 0 8px;
+  font-size: 25px;
+}
+.workspace-heading p {
+  max-width: 80ch;
+  margin: 0;
+  line-height: 1.6;
+  color: var(--muted);
+}
+[data-page][hidden] {
+  display: none !important;
+}
+#comparisonWorkspace .comparison-section {
+  margin: 18px 0;
+}
+#runProgressHost .run-progress {
+  margin-bottom: 20px;
+}
+@media (max-width: 680px) {
+  .page-navigation {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .page-navigation a {
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+  .workspace-heading h2 {
+    font-size: 22px;
+  }
+}
 @media (max-width: 800px) {
   .equipment-columns {
     grid-template-columns: 1fr;
@@ -2499,7 +2571,8 @@ h3 {
   text-align: center;
 }
 
-.model-unavailable .dashboard {
+.model-unavailable .dashboard,
+.model-unavailable #comparisonWorkspace {
   display: none;
 }
 .model-connection,

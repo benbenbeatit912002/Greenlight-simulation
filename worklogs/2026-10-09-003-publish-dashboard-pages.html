@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Publish the separated dashboard pages — 2026-10-09</title>
+  <style>
+    body { max-width: 900px; margin: 40px auto; padding: 0 24px; background: #081310; color: #e7f5ee; font: 16px/1.65 system-ui, sans-serif; }
+    h1, h2, a { color: #a9f0c6; } code { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <p><a href="index.html">All work logs</a> · <time datetime="2026-10-09">2026-10-09</time></p>
+  <h1>Publish the separated dashboard pages</h1>
+  <h2>Request and decisions</h2>
+  <p>The user requested uploading the completed changes to GitHub and adding a screenshot to the first page. Interpreted the first page as the GitHub README. Upload targets the existing branch, codex/scheduled-control-comparison; no main-branch merge or force push is authorized by this operation.</p>
+  <h2>Actions and files</h2>
+  <p>Added an English four-page overview near the top of README.md. Included the previously reviewed page-navigation and English 24-hour schedule changes, their tests, user guide and work logs. Added this log and updated the index.</p>
+  <p>Started the full model temporarily and attempted to save an actual browser screenshot as docs/images/dashboard-preview.jpg. The browser runtime rejected the write with EPERM because the active chat workspace is outside the simulator. No substitute image, broken image link or mock-up was added. Screenshot publication remains incomplete; reopening this chat directly on Greenlight-simulation is the safe next step. No files were written in the protected practice repositories.</p>
+  <h2>Review and validation</h2>
+  <p>The page refactor was reviewed in one initial and one follow-up review, recorded in the preceding log. This request adds documentation and performs Git publication only, so no additional code reviewer is required. The shared check was rerun successfully before publication: 79 Python tests passed, 10 optional integration tests skipped, and 22 JavaScript tests passed. Browser navigation and full-model operation were verified in the preceding task. Final whitespace checks and the file/diff review passed. The temporary screenshot server was stopped and port 4173 verified closed.</p>
+  <h2>Git publication</h2>
+  <p>Confirmed origin is benbenbeatit912002/Greenlight-simulation and fetched remote references. Local HEAD initially matched its remote feature branch. This record accompanies the publication commit; the push result will be reported to the user after remote commit verification. Runtime logs, caches, environments and protected research files are excluded.</p>
+</body>
+</html>
