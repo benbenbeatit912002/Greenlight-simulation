@@ -12,6 +12,26 @@ A greenhouse simulation dashboard for exploring how local weather and equipment 
 
 **Status:** research/education prototype. The public interface uses the full scientific model or hides results when it is unavailable. Independent predictive validation, full-series result export and parameter calibration are not yet complete.
 
+## Feature tour
+
+### 1. Upload local weather and choose simulation dates
+
+![Weather import page showing a validated Amsterdam Excel workbook, record count and five-minute interval](docs/images/weather-and-dates.jpg)
+
+Upload local climate data in the supported nine-column Excel format and inspect its coverage, sampling interval and input ranges. Select the source year, time convention and simulation period before initializing the model. The example shown contains 1,153 records; bundled public workbooks cover Amsterdam, Almería and Taipei.
+
+### 2. Configure the greenhouse and its starting conditions
+
+![Greenhouse settings showing the length and width calculator, floor and cover areas, heights and air-volume preview](docs/images/greenhouse-configuration.jpg)
+
+Enter greenhouse dimensions and preview the resulting air volumes, then configure equipment capacities and initial air or crop conditions. Blank fields inherit the model defaults. Changes stay in a draft until applied, so users can review their setup before starting a new run. The screenshot shows a 12 × 12 m floor-area calculation.
+
+### 3. Schedule equipment and compare control strategies
+
+![Open-loop schedule editor showing daily commands for six greenhouse actuators and temperature and humidity comparison limits](docs/images/controller-schedule.jpg)
+
+Set daily commands for heating, thermal and blackout screens, ventilation, CO₂ injection and lighting. Inspect equipment timelines and compare a scheduled run with the automatic controller using the same weather, greenhouse settings and simulation duration. Comparison metrics include indoor climate, heating energy and time outside the selected limits. The screenshot shows the editable example schedule.
+
 ## Dashboard pages
 
 The interface is organized into four pages so each workflow has its own space:

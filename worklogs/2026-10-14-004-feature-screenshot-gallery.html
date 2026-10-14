@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add a feature screenshot gallery — 2026-10-14</title>
+  <style>body { max-width: 900px; margin: 40px auto; padding: 0 24px; background: #081310; color: #e7f5ee; font: 16px/1.65 system-ui, sans-serif; } h1,h2,a { color: #a9f0c6; } img { max-width: 100%; } code { overflow-wrap: anywhere; }</style>
+</head>
+<body>
+  <p><a href="index.html">All work logs</a> · <time datetime="2026-10-14">2026-10-14</time></p>
+  <h1>Add a feature screenshot gallery</h1>
+  <h2>Request and decisions</h2>
+  <p>The user requested approximately three pictures of other controls and features, each with explanatory text. Retained the existing live-simulation cover and added three feature screenshots with English descriptions in README.md, making four images in total.</p>
+  <h2>Images and descriptions</h2>
+  <ul>
+    <li>docs/images/weather-and-dates.jpg: actual weather-import interface after validating the bundled public Amsterdam workbook, with 1,153 five-minute records. Source year 2023 and local-standard time produced valid coverage and a selectable 24-hour, 96-step window; the uploaded weather was not applied to the model.</li>
+    <li>docs/images/greenhouse-configuration.jpg: a 12 × 12 m floor-area calculator and the model-default geometry/air-volume preview. Calculator entries were not applied to the active run.</li>
+    <li>docs/images/controller-schedule.jpg: the existing daily six-actuator schedule editor and comparison limits. No schedule was applied and no saved baseline was changed.</li>
+  </ul>
+  <p>The README explains the workflow and supported comparisons without claiming automatic regional calibration or validated production performance. Browser-native file-picker wording may follow the local operating-system language.</p>
+  <h2>Review and validation</h2>
+  <p>Documentation and screenshots only; no production code changes. Additional code review and test suites were unnecessary. Each screenshot was visually inspected, then exported as an unedited JPEG through the approved local export form. File sizes, README links and Git whitespace checks are verified before publication. Public README image loading is checked after pushing.</p>
+  <h2>Scope and publication</h2>
+  <p>All generated files and temporary logs stay inside Greenlight-simulation. The temporary simulator uses Python -B and disabled bytecode generation; protected source and the previously authorized Amsterdam input are read only. Both temporary servers are stopped after capture. Changes are published to main under the user's continuing authorization to update the GitHub project. The prior local explanation log is preserved separately and excluded from this publication.</p>
+</body>
+</html>
