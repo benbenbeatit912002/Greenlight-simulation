@@ -1,6 +1,12 @@
 # GreenLight 2 Greenhouse Simulator
 
-An interactive greenhouse simulation and decision-support workbench connecting a bilingual browser interface to the GreenLight-Gym2 scientific model. Explore greenhouse settings, weather, control strategies, climate and resource use.
+A greenhouse simulation dashboard for exploring how local weather and equipment controls affect the growing environment. Upload climate data from Excel, configure greenhouse settings, and visualize climate, crop responses and resource use with the full GreenLight-Gym2 model.
+
+![GreenLight greenhouse dashboard showing indoor climate readings, an interactive greenhouse visualization, and automatic control settings](docs/images/greenhouse-dashboard.jpg)
+
+*Actual English dashboard during a full-model simulation using Amsterdam weather. The greenhouse drawing illustrates the model state; it is not a spatial simulation. Click the image to view it at full size.*
+
+**Project contribution:** a bilingual Python and JavaScript application that connects weather uploads, greenhouse configuration, control schedules and visual comparisons to the upstream scientific model.
 
 [![CI](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml)
 
