@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Merge the dashboard and cover into main — 2026-10-14</title>
+  <style>
+    body { max-width: 900px; margin: 40px auto; padding: 0 24px; background: #081310; color: #e7f5ee; font: 16px/1.65 system-ui, sans-serif; }
+    h1, h2, a { color: #a9f0c6; } code { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <p><a href="index.html">All work logs</a> · <time datetime="2026-10-14">2026-10-14</time></p>
+  <h1>Merge the dashboard and cover into main</h1>
+  <h2>Request and authorization</h2>
+  <p>The user explicitly approved merging the latest dashboard and README cover into main so the default GitHub repository homepage presents the project to internship reviewers. This resolves the approval requirement documented in the preceding log.</p>
+  <h2>Actions and decisions</h2>
+  <p>Fetched origin, confirmed a clean working tree and verified that main was an ancestor of the feature branch. Switched the simulator checkout to main and fast-forwarded it from 6f04873 to 5d8658f, bringing in scheduled controls, the four-page dashboard, the English 24-hour time input, the README introduction and the actual dashboard screenshot. No conflict resolution or history rewriting was needed.</p>
+  <p>Only this HTML log and worklogs/index.html are newly edited for the merge request. Existing implementation and screenshots are unchanged. This log accompanies the final publication commit on main.</p>
+  <h2>Review and validation</h2>
+  <p>No additional code review or test suite was needed because this is a fast-forward of previously reviewed and checked commits plus documentation. The recorded checks for the dashboard passed 79 Python tests and 22 JavaScript tests, with 10 optional integration tests skipped. Full-model browser operation and the public screenshot were verified during earlier work. Git whitespace checks are run before committing; remote main and the default GitHub README are verified after pushing.</p>
+  <h2>Scope and Git status</h2>
+  <p>All Git operations and file changes are confined to Greenlight-simulation. Protected research repositories are untouched, and no simulator server is started. Publish with an ordinary push to origin/main and retain the feature branch.</p>
+</body>
+</html>
