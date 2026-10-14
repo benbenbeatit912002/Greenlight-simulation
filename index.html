@@ -8,26 +8,26 @@
     <meta name="application-name" content="GreenLight 2 Greenhouse Simulator" />
     <meta
       name="description"
-      content="Interactive GreenLight 2 greenhouse climate and control simulator using the scientific Python model."
+      content="Upload local weather, adjust greenhouse settings, and use GreenLight to simulate temperature, humidity and crop conditions."
     />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="GreenLight 2 Greenhouse Simulator" />
     <meta
       property="og:description"
-      content="Explore greenhouse climate, crop state, controls, and resource use through a scientific simulation workbench."
+      content="Upload local weather, adjust greenhouse settings, and use GreenLight to simulate temperature, humidity and crop conditions."
     />
     <meta property="og:locale" content="zh_TW" />
     <title>GreenLight 2 溫室模擬器</title>
     <link rel="stylesheet" href="styles.css?v=20261009-pages" />
     <script defer src="frontend/run-window.js?v=20260912"></script>
-    <script defer src="frontend/greenhouse-settings.js?v=20261003-dimensions"></script>
+    <script defer src="frontend/greenhouse-settings.js?v=20261014-copy"></script>
     <script defer src="frontend/charts.js"></script>
-    <script defer src="frontend/translations.js?v=20261009-pages"></script>
+    <script defer src="frontend/translations.js?v=20261014-copy"></script>
     <script defer src="frontend/control-plan.js?v=20261008"></script>
     <script defer src="frontend/controller-panel.js?v=20261009"></script>
     <script defer src="frontend/pages.js?v=20261009"></script>
     <script defer src="frontend/app.js?v=20261009-pages"></script>
-    <script defer src="frontend/climate-upload.js?v=20260915-greenhouse"></script>
+    <script defer src="frontend/climate-upload.js?v=20261014-copy"></script>
   </head>
   <body>
     <div class="app-shell model-unavailable" id="simulatorApp">
@@ -55,7 +55,7 @@
             </svg>
           </div>
           <div>
-            <div class="eyebrow">GREENHOUSE DECISION WORKBENCH</div>
+            <div class="eyebrow">GREENLIGHT DASHBOARD</div>
             <h1>GreenLight 2 <span data-i18n="brandSubtitle">溫室模擬器</span></h1>
           </div>
         </div>
@@ -141,13 +141,11 @@
         </div>
         <section class="showcase-intro" aria-labelledby="showcaseTitle" data-page="simulation">
           <div class="showcase-copy">
-            <span class="eyebrow">OPEN GREENHOUSE SIMULATION</span>
-            <h2 id="showcaseTitle" data-i18n="showcaseTitle">
-              在決策進入溫室前，先看見氣候與作物的反應。
-            </h2>
+            <span class="eyebrow">GREENHOUSE SIMULATION</span>
+            <h2 id="showcaseTitle" data-i18n="showcaseTitle">看看你的溫室會如何變化。</h2>
             <p data-i18n="showcaseBody">
-              以實測天氣、28-state GreenLight
-              模型與六項致動器，探索控制策略如何改變溫度、濕度、CO₂、作物與資源使用。
+              上傳當地天氣、設定溫室，再調整加熱、通風和燈光。用 GreenLight
+              模型觀察溫度、濕度、作物和能源用量的變化。
             </p>
             <div class="showcase-actions">
               <a
@@ -216,7 +214,7 @@
             <div>
               <span class="eyebrow" data-weather-i18n="stage">第一階段 · 檢查並執行</span>
               <h2 id="weatherImportTitle" data-weather-i18n="title">匯入你的室外氣候</h2>
-              <p data-weather-i18n="intro">先檢查 Excel 氣候資料，再準備接入溫室模型。</p>
+              <p data-weather-i18n="intro">上傳 Excel 天氣資料，先在這裡檢查，再用來模擬。</p>
             </div>
             <a
               class="showcase-secondary weather-template-link"
@@ -389,8 +387,8 @@
             Controller schedules and comparison
           </h2>
           <p data-i18n="scheduleIntro">
-            Set daily actuator commands. Apply starts a new full-model run. The example is a
-            demonstration, not an optimized growing strategy.
+            Set when equipment turns on, turns off, or changes its level. Applying a schedule
+            creates a new simulation. The example is for practice, not growing advice.
           </p>
           <p id="activeControllerText" role="status"></p>
           <p id="appliedComparisonLimits"></p>
@@ -1450,11 +1448,11 @@
 
             <section class="comparison-section" aria-labelledby="comparisonTitle">
               <div class="section-title-row">
-                <h3 id="comparisonTitle" data-i18n="comparisonTitle">方案比較工作台</h3>
-                <span data-i18n="decisionSupport">決策支援</span>
+                <h3 id="comparisonTitle" data-i18n="comparisonTitle">比較模擬結果</h3>
+                <span data-i18n="decisionSupport">結果比較</span>
               </div>
               <p class="comparison-intro" data-i18n="comparisonIntro">
-                先儲存一個完整模擬結果，再重設並以相同步數測試另一個策略。
+                先儲存一次模擬結果，再重設、換一組控制設定，執行相同時間後比較。
               </p>
               <div class="comparison-actions">
                 <button id="saveBaselineButton" type="button" disabled data-i18n="saveBaseline">
@@ -1575,34 +1573,36 @@
           >
             ×
           </button>
-          <span class="eyebrow" data-i18n="tourKicker">PROJECT WALKTHROUGH</span>
-          <h2 id="tourTitle" data-i18n="tourTitle">用三步理解這座數位溫室</h2>
+          <span class="eyebrow" data-i18n="tourKicker">操作說明</span>
+          <h2 id="tourTitle" data-i18n="tourTitle">如何開始</h2>
           <p class="dialog-lead" id="tourIntro" data-i18n="tourBody">
-            從天氣與控制目標開始，觀察模型如何連結氣候、致動器、作物生長與資源使用。
+            準備好天氣和溫室設定，就可以試試不同設備設定對模擬結果的影響。
           </p>
           <ol class="tour-steps">
             <li>
               <span>01</span>
               <div>
-                <h3 data-i18n="tourStepOneTitle">選擇情境</h3>
-                <p data-i18n="tourStepOneBody">切換季節與實測天氣條件，建立不同的溫室外部擾動。</p>
+                <h3 data-i18n="tourStepOneTitle">準備天氣與溫室</h3>
+                <p data-i18n="tourStepOneBody">
+                  使用內建天氣或上傳 Excel，再填入溫室設定。留空的欄位會使用模型預設值。
+                </p>
               </div>
             </li>
             <li>
               <span>02</span>
               <div>
-                <h3 data-i18n="tourStepTwoTitle">比較控制策略</h3>
+                <h3 data-i18n="tourStepTwoTitle">選擇控制方式</h3>
                 <p data-i18n="tourStepTwoBody">
-                  使用規則控制器，或手動調整六項 GreenLight 絕對控制量。
+                  使用自動控制、手動調整設備，或設定每天的運作排程。
                 </p>
               </div>
             </li>
             <li>
               <span>03</span>
               <div>
-                <h3 data-i18n="tourStepThreeTitle">閱讀系統反應</h3>
+                <h3 data-i18n="tourStepThreeTitle">查看結果</h3>
                 <p data-i18n="tourStepThreeBody">
-                  追蹤氣候、作物、限制警示、能源、CO₂ 與估計成本。
+                  開始模擬，查看氣候圖表、作物變化、能源用量和警示。
                 </p>
               </div>
             </li>
@@ -1616,12 +1616,14 @@
           >
             <div>
               <span data-i18n="liveEngine">LIVE ENGINE</span
-              ><strong id="tourModelTitle">即時近似模型</strong>
+              ><strong id="tourModelTitle">完整模型尚未連接</strong>
             </div>
             <p id="tourEngineDescription">完整模型尚未連接；此面板不提供近似模型運算。</p>
           </section>
           <div class="dialog-footer">
-            <p data-i18n="modelTransparency">介面會清楚標示目前引擎；近似模型不會冒充科學結果。</p>
+            <p data-i18n="modelTransparency">
+              所有模擬數值來自 GreenLight。模型離線時停止運算，不切換近似模型。剖面動畫僅為示意。
+            </p>
             <button
               class="showcase-primary"
               id="tourExploreButton"

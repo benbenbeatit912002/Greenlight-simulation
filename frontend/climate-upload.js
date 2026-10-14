@@ -6,7 +6,8 @@
   const copy = {
     en: {
       title: "Import your outdoor weather",
-      intro: "Check an Excel workbook before connecting it to a greenhouse model.",
+      intro:
+        "Upload your weather in Excel format. Check the data here before using it in a simulation.",
       stage: "Step 1 · Validate and run",
       template: "Download Excel template",
       file: "Weather workbook (.xlsx)",
@@ -20,7 +21,7 @@
       valid: "Data checks passed · preview only",
       ready: "Data checks passed · ready to initialize GreenLight",
       unchanged:
-        "The workbook is checked in memory and converted for the model. Select Run with this weather to initialize a full GreenLight simulation.",
+        "Your data was checked in memory. Select Run with this weather to prepare a new GreenLight simulation.",
       useWeather: "Run with this weather",
       failed: "Could not validate this workbook",
       select: "Choose a nonempty .xlsx workbook no larger than 2 MiB.",
@@ -100,7 +101,7 @@
     },
     zh: {
       title: "匯入你的室外氣候",
-      intro: "檢查 Excel 氣候資料，通過後可接入完整 GreenLight 模型。",
+      intro: "上傳 Excel 天氣資料，先在這裡檢查，再用來模擬。",
       stage: "第一階段 · 檢查並執行",
       template: "下載 Excel 範本",
       file: "氣候資料檔案（.xlsx）",
@@ -112,8 +113,7 @@
       empty: "選擇檔案後，可查看涵蓋時間、數值範圍與前五筆資料。",
       valid: "資料檢查通過 · 僅供預覽",
       ready: "資料檢查通過 · 可以初始化 GreenLight",
-      unchanged:
-        "檔案已在記憶體中檢查並轉換。按下「使用這份天氣模擬」後，才會初始化完整 GreenLight 模型。",
+      unchanged: "資料已在記憶體中檢查。按「使用這份天氣模擬」，即可準備新的 GreenLight 模擬。",
       useWeather: "使用這份天氣模擬",
       failed: "這份檔案未通過檢查",
       select: "請選擇非空白、大小不超過 2 MiB 的 .xlsx 檔案。",

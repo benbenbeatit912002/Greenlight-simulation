@@ -26,11 +26,11 @@
     en: {
       title: "Step 3 · Greenhouse and initial state",
       intro:
-        "Review model defaults or enter overrides. Leave a field blank to inherit its default. Apply settings only when you want to initialize a new run.",
+        "Enter your own settings or leave fields blank to use the model defaults. Applying settings creates a new simulation.",
       geometry: "Greenhouse dimensions and air volume",
       sizeCalculator: "Start with length × width",
       sizeIntro:
-        "For a rectangular floor, enter its length and width in metres. This tool changes only the floor-area draft, not the active simulation.",
+        "Enter the length and width in metres to calculate a rectangular floor area. The current simulation stays unchanged until you apply the settings.",
       length: "Floor length (m)",
       width: "Floor width (m)",
       sizeButton: "Copy floor area to draft",
@@ -89,10 +89,10 @@
     },
     zh: {
       title: "第三階段 · 溫室設定與初始狀態",
-      intro: "查看模型預設值或輸入自訂值；欄位留空即沿用預設值。按下套用後才會初始化新的模擬。",
+      intro: "填入你的設定，或留空使用模型預設值。按下套用後會建立新的模擬。",
       geometry: "溫室尺寸與空間",
       sizeCalculator: "從長 × 寬開始設定",
-      sizeIntro: "矩形地板可直接輸入長、寬（公尺）。換算只填入地板面積草稿，不會立刻改變目前模擬。",
+      sizeIntro: "輸入長、寬（公尺）來計算矩形地板面積。套用設定前，不會改變目前的模擬。",
       length: "地板長度（m）",
       width: "地板寬度（m）",
       sizeButton: "將地板面積填入草稿",

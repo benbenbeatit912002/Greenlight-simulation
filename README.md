@@ -1,47 +1,45 @@
 # GreenLight 2 Greenhouse Simulator
 
-A greenhouse simulation dashboard for exploring how local weather and equipment controls affect the growing environment. Upload climate data from Excel, configure greenhouse settings, and visualize climate, crop responses and resource use with the full GreenLight-Gym2 model.
+A dashboard for the GreenLight-Gym2 greenhouse model. Upload your local weather from Excel, adjust the greenhouse settings, and see how temperature, humidity and crop conditions change. Available in English and Chinese.
 
 ![GreenLight greenhouse dashboard showing indoor climate readings, an interactive greenhouse visualization, and automatic control settings](docs/images/greenhouse-dashboard.jpg)
 
-*Actual English dashboard during a full-model simulation using Amsterdam weather. The greenhouse drawing illustrates the model state; it is not a spatial simulation. Click the image to view it at full size.*
-
-**Project contribution:** a bilingual Python and JavaScript application that connects weather uploads, greenhouse configuration, control schedules and visual comparisons to the upstream scientific model.
+*The dashboard running GreenLight-Gym2 with Amsterdam weather. The drawing shows what the equipment and crop are doing; it is not a 3D simulation. Click any screenshot to see it at full size.*
 
 [![CI](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml)
 
-**Status:** research/education prototype. The public interface uses the full scientific model or hides results when it is unavailable. Independent predictive validation, full-series result export and parameter calibration are not yet complete.
+**Still in development:** intended for learning and research, not production decisions. All simulation results come from the full GreenLight model; results are hidden if it is unavailable. Accuracy has not been independently validated. Greenhouse calibration and full time-series export are not yet available.
 
-## Feature tour
+## A look at the dashboard
 
 ### 1. Upload local weather and choose simulation dates
 
 ![Weather import page showing a validated Amsterdam Excel workbook, record count and five-minute interval](docs/images/weather-and-dates.jpg)
 
-Upload local climate data in the supported nine-column Excel format and inspect its coverage, sampling interval and input ranges. Select the source year, time convention and simulation period before initializing the model. The example shown contains 1,153 records; bundled public workbooks cover Amsterdam, Almería and Taipei.
+Upload an Excel weather file using the provided template, check the data, and choose when to start and stop the simulation. You can also try the included weather examples for Amsterdam, Almería and Taipei.
 
-### 2. Configure the greenhouse and its starting conditions
+### 2. Set up your greenhouse
 
 ![Greenhouse settings showing the length and width calculator, floor and cover areas, heights and air-volume preview](docs/images/greenhouse-configuration.jpg)
 
-Enter greenhouse dimensions and preview the resulting air volumes, then configure equipment capacities and initial air or crop conditions. Blank fields inherit the model defaults. Changes stay in a draft until applied, so users can review their setup before starting a new run. The screenshot shows a 12 × 12 m floor-area calculation.
+Enter the greenhouse size, equipment capacities and starting air and crop conditions. Leave fields blank to use the model defaults. Nothing changes in the current run until you apply your settings.
 
-### 3. Schedule equipment and compare control strategies
+### 3. Try an equipment schedule
 
 ![Open-loop schedule editor showing daily commands for six greenhouse actuators and temperature and humidity comparison limits](docs/images/controller-schedule.jpg)
 
-Set daily commands for heating, thermal and blackout screens, ventilation, CO₂ injection and lighting. Inspect equipment timelines and compare a scheduled run with the automatic controller using the same weather, greenhouse settings and simulation duration. Comparison metrics include indoor climate, heating energy and time outside the selected limits. The screenshot shows the editable example schedule.
+Choose when to heat, ventilate, use the lights, add CO₂, or open and close the screens. Compare your schedule with automatic control using the same weather, greenhouse settings and run length. See the differences in temperature, humidity, heating energy and time outside your chosen limits.
 
 ## Dashboard pages
 
-The interface is organized into four pages so each workflow has its own space:
+The dashboard has four pages:
 
-- **Live simulation** — greenhouse visualization, climate charts, crop responses and live controls.
-- **Weather & dates** — Excel upload, public weather examples and simulation time selection.
-- **Greenhouse settings** — dimensions, equipment capacities and initial conditions.
-- **Controllers & comparison** — daily actuator schedules, equipment timelines and matched-run comparisons.
+- **Live simulation** — watch the greenhouse and adjust its controls.
+- **Weather & dates** — upload weather and choose the simulation dates.
+- **Greenhouse settings** — enter the size, equipment and starting conditions.
+- **Controllers & comparison** — set equipment schedules and compare results.
 
-Switching pages preserves the active simulation and unsaved settings. The greenhouse drawing is illustrative; numerical simulation outputs come from the full GreenLight model. See the [user guide](docs/user-guide.md) for details.
+You can switch pages without losing the current run or unsaved settings. The drawing is an illustration; the numbers come from the full GreenLight model. See the [user guide](docs/user-guide.md) for details.
 
 ## Acknowledgements and citation
 

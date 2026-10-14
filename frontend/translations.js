@@ -8,10 +8,10 @@
       pageGreenhouse: "溫室設定",
       pageControllers: "控制器與比較",
       pageSimulationDescription:
-        "查看溫室氣候、作物與資源使用，並調整即時控制。切換頁面會保留目前運算與未套用的設定。",
-      pageWeatherDescription: "上傳氣候資料、確認可用日期，再選擇模擬起訖時間。",
-      pageGreenhouseDescription: "設定溫室尺寸、設備與作物初始狀態，準備完成後再套用。",
-      pageControllersDescription: "編輯設備排程、儲存基準，並比較相同條件下的控制結果。",
+        "查看溫室內的變化，也可以直接調整設備。切換頁面不會中斷模擬或清除尚未套用的設定。",
+      pageWeatherDescription: "上傳天氣資料，查看可用日期，再選擇要模擬的時間。",
+      pageGreenhouseDescription: "填入溫室大小、設備容量，以及空氣和作物的起始條件。",
+      pageControllersDescription: "安排設備每天的運作時間，看看和自動控制有什麼不同。",
       controllerPlannerTitle: "控制排程與結果比較",
       appliedEvaluationLimits: "目前運算使用的評估界限",
       controllerGuide: "控制操作教學與論文",
@@ -20,7 +20,7 @@
       publicWeatherInstructions:
         "下載後在氣候面板上傳，選擇來源年份 2023 與來源當地標準時間。範例為 NASA POWER 每小時數據轉成五分鐘格式，不是五分鐘現地量測。",
       scheduleIntro:
-        "設定每日設備命令。套用會重新初始化完整模型；範例是操作示範，並非最佳化栽培策略。",
+        "設定設備每天何時開、關或調整強度。套用後會建立新的模擬。範例僅供練習，不是栽培建議。",
       scheduleEditorTitle: "每日開迴路排程",
       scheduleClockNote:
         "請用 24 小時制 HH:MM 輸入時間（例如 06:00）。時間使用氣候資料來源時鐘，每日重複，以 15 分鐘為間隔。每列命令持續到下一列；六項設備均依排程運作，不使用室內溫度回授。",
@@ -75,7 +75,7 @@
       scheduleCompareReady: "條件與時長相同。較少能源用量仍需連同氣候超限時間一起評估。",
       scheduleActiveHint: "依已套用排程控制；上方編輯器可設定下一次模擬。",
       documentTitle: "GreenLight 2 溫室模擬器",
-      metaDescription: "直接使用 GreenLight 2 科學 Python 後端的互動溫室氣候與控制模擬器。",
+      metaDescription: "上傳當地天氣、調整溫室設定，用 GreenLight 模擬溫度、濕度和作物的變化。",
       brandSubtitle: "溫室模擬器",
       runControls: "模擬執行控制",
       weatherScenario: "天氣情境",
@@ -98,9 +98,9 @@
       progressClock: "目前資料時間",
       progressNote:
         "每步固定 15 分鐘；速度只改變每批步數。暫停後目前一批可能完成，接著不再送出新運算。",
-      showcaseTitle: "在決策進入溫室前，先看見氣候與作物的反應。",
+      showcaseTitle: "看看你的溫室會如何變化。",
       showcaseBody:
-        "以實測天氣、28-state GreenLight 模型與六項致動器，探索控制策略如何改變溫度、濕度、CO₂、作物與資源使用。",
+        "上傳當地天氣、設定溫室，再調整加熱、通風和燈光。用 GreenLight 模型觀察溫度、濕度、作物和能源用量的變化。",
       exploreControls: "開始探索控制",
       greenhouseDesign: "設定溫室尺寸",
       howItWorks: "了解運作方式",
@@ -137,15 +137,15 @@
       leafAreaIndex: "葉面積指數",
       temperatureSum: "溫度積分",
       canopy24h: "冠層 24h",
-      tourKicker: "PROJECT WALKTHROUGH",
-      tourTitle: "用三步理解這座數位溫室",
-      tourBody: "從天氣與控制目標開始，觀察模型如何連結氣候、致動器、作物生長與資源使用。",
-      tourStepOneTitle: "選擇情境",
-      tourStepOneBody: "切換季節與實測天氣條件，建立不同的溫室外部擾動。",
-      tourStepTwoTitle: "比較控制策略",
-      tourStepTwoBody: "使用規則控制器，或手動調整六項 GreenLight 絕對控制量。",
-      tourStepThreeTitle: "閱讀系統反應",
-      tourStepThreeBody: "追蹤氣候、作物、限制警示、能源、CO₂ 與估計成本。",
+      tourKicker: "操作說明",
+      tourTitle: "如何開始",
+      tourBody: "準備好天氣和溫室設定，就可以試試不同設備設定對模擬結果的影響。",
+      tourStepOneTitle: "準備天氣與溫室",
+      tourStepOneBody: "使用內建天氣或上傳 Excel，再填入溫室設定。留空的欄位會使用模型預設值。",
+      tourStepTwoTitle: "選擇控制方式",
+      tourStepTwoBody: "使用自動控制、手動調整設備，或設定每天的運作排程。",
+      tourStepThreeTitle: "查看結果",
+      tourStepThreeBody: "開始模擬，查看氣候圖表、作物變化、能源用量和警示。",
       liveEngine: "LIVE ENGINE",
       modelTransparency:
         "所有模擬數值來自 GreenLight。模型離線時停止運算，不切換近似模型。剖面動畫僅為示意。",
@@ -179,9 +179,9 @@
       heating: "暖氣",
       supplementalLighting: "補光",
       estimatedCost: "估計成本",
-      comparisonTitle: "方案比較工作台",
-      decisionSupport: "決策支援",
-      comparisonIntro: "先儲存一個完整模擬結果，再重設並以相同步數測試另一個策略。",
+      comparisonTitle: "比較模擬結果",
+      decisionSupport: "結果比較",
+      comparisonIntro: "先儲存一次模擬結果，再重設、換一組控制設定，執行相同時間後比較。",
       saveBaseline: "儲存目前結果為基準",
       replaceBaseline: "以目前結果取代基準",
       clearBaseline: "清除",
@@ -267,13 +267,13 @@
       pageGreenhouse: "Greenhouse settings",
       pageControllers: "Controllers & comparison",
       pageSimulationDescription:
-        "Watch greenhouse climate, crop state and resource use, and adjust live controls. Changing pages keeps the current run and your settings drafts.",
+        "Watch the greenhouse change and adjust its controls. Switching pages keeps your current run and unsaved settings.",
       pageWeatherDescription:
-        "Upload climate data, check its available dates and choose the simulation period.",
+        "Upload weather data, check the available dates, and choose when to run the simulation.",
       pageGreenhouseDescription:
-        "Configure greenhouse dimensions, equipment and initial crop state, then apply when ready.",
+        "Enter the greenhouse size, equipment capacities, and starting air and crop conditions.",
       pageControllersDescription:
-        "Edit equipment schedules, save a baseline and compare control strategies under the same conditions.",
+        "Plan when equipment runs each day and see how your schedule compares with automatic control.",
       controllerPlannerTitle: "Controller schedules and comparison",
       appliedEvaluationLimits: "Applied evaluation limits",
       controllerGuide: "Controller guide and papers",
@@ -282,7 +282,7 @@
       publicWeatherInstructions:
         "Upload a file below using the weather panel. Select source year 2023 and source-local-standard. These are NASA POWER hourly values resampled to five minutes, not five-minute site observations.",
       scheduleIntro:
-        "Set daily actuator commands. Apply starts a new full-model run. The example is a demonstration, not an optimized growing strategy.",
+        "Set when equipment turns on, turns off, or changes its level. Applying a schedule creates a new simulation. The example is for practice, not growing advice.",
       scheduleEditorTitle: "Daily open-loop schedule",
       scheduleClockNote:
         "Enter time in 24-hour HH:MM format (for example, 06:00). Times follow the weather source clock, repeat daily, and align to 15-minute steps. Commands hold until the next row. All six devices follow this schedule without indoor-temperature feedback.",
@@ -348,7 +348,7 @@
         "Following the applied schedule; use the editor above to configure the next run.",
       documentTitle: "GreenLight 2 Greenhouse Simulator",
       metaDescription:
-        "Interactive GreenLight 2 greenhouse climate and control simulator using the scientific Python model.",
+        "Upload local weather, adjust greenhouse settings, and use GreenLight to simulate temperature, humidity and crop conditions.",
       brandSubtitle: "Greenhouse simulator",
       runControls: "Simulation run controls",
       weatherScenario: "Weather scenario",
@@ -371,9 +371,9 @@
       progressClock: "Current source time",
       progressNote:
         "Each physical step is 15 minutes. Speed changes the batch size. Pause lets the current batch finish and stops further batches.",
-      showcaseTitle: "See climate and crop responses before decisions reach the greenhouse.",
+      showcaseTitle: "See how your greenhouse responds.",
       showcaseBody:
-        "Explore how control strategies change temperature, humidity, CO₂, crop state, and resource use with measured weather, a 28-state GreenLight model, and six actuators.",
+        "Upload local weather, set up your greenhouse, and try different heating, ventilation and lighting settings. GreenLight calculates the changes in climate, crops and energy use.",
       exploreControls: "Explore the controls",
       greenhouseDesign: "Set greenhouse dimensions",
       howItWorks: "How it works",
@@ -410,22 +410,21 @@
       leafAreaIndex: "Leaf area index",
       temperatureSum: "Temperature sum",
       canopy24h: "Canopy 24h",
-      tourKicker: "PROJECT WALKTHROUGH",
-      tourTitle: "Understand the digital greenhouse in three steps",
+      tourKicker: "QUICK START",
+      tourTitle: "How to get started",
       tourBody:
-        "Start with weather and control targets, then watch the model connect climate, actuators, crop growth, and resource use.",
-      tourStepOneTitle: "Choose a scenario",
+        "Choose your weather and greenhouse settings, then try different equipment settings and check the results.",
+      tourStepOneTitle: "Set up the weather and greenhouse",
       tourStepOneBody:
-        "Switch seasons and measured weather conditions to create different outdoor disturbances.",
-      tourStepTwoTitle: "Compare control strategies",
-      tourStepTwoBody:
-        "Use the rule-based controller or manually adjust the six absolute GreenLight controls.",
-      tourStepThreeTitle: "Read the system response",
+        "Use the built-in weather or upload an Excel file. Enter your greenhouse settings, or leave fields blank to use model defaults.",
+      tourStepTwoTitle: "Choose how to control it",
+      tourStepTwoBody: "Use automatic control, adjust equipment manually, or set a daily schedule.",
+      tourStepThreeTitle: "Check the results",
       tourStepThreeBody:
-        "Track climate, crop state, limit warnings, energy, CO₂, and estimated cost.",
+        "Start the simulation and follow the climate charts, crop changes, energy use and warnings.",
       liveEngine: "LIVE ENGINE",
       modelTransparency:
-        "Simulation values come from GreenLight. An offline model stops running with no approximation fallback. The cutaway animation is illustrative.",
+        "All simulation results come from GreenLight. If the model disconnects, the simulation stops; no simplified model takes over. The greenhouse drawing is an illustration.",
       goToControls: "Go to the controls",
       closeTour: "Close walkthrough",
       panelTitle: "Climate controls",
@@ -451,10 +450,10 @@
       heating: "Heating",
       supplementalLighting: "Supplemental lighting",
       estimatedCost: "Estimated cost",
-      comparisonTitle: "Strategy comparison workbench",
-      decisionSupport: "Decision support",
+      comparisonTitle: "Compare simulation results",
+      decisionSupport: "Results comparison",
       comparisonIntro:
-        "Save one completed run, then reset and test another strategy for the same number of steps.",
+        "Save a simulation result, reset, and try different control settings for the same run length.",
       saveBaseline: "Save current result as baseline",
       replaceBaseline: "Replace baseline with current result",
       clearBaseline: "Clear",

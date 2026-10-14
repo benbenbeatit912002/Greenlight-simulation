@@ -270,7 +270,9 @@ class StaticContractTests(unittest.TestCase):
         self.assertIn("SHA-256 fingerprint of the exact", model_card)
 
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("greenhouse simulation and decision-support workbench", readme)
+        self.assertIn("GreenLight-Gym2", readme)
+        self.assertIn("[CITATION.md](CITATION.md)", readme)
+        self.assertIn("not production decisions", readme)
         self.assertNotIn("An interactive greenhouse digital twin", readme)
         self.assertNotIn("scientific digital twin", self.html)
 
