@@ -103,6 +103,14 @@ class ApiServerTests(unittest.TestCase):
         self.assertIn("GreenLight 2", body)
         self.assertTrue(headers["content-type"].startswith("text/html"))
 
+    def test_excel_download_mime_does_not_depend_on_system_associations(self):
+        with patch("mimetypes.guess_type", return_value=("text/plain", None)):
+            status, body, headers = self.request("GET", "/templates/weather-amsterdam-winter.xlsx")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers["content-type"], XLSX_MIME)
+        self.assertIsInstance(body, bytes)
+        self.assertTrue(body.startswith(b"PK"))
+
     def test_frontend_assets_are_public_and_source_is_private(self):
         for path in (
             "/frontend/app.js",

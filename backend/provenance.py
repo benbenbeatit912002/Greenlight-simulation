@@ -12,6 +12,9 @@ from typing import Any
 
 
 def _git_revision(source_path: Path) -> str | None:
+    # Do not mistake a containing application checkout for the model's repository.
+    if not (source_path / ".git").exists():
+        return None
     options: dict[str, Any] = {}
     if os.name == "nt":
         options["creationflags"] = subprocess.CREATE_NO_WINDOW

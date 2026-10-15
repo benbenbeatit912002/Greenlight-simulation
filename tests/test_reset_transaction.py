@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.metadata
 import os
 import unittest
 from pathlib import Path
@@ -140,7 +141,14 @@ class ResetTransactionTests(unittest.TestCase):
 
 class ModelPathTests(unittest.TestCase):
     def test_missing_path_does_not_probe_siblings(self):
-        with patch.dict(os.environ, {}, clear=True), patch.object(Path, "is_file") as probe:
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch(
+                "backend.model_source.importlib.metadata.distribution",
+                side_effect=importlib.metadata.PackageNotFoundError,
+            ),
+            patch.object(Path, "is_file") as probe,
+        ):
             with self.assertRaisesRegex(RuntimeError, "GREENLIGHT_GYM_PATH"):
                 default_source_path()
             probe.assert_not_called()

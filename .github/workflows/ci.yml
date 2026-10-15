@@ -54,3 +54,27 @@ jobs:
 
       - name: Run formatting and software contracts
         run: uv run --no-sync python -B scripts/check.py
+
+      - name: Install the pinned public model
+        run: uv sync --locked --extra greenlight --python 3.12
+
+      - name: Check full-model startup
+        env:
+          GREENLIGHT_GYM_PATH: ""
+          TEMP: ${{ github.workspace }}/.runtime/tmp
+          TMP: ${{ github.workspace }}/.runtime/tmp
+          TMPDIR: ${{ github.workspace }}/.runtime/tmp
+          MPLCONFIGDIR: ${{ github.workspace }}/.runtime/matplotlib
+          XDG_CACHE_HOME: ${{ github.workspace }}/.runtime/cache
+        run: uv run --no-sync python -B server.py --check-model
+
+      - name: Run full-model integration
+        env:
+          RUN_GREENLIGHT_INTEGRATION: "1"
+          GREENLIGHT_GYM_PATH: ""
+          TEMP: ${{ github.workspace }}/.runtime/tmp
+          TMP: ${{ github.workspace }}/.runtime/tmp
+          TMPDIR: ${{ github.workspace }}/.runtime/tmp
+          MPLCONFIGDIR: ${{ github.workspace }}/.runtime/matplotlib
+          XDG_CACHE_HOME: ${{ github.workspace }}/.runtime/cache
+        run: uv run --no-sync python -B -m unittest discover -s tests -p 'test_greenlight_integration.py' -v

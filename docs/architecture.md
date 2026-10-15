@@ -15,6 +15,7 @@ index.html + styles.css
   backend/application.py         Revision checks, request validation and serialized operations
   backend/greenlight_adapter.py  Scientific environment lifecycle, controls and snapshots
     model_defaults.py            Presets and control names
+    model_source.py              Pinned-package discovery or explicit source override
     provenance.py                Read-only source and array identity
     weather_upload.py            Bounded workbook parsing, independent of the model
     weather_conversion.py        Weather conversion using upstream physical functions
@@ -22,7 +23,7 @@ index.html + styles.css
     run_window.py                Simulation bounds and clock
     greenhouse_config.py         Parameter and initial-state mapping
             |
-  explicitly configured read-only GreenLight-Gym2 source
+  installed gl-gym 0.3.2 package (or explicit read-only source override)
 ```
 
 ## Why keep `backend/`?

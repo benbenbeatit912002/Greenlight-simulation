@@ -10,6 +10,7 @@ This project helps people try local weather and equipment settings in the GreenL
 - Run the full GreenLight-Gym2 model with automatic, manual or daily scheduled controls.
 - Compare runs with matching weather, greenhouse settings and duration.
 - Use the dashboard in English or Traditional Chinese.
+- Install the pinned public model and example weather with the `greenlight` extra; no separate source checkout is needed.
 
 The simulator stops if the full model is unavailable. It does not switch to a simplified model.
 
@@ -21,7 +22,7 @@ Export the complete results and the settings used to produce them. A repeatable 
 
 ### Make installation easier
 
-Document and pin a compatible model-source version, then test the complete setup on a clean computer. The model is currently a separate, explicitly configured dependency. A project software license also needs to be selected before broad redistribution is invited.
+The model dependency is now pinned and has a command-line startup check. Next, improve first-run error messages and consider a desktop launcher. A project software license still needs to be selected before broad redistribution is invited.
 
 ### Expand greenhouse settings
 

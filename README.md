@@ -52,19 +52,19 @@ This repository contributes the browser interface and local integration layer; t
 
 ## Quick start
 
-Install Git and [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+Install Git, Python 3.12 and [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```sh
 git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
 cd Greenlight-simulation
-uv sync --locked --python 3.12 --cache-dir .uv-cache
-uv run --no-sync python -B examples/validate_weather.py
-uv run --no-sync python -B server.py --engine browser
+uv sync --locked --extra greenlight --python 3.12 --cache-dir .uv-cache
+uv run --no-sync python -B server.py --check-model
+uv run --no-sync python -B server.py
 ```
 
-Open <http://127.0.0.1:4173/>. This setup displays the interface and validates the bundled synthetic weather without accessing a model checkout or private research data. No Node.js installation is needed to use the app. The example expects 433 records covering 36 hours and reports a successful validation.
+Open <http://127.0.0.1:4173/>. Stop with Ctrl+C. The setup installs **gl-gym 0.3.2** and its dependencies into `.venv`, including the upstream Amsterdam example weather. You do not need a separate GreenLight checkout, a personal research folder or Node.js to run the simulator. The check command initializes the full model and runs one 15-minute step without starting a server.
 
-To run actual simulations, install the `greenlight` extra and explicitly set `GREENLIGHT_GYM_PATH` to a compatible source checkout. Follow [the full Windows/Linux/macOS installation guide](docs/installation.md). The model source is read-only and is not bundled here; its exact compatible version remains a separate setup requirement.
+See [the Windows/Linux/macOS installation guide](docs/installation.md) for project-local Python provisioning, interface-only use and advanced source overrides. If you previously set `GREENLIGHT_GYM_PATH`, unset it to use the installed package; explicit source paths take priority. Installation needs an internet connection; normal model runs do not.
 
 ## What you can do
 
@@ -119,11 +119,13 @@ npm ci --ignore-scripts --cache .npm-cache
 uv run --no-sync python -B scripts/check.py
 ```
 
-Checks include Ruff formatting/lint/complexity, Prettier formatting, JavaScript syntax, Python and JavaScript contracts, and the public example. Default checks do not run external-model integration or establish scientific accuracy. See [CONTRIBUTING](CONTRIBUTING.md) before submitting a focused pull request. Report sensitive issues through [SECURITY](SECURITY.md).
+Checks include Ruff formatting/lint/complexity, Prettier formatting, JavaScript syntax, Python and JavaScript contracts, and the public example. The default local checks skip model integration; CI also installs the pinned package and runs the separate full-model suite. These checks do not establish scientific accuracy. See [CONTRIBUTING](CONTRIBUTING.md) before submitting a focused pull request. Report sensitive issues through [SECURITY](SECURITY.md).
 
 ## Model provenance and license status
 
 GreenLight-Gym2 supplies the scientific model; this repository supplies the local interface and adapter. Model attribution and references are in [CITATION.md](CITATION.md) and [MODEL_CARD](MODEL_CARD.md). Source, parameter and weather fingerprints help explain which model/configuration produced a run.
+
+The [upstream gl-gym package](https://pypi.org/project/gl-gym/0.3.2/) declares **AGPL-3.0-or-later**. Its source, license and example weather are installed as a dependency, not copied into this repository. Installing it separately does not remove applicable upstream license obligations.
 
 No software license has been selected for this wrapper yet. Public visibility does not grant broad reuse rights. The owner must confirm the license and citation authors before those metadata can be finalized; upstream model and data permissions remain separate.
 

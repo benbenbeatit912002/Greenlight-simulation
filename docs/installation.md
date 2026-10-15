@@ -4,11 +4,11 @@
 
 | Setup | Requirements | What works |
 | --- | --- | --- |
-| Interface and public example | Git, uv, Python 3.12 (uv can provision it) | UI, weather validation, synthetic example |
-| Contributor | Above plus Node.js 22+ and npm | Formatting, lint, software regression tests |
-| Scientific simulation | Above plus compatible GreenLight-Gym2 source and `greenlight` dependencies | Full-model simulations; separate scientific validation is still required |
+| Full simulator (recommended) | Git, uv, Python 3.12 | Full-model simulations using the pinned `gl-gym` package and its example weather |
+| Interface only | Same tools, without the `greenlight` extra | UI, weather validation, synthetic example; no simulation values |
+| Contributor | Above plus Node.js 22+ and npm | Formatting, lint, software and model integration tests |
 
-This is a source application: run it from its checkout. The existing `python server.py` entry point is retained. A standalone wheel containing the frontend and model is not currently published.
+This is a source application: run it from its checkout. The model is installed automatically as a dependency; no second repository is needed. A standalone application installer is not currently published. Installation needs internet access. Normal simulation and bundled examples run locally without an API key or online AI service.
 
 ## Windows PowerShell
 
@@ -17,9 +17,13 @@ git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
 Set-Location Greenlight-simulation
 $env:PYTHONDONTWRITEBYTECODE = '1'
 $env:UV_CACHE_DIR = "$PWD\.uv-cache"
-uv sync --locked --python 3.12
-uv run --no-sync python -B examples/validate_weather.py
-uv run --no-sync python -B server.py --engine browser
+$env:UV_PYTHON_INSTALL_DIR = "$PWD\.runtime\python"
+New-Item -ItemType Directory -Force .runtime\tmp | Out-Null
+$env:TEMP = "$PWD\.runtime\tmp"
+$env:TMP = $env:TEMP
+uv sync --locked --extra greenlight --python 3.12
+uv run --no-sync python -B server.py --check-model
+uv run --no-sync python -B server.py
 ```
 
 ## Linux or macOS
@@ -29,30 +33,46 @@ git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
 cd Greenlight-simulation
 export PYTHONDONTWRITEBYTECODE=1
 export UV_CACHE_DIR="$PWD/.uv-cache"
-uv sync --locked --python 3.12
-uv run --no-sync python -B examples/validate_weather.py
-uv run --no-sync python -B server.py --engine browser
+export UV_PYTHON_INSTALL_DIR="$PWD/.runtime/python"
+mkdir -p .runtime/tmp
+export TMPDIR="$PWD/.runtime/tmp"
+uv sync --locked --extra greenlight --python 3.12
+uv run --no-sync python -B server.py --check-model
+uv run --no-sync python -B server.py
 ```
 
-Open <http://127.0.0.1:4173/>. Stop with Ctrl+C. If the port is busy, add `--port 4174`. The historical `browser` option means interface-only: it never substitutes approximate simulation values.
+Open <http://127.0.0.1:4173/>. Stop with Ctrl+C. If the port is busy, add `--port 4174`. The check command must print **Full GreenLight model check passed**; it does not leave a server running. A failed check exits with code 2. The regular server also refuses to start if the full model cannot initialize.
 
-For end users who do not need Ruff, `uv sync --locked --no-dev --python 3.12` is sufficient. No Node installation is needed to use the interface.
+For end users who do not need Ruff, add `--no-dev` to the sync command. Keep `--extra greenlight` on later syncs or uv can remove the optional model. No Node installation is needed to use the simulator.
 
-## Scientific model setup
+## What is installed?
 
-Set `GREENLIGHT_GYM_PATH` to a compatible source checkout containing `gl_gym/__init__.py`. The application no longer assumes a personal sibling-directory layout. If this variable is absent, full-model startup returns a clear configuration error. Existing users who relied on automatic sibling discovery must set it explicitly.
+The `greenlight` extra pins [gl-gym 0.3.2](https://pypi.org/project/gl-gym/0.3.2/). `uv.lock` records its artifact hashes and supporting dependency versions. Everything is installed in this checkout's `.venv`; the commands above also keep downloads, temporary files and any uv-provisioned Python inside this checkout. Existing system Python can be reused.
+
+The upstream package includes `gl_gym/data/weather/Amsterdam/2010.csv`, which is used for the built-in scenarios. The simulator does not search neighboring folders or require private research data. Excel uploads remain in memory. Upstream training extras (PyTorch, W&B and reinforcement-learning training tools) are not installed.
+
+The dependency declares AGPL-3.0-or-later and includes its license. Attribution is in [CITATION.md](../CITATION.md). The wrapper's software license remains undecided; separate installation does not waive upstream license terms.
+
+## Advanced: use a source checkout
+
+Normally leave `GREENLIGHT_GYM_PATH` unset. If it is set, it takes precedence over the installed package and must point to a compatible checkout containing `gl_gym/__init__.py`. An invalid override fails explicitly; it does not silently select another model. Source imports are read-only and bytecode writing is disabled.
 
 ```powershell
 $env:GREENLIGHT_GYM_PATH = 'C:\path\to\GreenLight-Gym2'
 uv sync --locked --extra greenlight --python 3.12
-uv run --no-sync python -B server.py --engine glgym
+uv run --no-sync python -B server.py --check-model
+uv run --no-sync python -B server.py
 ```
 
 On Linux/macOS, use `export GREENLIGHT_GYM_PATH="/path/to/GreenLight-Gym2"` with the same remaining commands. The variable is not loaded from `.env` automatically.
 
-The adapter requires the `gl_gym/GreenLightTomato-v0` environment, a 28-state model, six controls, the component API, and the auxiliary equations documented in [MODEL_CARD](../MODEL_CARD.md). A repository with a similar name is not sufficient evidence of compatibility. The current project does not yet distribute a pinned, universally installable upstream source revision. Obtain the exact compatible revision from the maintainer and record its commit and local changes; do not guess a different GreenLight repository.
+The adapter requires the `gl_gym/GreenLightTomato-v0` environment, a 28-state model, six controls, 208 parameters, the component API and the auxiliary equations documented in [MODEL_CARD](../MODEL_CARD.md). Custom source revisions are not covered by the pinned-package guarantee. Their provenance is labeled as a source checkout, not as the installed package. Restart Python when changing model sources.
 
-Built-in runs require the upstream Amsterdam/2010 weather file. Use only data you are authorized to access. The synthetic validation example above does not require that file. Full-model integration tests are opt-in and are not part of the default checks.
+To return to the packaged model, run `Remove-Item Env:GREENLIGHT_GYM_PATH -ErrorAction SilentlyContinue` in PowerShell, `set GREENLIGHT_GYM_PATH=` in CMD, or `unset GREENLIGHT_GYM_PATH` in a POSIX shell. This clears the variable only for that terminal; it does not remove any files.
+
+## Interface-only use
+
+Omit the extra with `uv sync --locked --python 3.12`, then run `uv run --no-sync python -B server.py --engine browser`. The historical `browser` name means interface-only: simulation results are unavailable and there is no approximation fallback. Run `uv run --no-sync python -B examples/validate_weather.py` to validate the 433-row synthetic workbook without loading a model.
 
 ## Contributor setup
 
@@ -67,8 +87,8 @@ uv run --no-sync python -B scripts/check.py
 
 ## Troubleshooting
 
-- **Model path missing:** set `GREENLIGHT_GYM_PATH` explicitly, or use `--engine browser` for the tutorial and upload validation.
+- **Model not installed or wrong version:** run the locked sync command with `--extra greenlight`, then repeat `--check-model`.
 - **Optional dependencies missing:** rerun `uv sync --locked --extra greenlight --python 3.12`. A later sync without this extra can remove optional packages.
-- **Import/API mismatch:** confirm the exact upstream revision; do not edit the external model to silence an import error.
+- **Import/API mismatch or unexpected source:** unset an old `GREENLIGHT_GYM_PATH` to use the tested package. Do not edit another model repository to silence an import error.
 - **Asset 404 after updating:** restart the server and reload the page. Browser scripts now live under `frontend/`.
 - **Different results between users:** compare source revision, loaded-source hash, configuration, weather, initialization and solver versions before comparing outputs.

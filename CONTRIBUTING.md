@@ -20,7 +20,7 @@ npm ci --ignore-scripts --cache .npm-cache
 uv run --no-sync python -B server.py --engine browser
 ```
 
-This serves the interface and upload validation, with scientific results unavailable until the full model is configured. The optional model is an explicit, read-only source checkout. Set `GREENLIGHT_GYM_PATH`; never edit a collaborator's model or research files while working on this wrapper.
+This minimal setup serves the interface and upload validation. For simulation, sync with `--extra greenlight` and run `server.py --check-model`, then `server.py`. The pinned public package supplies the model and default weather. `GREENLIGHT_GYM_PATH` is an optional advanced source override; never edit a collaborator's model or research files while working on this wrapper.
 
 ## Make a focused change
 
@@ -66,7 +66,7 @@ npm run format
 
 The Python cyclomatic-complexity limit is 20. New code should use focused functions with explicit inputs and documented units. A score below the limit does not by itself make code understandable. Keep source readable; generated/minified distribution assets should not replace the maintained source.
 
-For model execution checks, follow [the opt-in integration instructions](docs/scientific-validation.md). Run them only against an explicitly authorized source/data setup. Passing software checks is not evidence of greenhouse prediction accuracy.
+For model execution checks, follow [the opt-in integration instructions](docs/scientific-validation.md). CI runs these separately with the pinned public package and its weather on Windows, Linux and macOS. Custom external sources still require explicit authorization. Passing software checks is not evidence of greenhouse prediction accuracy.
 
 ## Pull request expectations
 

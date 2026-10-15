@@ -22,12 +22,13 @@ Define calibration and held-out periods before fitting. Keep held-out observatio
 
 ## Optional integration suite
 
-After configuring an explicitly authorized model/data source:
+After installing the pinned public model with `uv sync --locked --extra greenlight --python 3.12` (no external research data is needed):
 
 ```powershell
 $env:PYTHONDONTWRITEBYTECODE = '1'
 $env:RUN_GREENLIGHT_INTEGRATION = '1'
+uv run --no-sync python -B server.py --check-model
 uv run --no-sync python -B -m unittest discover -s tests -p 'test_greenlight_integration.py' -v
 ```
 
-On Linux/macOS, set those environment variables with `export`. The default `scripts/check.py` deliberately disables these tests and never assumes access to a contributor's external research data. Read [MODEL_CARD](../MODEL_CARD.md) for the authoritative model scope and limitations.
+On Linux/macOS, set those environment variables with `export`. Leave `GREENLIGHT_GYM_PATH` unset to test the installed package. The default `scripts/check.py` deliberately disables these tests; CI runs them separately against the pinned public dependency. A custom source/data override requires explicit authorization. Read [MODEL_CARD](../MODEL_CARD.md) for the authoritative model scope and limitations.

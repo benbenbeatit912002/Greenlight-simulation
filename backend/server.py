@@ -42,6 +42,8 @@ class SimulatorHTTPServer(ThreadingHTTPServer):
 
 class SimulatorRequestHandler(SimpleHTTPRequestHandler):
     server_version = "GreenLightSimulator/1.0"
+    # Windows registry associations can otherwise label Excel workbooks as text.
+    extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".xlsx": XLSX_MIME}
 
     def end_headers(self) -> None:
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -324,6 +326,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--host", default="127.0.0.1", help="bind address (default: loopback only)")
     parser.add_argument("--port", default=4173, type=int, help="HTTP port")
     parser.add_argument(
+        "--check-model",
+        action="store_true",
+        help="initialize the full model, check one step, and exit without opening a server",
+    )
+    parser.add_argument(
         "--engine",
         default="glgym",
         choices=("auto", "glgym", "browser"),
@@ -332,8 +339,35 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def check_model() -> int:
+    engine = None
+    try:
+        engine = GreenLightGymAdapter()
+        snapshot = engine.step({"steps": 1, "mode": "auto"})
+        if snapshot["modelStep"] != 1 or snapshot["episode"]["truncated"]:
+            raise RuntimeError("The model did not complete the first 15-minute step.")
+        if not engine._np.isfinite(engine.core.x).all():
+            raise RuntimeError("The model returned a non-finite state.")
+        json.dumps(snapshot, allow_nan=False)
+        print(
+            json.dumps(
+                {"engine": engine.metadata(), "modelStep": snapshot["modelStep"]}, allow_nan=False
+            )
+        )
+        print("Full GreenLight model check passed (one 15-minute step; no server started).")
+        return 0
+    except Exception as exc:
+        print(f"GreenLight model check failed: {exc}")
+        return 2
+    finally:
+        if engine is not None:
+            engine.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.check_model:
+        return check_model()
     try:
         server = create_server(args.host, args.port, requested_engine=args.engine)
     except RuntimeError as exc:

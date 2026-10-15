@@ -1,11 +1,8 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.metadata
 import json
 import math
-import os
-import sys
 import uuid
 from copy import deepcopy
 from pathlib import Path
@@ -26,6 +23,12 @@ from backend.model_defaults import CONTROL_NAMES as CONTROL_NAMES
 from backend.model_defaults import DEFAULT_TARGETS as DEFAULT_TARGETS
 from backend.model_defaults import RULE_BASED_DEFAULTS as RULE_BASED_DEFAULTS
 from backend.model_defaults import SCENARIOS as SCENARIOS
+from backend.model_source import default_source_path as default_source_path
+from backend.model_source import (
+    prepare_model_import,
+    resolve_model_source,
+    verify_loaded_model_source,
+)
 from backend.provenance import _array_fingerprint as _array_fingerprint
 from backend.provenance import _git_revision as _git_revision
 from backend.provenance import _loaded_source_fingerprint as _loaded_source_fingerprint
@@ -52,13 +55,6 @@ def _round(value: float, digits: int = 2) -> float:
     return round(float(value), digits)
 
 
-def default_source_path() -> Path:
-    configured = os.environ.get("GREENLIGHT_GYM_PATH")
-    if configured:
-        return Path(configured).expanduser().resolve()
-    raise RuntimeError("Set GREENLIGHT_GYM_PATH to a compatible GreenLight-Gym2 source checkout.")
-
-
 class PreservedRunResetError(RuntimeError):
     """A candidate failed while the previous environment remained untouched."""
 
@@ -71,16 +67,11 @@ class GreenLightGymAdapter:
     step_minutes = 15
 
     def __init__(self, source_path: str | Path | None = None) -> None:
-        self.source_path = Path(source_path or default_source_path()).resolve()
-        if not (self.source_path / "gl_gym" / "__init__.py").is_file():
-            raise RuntimeError(f"GL-Gym2 source not found at {self.source_path}")
-
-        source_text = str(self.source_path)
-        if source_text not in sys.path:
-            sys.path.insert(0, source_text)
-        # Import sibling source read-only; do not create __pycache__ files in
-        # either practice repository.
-        sys.dont_write_bytecode = True
+        source = resolve_model_source(source_path)
+        self.source_path = source.root
+        self.package_version = source.version
+        self.source_kind = source.kind
+        prepare_model_import(self.source_path)
 
         try:
             import casadi as ca
@@ -108,6 +99,8 @@ class GreenLightGymAdapter:
                 "greenlight dependency group before starting the scientific model."
             ) from exc
 
+        verify_loaded_model_source(self.source_path)
+
         self._gym = gym
         self._np = np
         self._rule_based_controller_class = RuleBasedController
@@ -122,11 +115,9 @@ class GreenLightGymAdapter:
         self._soil_temperature = soilTempNl
         self._vapor_density_to_pressure = vaporDens2pres
 
-        try:
-            self.package_version = importlib.metadata.version("gl-gym")
-        except importlib.metadata.PackageNotFoundError:
-            self.package_version = "local-source"
-        self.git_revision = _git_revision(self.source_path)
+        self.git_revision = (
+            _git_revision(self.source_path) if self.source_kind == "source-checkout" else None
+        )
 
         self._weather_data_dir = self.source_path / "gl_gym" / "data" / "weather"
         self._default_weather_repository = WeatherRepository(
@@ -306,7 +297,12 @@ class GreenLightGymAdapter:
             "stepMinutes": self.step_minutes,
             "weather": self.weather_label if uploaded else "Amsterdam recorded weather",
             "weatherSource": "uploaded-in-memory" if uploaded else "recorded-Amsterdam-2010",
-            "sourceLabel": "GreenLight-Gym2 source checkout (read-only import)",
+            "sourceKind": self.source_kind,
+            "sourceLabel": (
+                f"gl-gym {self.package_version} (installed package)"
+                if self.source_kind == "installed-package"
+                else "GreenLight-Gym2 source checkout (read-only import)"
+            ),
             "outputSource": "gl_gym.models.GreenLight.aux_states.update",
             "weatherFile": None if uploaded else "gl_gym/data/weather/Amsterdam/2010.csv",
         }

@@ -87,6 +87,10 @@ class GreenLightIntegrationTests(unittest.TestCase):
             )
             self.assertEqual(reset_snapshot["engine"], "greenlight-gym2")
             metadata = adapter.metadata()
+            if not os.environ.get("GREENLIGHT_GYM_PATH"):
+                self.assertEqual(metadata["sourceKind"], "installed-package")
+                self.assertEqual(metadata["version"], "0.3.2")
+                self.assertIsNone(metadata["gitRevision"])
             self.assertRegex(
                 metadata["sourceFingerprint"],
                 r"^[0-9a-f]{64}$",

@@ -1,7 +1,7 @@
 # Model Card: GreenLight Simulation
 
 Status: pre-deployment research and education prototype
-Last reviewed: 2026-09-15
+Last reviewed: 2026-10-15
 
 ## Decision-support claim
 
@@ -15,6 +15,8 @@ The current public interface runs only GreenLight-Gym2. Missing connections or s
 | Legacy browser approximation (not active) | Historical deterministic JavaScript model retained for regression tests. | Historical software testing only. | Not calibrated; not loaded by the public UI. |
 
 The active engine is visible in the interface and returned by `GET /api/status`. A saved comparison records the engine, model identifier, weather fingerprint, cost-assumption identifier, scenario, horizon, targets, controls, resources, crop result, and alert count. The full-model identifier combines the installed package version (or a `source-checkout` label), adapter version, parameter fingerprint, and either an exact 40-character source Git revision or a SHA-256 fingerprint of the exact `gl_gym` Python modules loaded by the adapter. The selected weather array is fingerprinted separately. Comparisons are blocked when either side has sentinel provenance such as `unknown`, `unversioned`, or `local-source`; runs using the same scenario also require an identical weather fingerprint.
+
+The standard installation pins the public **gl-gym 0.3.2** package and uses its bundled Amsterdam/2010 weather. No private checkout is required. Installed-package runs report a loaded-source hash, not the containing simulator repository's Git revision. An explicit `GREENLIGHT_GYM_PATH` remains available for advanced use and is labeled separately. The `--check-model` command verifies initialization and one finite 15-minute step; this is an installation check, not predictive validation. The adapter's physical equations, parameter mappings and time step are unchanged by this packaging update.
 
 ## Intended uses
 
