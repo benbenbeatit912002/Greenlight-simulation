@@ -219,19 +219,13 @@ class StaticContractTests(unittest.TestCase):
         ):
             self.assertIn(metadata, self.engine_js)
 
-        strategy = (ROOT / "PRODUCT_STRATEGY.md").read_text(encoding="utf-8")
-        self.assertIn(
-            "explainable, pre-deployment greenhouse decision-support workbench",
-            strategy,
-        )
-        self.assertIn("USDA Agricultural Research Service", strategy)
-        self.assertIn("Wageningen University & Research", strategy)
-
     def test_public_github_project_contract(self) -> None:
         required_files = (
             "MODEL_CARD.md",
             "CONTRIBUTING.md",
             "SECURITY.md",
+            "CHANGELOG.md",
+            "docs/roadmap.md",
             ".github/workflows/ci.yml",
             ".github/pull_request_template.md",
             ".github/ISSUE_TEMPLATE/bug_report.yml",
@@ -276,13 +270,32 @@ class StaticContractTests(unittest.TestCase):
         self.assertNotIn("An interactive greenhouse digital twin", readme)
         self.assertNotIn("scientific digital twin", self.html)
 
-    def test_worklog_index_links_exist(self) -> None:
-        worklog_dir = ROOT / "worklogs"
-        index = (worklog_dir / "index.html").read_text(encoding="utf-8")
-        links = re.findall(r'<a href="([^"/]+\.html)"', index)
-        self.assertGreater(len(links), 0)
-        for link in links:
-            self.assertTrue((worklog_dir / link).is_file(), link)
+    def test_public_documentation_links_exist(self) -> None:
+        documents = [
+            ROOT / name
+            for name in (
+                "README.md",
+                "CONTRIBUTING.md",
+                "CHANGELOG.md",
+                "CITATION.md",
+                "MODEL_CARD.md",
+                "GREENHOUSE_CONFIGURATION.md",
+                "SECURITY.md",
+                "examples/README.md",
+            )
+        ]
+        documents.extend(sorted((ROOT / "docs").glob("*.md")))
+        for document in documents:
+            for target in re.findall(
+                r"\[[^\]]*\]\(([^\s)]+)\)", document.read_text(encoding="utf-8")
+            ):
+                link = urlsplit(target)
+                if link.scheme or link.netloc or not link.path:
+                    continue
+                with self.subTest(document=document.name, target=target):
+                    resolved = (document.parent / link.path).resolve()
+                    self.assertTrue(resolved.is_relative_to(ROOT))
+                    self.assertTrue(resolved.is_file())
 
     def test_weather_template_link_alignment(self) -> None:
         self.assertIn('class="showcase-secondary weather-template-link"', self.html)

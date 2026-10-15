@@ -5,8 +5,9 @@ import json
 import threading
 import unittest
 from typing import Any, Mapping
+from unittest.mock import patch
 
-from backend.server import create_server
+from backend.server import STATIC_ROOT, create_server
 from backend.weather_upload import XLSX_MIME
 
 
@@ -118,6 +119,8 @@ class ApiServerTests(unittest.TestCase):
             "/templates/weather-taipei-summer.xlsx",
             "/docs/controller-schedules.md",
             "/docs/public-weather-examples.md",
+            "/docs/roadmap.md",
+            "/CHANGELOG.md",
         ):
             with self.subTest(path=path):
                 status, body, _ = self.request("GET", path)
@@ -132,6 +135,28 @@ class ApiServerTests(unittest.TestCase):
         ):
             with self.subTest(path=path):
                 self.assertEqual(self.request("GET", path)[0], 404)
+
+    def test_local_notes_are_private_even_if_the_files_exist(self):
+        # Resolve every private route to a real, harmless file so this catches
+        # allowlist regressions even in a fresh checkout without local notes.
+        with patch(
+            "backend.server.SimulatorRequestHandler.translate_path",
+            return_value=str(STATIC_ROOT / "README.md"),
+        ):
+            for method in ("GET", "HEAD"):
+                for path in (
+                    "/AGENTS.md",
+                    "/SECOND_COMPUTER_PROMPT.md",
+                    "/IMPLEMENTATION_PLAN.md",
+                    "/PRODUCT_STRATEGY.md",
+                    "/worklogs/index.html",
+                    "/worklogs/private-note.html",
+                    "/%77orklogs/private-note.html",
+                    "/worklogs/private-note.html?download=1",
+                    "/.codex/instructions.md",
+                ):
+                    with self.subTest(method=method, path=path):
+                        self.assertEqual(self.request(method, path)[0], 404)
 
     def test_status_reports_scientific_engine(self) -> None:
         status, body, headers = self.request("GET", "/api/status")

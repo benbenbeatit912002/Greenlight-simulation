@@ -11,3 +11,13 @@ __pycache__/
 htmlcov/
 .ruff_cache/
 .npm-cache/
+
+# Local development instructions and private notes
+/AGENTS.md
+/AGENTS.override.md
+/.codex/
+/.agents/
+/SECOND_COMPUTER_PROMPT.md
+/IMPLEMENTATION_PLAN.md
+/PRODUCT_STRATEGY.md
+/worklogs/

@@ -29,7 +29,7 @@ result:
 
 - [ ] The change is focused and documented.
 - [ ] Tests were added or the reason they are unnecessary is explained.
-- [ ] An English HTML work log was added and indexed newest first.
+- [ ] User-facing changes are described in the changelog.
 - [ ] No secret, private greenhouse data, thesis content, experiment result, or protected research material is included.
 - [ ] External GreenLight-Gym2 source remains read-only.
 - [ ] Known limitations and follow-up work are stated.

@@ -91,7 +91,7 @@ Each server process owns one shared simulation. For independent work, different 
 | Understand or modify code | [Architecture](docs/architecture.md), [contributing](CONTRIBUTING.md) |
 | Call the local API | [API contract](docs/api.md) |
 | Interpret scientific results | [Model card](MODEL_CARD.md), [validation](docs/scientific-validation.md) |
-| See planned capabilities | [Implementation plan](IMPLEMENTATION_PLAN.md), [product direction](PRODUCT_STRATEGY.md) |
+| See planned capabilities | [Roadmap](docs/roadmap.md) |
 
 ## Repository map
 
@@ -107,7 +107,7 @@ examples/           Public validation example and expected summary
 templates/          Synthetic Excel weather template
 tests/              Software contracts and opt-in full-model integration
 scripts/check.py    Shared local/CI quality-check entry point
-worklogs/           English project change records
+CHANGELOG.md        User-facing updates
 ```
 
 ## Contributing and checks
@@ -127,6 +127,6 @@ GreenLight-Gym2 supplies the scientific model; this repository supplies the loca
 
 No software license has been selected for this wrapper yet. Public visibility does not grant broad reuse rights. The owner must confirm the license and citation authors before those metadata can be finalized; upstream model and data permissions remain separate.
 
-## Change records
+## Updates
 
-[Worklog index](worklogs/index.html) records implementation and verification. Existing root startup remains supported; browser assets moved to `frontend/`, and full-model startup now requires explicit `GREENLIGHT_GYM_PATH` instead of automatic sibling discovery.
+See the [changelog](CHANGELOG.md) for recent updates and the [roadmap](docs/roadmap.md) for planned features.

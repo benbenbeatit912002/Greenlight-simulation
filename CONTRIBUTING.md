@@ -4,9 +4,9 @@ Thank you for helping make GreenLight Simulation more reproducible, understandab
 
 ## Before you start
 
-- Read `README.md`, `MODEL_CARD.md`, `PRODUCT_STRATEGY.md`, and `AGENTS.md`.
+- Read [README.md](README.md), [MODEL_CARD.md](MODEL_CARD.md), and the [roadmap](docs/roadmap.md).
 - Search existing issues and pull requests before opening a duplicate.
-- Keep the product positioned as pre-deployment decision support, not a production controller.
+- Describe the project as a simulation for learning and research, not a production controller.
 - Do not submit private greenhouse data, thesis material, credentials, unpublished results, or source copied from a repository whose license does not permit redistribution.
 - This repository does not yet have a software license. Public visibility alone does not grant reuse rights; the owner must choose and add a license before broad redistribution is invited.
 
@@ -29,7 +29,7 @@ This serves the interface and upload validation, with scientific results unavail
 3. Explain the intended user, expected behavior, assumptions, and limitations.
 4. Add or update tests for behavior that changed.
 5. Update documentation and `MODEL_CARD.md` when model meaning, provenance, economics, or validation status changes.
-6. Add a standalone English HTML entry in `worklogs/` and place its link first in `worklogs/index.html`.
+6. Add a short entry to `CHANGELOG.md` for user-facing changes.
 
 Avoid committing `.venv`, `.uv-cache`, `.runtime`, logs, local data, Python bytecode, editor files, or secrets.
 
@@ -76,7 +76,7 @@ The pull request should contain:
 - screenshots for visible UI changes;
 - model and safety impact;
 - exact validation commands and results;
-- documentation/work-log updates;
+- documentation and changelog updates;
 - known limitations and follow-up work; and
 - confirmation that no protected research material or secret was included.
 

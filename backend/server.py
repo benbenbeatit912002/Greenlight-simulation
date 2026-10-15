@@ -204,12 +204,12 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             "/frontend/greenhouse-settings.js",
             "/README.md",
             "/MODEL_CARD.md",
-            "/PRODUCT_STRATEGY.md",
+            "/CHANGELOG.md",
             "/GREENHOUSE_CONFIGURATION.md",
             "/docs/controller-schedules.md",
             "/docs/public-weather-examples.md",
+            "/docs/roadmap.md",
         }
-        worklog = path.startswith("/worklogs/") and path.count("/") == 2 and path.endswith(".html")
         template = path in {
             "/templates/greenlight-weather-template.xlsx",
             "/templates/weather-amsterdam-winter.xlsx",
@@ -221,7 +221,7 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
         }
         resolved = Path(self.translate_path(path)).resolve()
         if (
-            (path not in public and not worklog and not template)
+            (path not in public and not template)
             or not resolved.is_relative_to(STATIC_ROOT)
             or not resolved.is_file()
         ):

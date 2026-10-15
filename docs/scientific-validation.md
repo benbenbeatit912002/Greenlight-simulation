@@ -14,11 +14,11 @@ The public synthetic workbook demonstrates software compatibility. It is not mea
 
 Record the application commit and uncommitted changes, upstream source commit and loaded-source fingerprint, dependency lock, parameters, initial states, weather file identity, requested time window, source clock, seed and solver configuration. Retain the exact authorized input file; a hash alone cannot reconstruct it. Preserve full output series when available instead of relying on a screenshot or the short live chart.
 
-The current adapter reports much of this identity in status/snapshots. A complete export/replay bundle is still M4 in [IMPLEMENTATION_PLAN](../IMPLEMENTATION_PLAN.md); this structural refactor does not claim to implement it.
+The current adapter reports much of this identity in status/snapshots. A complete export/replay bundle is not yet available; see the [roadmap](roadmap.md).
 
 ## Before reporting predictive performance
 
-Define calibration and held-out periods before fitting. Keep held-out observations out of parameter selection. Align timestamps, units, initial states and historical actuator inputs. Report error metrics, failed runs, assumptions and uncertainty; distinguish default-parameter runs from calibrated runs. The current application does not implement the M5 fitting workflow.
+Define calibration and held-out periods before fitting. Keep held-out observations out of parameter selection. Align timestamps, units, initial states and historical actuator inputs. Report error metrics, failed runs, assumptions and uncertainty; distinguish default-parameter runs from calibrated runs. Parameter fitting is not yet available in this application.
 
 ## Optional integration suite
 
