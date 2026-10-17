@@ -43,12 +43,12 @@ You can switch pages without losing the current run or unsaved settings. The dra
 
 ## Acknowledgements and citation
 
-This work builds on **GreenLight**, developed by **David Katzin and collaborators**, and uses the **GreenLight-Gym2** implementation by **Bart van Laatum and contributors**. We gratefully acknowledge their scientific and software contributions.
+The greenhouse model comes from **GreenLight**, developed by **David Katzin and collaborators**, and the **GreenLight-Gym2** implementation by **Bart van Laatum and contributors**.
 
 - **Original GreenLight model:** David Katzin, Simon van Mourik, Frank Kempkes, and Eldert J. van Henten (2020). *GreenLight – An open source model for greenhouses with supplemental lighting: Evaluation of heat requirements under LED and HPS lamps*. Biosystems Engineering, 194, 61–81. [Paper](https://doi.org/10.1016/j.biosystemseng.2020.03.010) · [Original repository](https://github.com/davkat1/GreenLight).
 - **GreenLight-Gym / GreenLight-Gym2:** Bart van Laatum, Eldert J. van Henten, and Sjoerd Boersma (2025). *GreenLight-Gym: Reinforcement learning benchmark environment for control of greenhouse production systems*. IFAC-PapersOnLine, 59(23), 437–442. [Paper](https://doi.org/10.1016/j.ifacol.2025.11.827) · [Upstream repository](https://github.com/BartvLaatum/GreenLight-Gym2).
 
-This repository contributes the browser interface and local integration layer; the underlying greenhouse model and upstream environment are credited to their original authors. Please cite the relevant upstream publications when using this work in research. See [CITATION.md](CITATION.md) for BibTeX and attribution details.
+This project adds the dashboard, weather uploads, settings and schedule comparisons. See [CITATION.md](CITATION.md) for upstream references and BibTeX.
 
 ## Quick start
 
@@ -75,6 +75,7 @@ See [the Windows/Linux/macOS installation guide](docs/installation.md) for proje
 - Edit a daily six-actuator schedule and inspect planned/applied equipment timelines.
 - Compare compatible runs at matching horizons using whole-run climate, heating energy and time-outside-limit metrics.
 - Try three attributed NASA POWER weather workbooks for Amsterdam, Almería and Taipei. See [public weather examples and limitations](docs/public-weather-examples.md).
+- Download a two-year hourly [weather collection for eight locations](data/weather/README.md), with source records and quality checks. These are outdoor inputs, not greenhouse calibration data.
 
 See the [scheduled control guide and research references](docs/controller-schedules.md) for the baseline-comparison workflow. The included schedule is a teaching example, not an optimized or safe growing strategy.
 
@@ -91,6 +92,7 @@ Each server process owns one shared simulation. For independent work, different 
 | Understand or modify code | [Architecture](docs/architecture.md), [contributing](CONTRIBUTING.md) |
 | Call the local API | [API contract](docs/api.md) |
 | Interpret scientific results | [Model card](MODEL_CARD.md), [validation](docs/scientific-validation.md) |
+| Prepare local calibration | [Weather collection](data/weather/README.md), [methods and synthetic experiment](docs/calibration.md) |
 | See planned capabilities | [Roadmap](docs/roadmap.md) |
 
 ## Repository map
@@ -99,12 +101,12 @@ Each server process owns one shared simulation. For independent work, different 
 server.py           Stable local startup entry point
 backend/            HTTP, application operations and scientific adapter
 frontend/           Browser controls, translations, charts and upload UI
-frontend/legacy/    Inactive approximation retained for regression tests
 index.html          Public page and explicit browser-script load order
 styles.css          Interface styling
 docs/               Installation, user, architecture and scientific guides
 examples/           Public validation example and expected summary
-templates/          Synthetic Excel weather template
+templates/          Excel weather template and three public weather examples
+data/weather/       Weather collection instructions, site list and local downloads
 tests/              Software contracts and opt-in full-model integration
 scripts/check.py    Shared local/CI quality-check entry point
 CHANGELOG.md        User-facing updates
@@ -127,7 +129,7 @@ GreenLight-Gym2 supplies the scientific model; this repository supplies the loca
 
 The [upstream gl-gym package](https://pypi.org/project/gl-gym/0.3.2/) declares **AGPL-3.0-or-later**. Its source, license and example weather are installed as a dependency, not copied into this repository. Installing it separately does not remove applicable upstream license obligations.
 
-No software license has been selected for this wrapper yet. Public visibility does not grant broad reuse rights. The owner must confirm the license and citation authors before those metadata can be finalized; upstream model and data permissions remain separate.
+This dashboard does not yet have a software license. Public visibility alone does not grant permission to redistribute its code. The upstream model and weather data have their own terms.
 
 ## Updates
 

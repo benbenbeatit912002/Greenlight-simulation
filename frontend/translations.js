@@ -218,19 +218,16 @@
       dragSliders: "拖曳滑桿調整",
       fullModel: "GreenLight 2 完整模型",
       offlineModel: "科學模型已離線",
-      approximateModel: "即時近似模型",
+      unknownModel: "未識別的模型",
       fullModelNote:
         "15 分鐘／步 · 28-state GreenLight-Gym2 CasADi 模型 · 阿姆斯特丹實測天氣。六項控制值直接使用 0–1 絕對開度。",
       fullModelUploadedNote:
         "15 分鐘／步 · 28-state GreenLight-Gym2 CasADi 模型 · 目前使用記憶體中的上傳氣候資料。六項控制值直接使用 0–1 絕對開度。",
-      browserModelNote:
-        "15 分鐘／步 · 6 項 GreenLight 2 控制量。此介面使用簡化氣候動態作即時互動展示；啟用 Python 科學後端後會自動切換完整 28-state 模型。",
       offlineModelNote:
         "GreenLight-Gym2 尚未連接或已停止。模擬數字已隱藏，不會使用瀏覽器近似模型。",
       fullModelTour: "目前連接 28-state GreenLight-Gym2 CasADi 模型與阿姆斯特丹實測天氣。",
       fullModelUploadedTour:
         "目前連接 28-state GreenLight-Gym2 CasADi 模型與記憶體中的上傳氣候資料。",
-      browserModelTour: "目前使用瀏覽器近似模型，適合免安裝互動展示，不代表完整科學結果。",
       offlineModelTour: "完整模型未連接，請重新連接。此面板不提供近似模型運算。",
       switchToEnglish: "切換為英文",
       switchToChinese: "切換為中文",
@@ -494,21 +491,17 @@
       dragSliders: "Drag sliders to adjust",
       fullModel: "GreenLight 2 full model",
       offlineModel: "Scientific model offline",
-      approximateModel: "Real-time approximation",
+      unknownModel: "Unrecognized model",
       fullModelNote:
         "15 min/step · 28-state GreenLight-Gym2 CasADi model · measured Amsterdam weather. The six controls use absolute 0–1 openings.",
       fullModelUploadedNote:
         "15 min/step · 28-state GreenLight-Gym2 CasADi model · active weather is the uploaded in-memory dataset. The six controls use absolute 0–1 openings.",
-      browserModelNote:
-        "15 min/step · 6 GreenLight 2 control variables. This interface uses simplified climate dynamics for live interaction; it switches to the full 28-state model when the Python scientific backend is available.",
       offlineModelNote:
         "GreenLight-Gym2 is not connected or has stopped. Simulation values are hidden. No browser approximation is used.",
       fullModelTour:
         "Connected to the 28-state GreenLight-Gym2 CasADi model with measured Amsterdam weather.",
       fullModelUploadedTour:
         "Connected to the 28-state GreenLight-Gym2 CasADi model with the uploaded in-memory weather dataset.",
-      browserModelTour:
-        "Using the browser approximation for installation-free interaction; it is not a full scientific result.",
       offlineModelTour:
         "The full model is unavailable. Reconnect to continue. This panel does not run an approximation.",
       retryModel: "Reconnect full model",

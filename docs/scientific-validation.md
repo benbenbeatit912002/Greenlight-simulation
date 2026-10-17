@@ -8,7 +8,7 @@ Three kinds of evidence must remain distinct:
 | Full-model integration | No; explicit opt-in | A compatible upstream model initializes and steps correctly through this adapter |
 | Independent predictive validation | Not yet completed here | Agreement with held-out greenhouse observations under documented conditions |
 
-The public synthetic workbook demonstrates software compatibility. It is not measured weather and cannot establish predictive accuracy. Legacy browser-model tests do not validate the active scientific model.
+The public synthetic workbook demonstrates software compatibility. It is not measured weather and cannot establish predictive accuracy.
 
 ## Record a scientific run
 
@@ -18,7 +18,7 @@ The current adapter reports much of this identity in status/snapshots. A complet
 
 ## Before reporting predictive performance
 
-Define calibration and held-out periods before fitting. Keep held-out observations out of parameter selection. Align timestamps, units, initial states and historical actuator inputs. Report error metrics, failed runs, assumptions and uncertainty; distinguish default-parameter runs from calibrated runs. Parameter fitting is not yet available in this application.
+Define calibration and held-out periods before fitting. Keep held-out observations out of parameter selection. Align timestamps, units, initial states and historical actuator inputs. Report error metrics, failed runs, assumptions and uncertainty; distinguish default-parameter runs from calibrated runs. Real-data fitting is not enabled in the dashboard. The [synthetic fitting example](calibration.md) tests the optimizer with generated targets only.
 
 ## Optional integration suite
 

@@ -233,7 +233,7 @@
   }
 
   function comparisonEngineLabel(engine) {
-    return t(engine === "greenlight2" ? "fullModel" : "approximateModel");
+    return t(engine === "greenlight2" ? "fullModel" : "unknownModel");
   }
 
   function comparisonRunMeta(summary) {

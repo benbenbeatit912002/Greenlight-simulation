@@ -128,6 +128,9 @@ class ApiServerTests(unittest.TestCase):
             "/docs/controller-schedules.md",
             "/docs/public-weather-examples.md",
             "/docs/roadmap.md",
+            "/docs/calibration.md",
+            "/data/weather/README.md",
+            "/data/weather/sites.json",
             "/CHANGELOG.md",
         ):
             with self.subTest(path=path):
@@ -162,6 +165,9 @@ class ApiServerTests(unittest.TestCase):
                     "/%77orklogs/private-note.html",
                     "/worklogs/private-note.html?download=1",
                     "/.codex/instructions.md",
+                    "/frontend/legacy/simulator-engine.js",
+                    "/data/weather/downloads/example/source.json",
+                    "/data/weather/reports/example.json",
                 ):
                     with self.subTest(method=method, path=path):
                         self.assertEqual(self.request(method, path)[0], 404)

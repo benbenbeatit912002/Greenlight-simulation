@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-17
+
+- Removed the unused browser climate model and outdated fallback descriptions from the public project.
+- Added an hourly NASA POWER collector for eight locations, with source hashes, units, gap checks and leap-year coverage.
+- Added fixed-offset weather windows and full-model seasonal checks. Raw downloads and generated reports remain local.
+- Tested a bounded, one-parameter fitting example with synthetic data and a separate evaluation year. Real-greenhouse calibration is not yet enabled.
+- Added research references and a check that prevents local-only files from entering a release.
+
 ## 2026-10-15
 
 - Pinned gl-gym 0.3.2 so the full model and its example weather install with the `greenlight` extra, without a separate source checkout.

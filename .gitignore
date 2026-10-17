@@ -21,3 +21,7 @@ htmlcov/
 /IMPLEMENTATION_PLAN.md
 /PRODUCT_STRATEGY.md
 /worklogs/
+/frontend/legacy/
+/tests/browser_model_contract.test.js
+/data/weather/downloads/
+/data/weather/reports/

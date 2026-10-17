@@ -11,6 +11,7 @@ This project helps people try local weather and equipment settings in the GreenL
 - Compare runs with matching weather, greenhouse settings and duration.
 - Use the dashboard in English or Traditional Chinese.
 - Install the pinned public model and example weather with the `greenlight` extra; no separate source checkout is needed.
+- Collect and validate hourly NASA POWER weather for eight example locations. Run cross-climate numerical checks and a separate synthetic parameter-recovery experiment.
 
 The simulator stops if the full model is unavailable. It does not switch to a simplified model.
 

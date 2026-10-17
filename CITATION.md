@@ -45,5 +45,3 @@ The second entry follows the upstream repository's requested conference citation
 ## Citing this interface and a specific run
 
 In addition to the relevant upstream publications, identify this interface repository and the exact application/upstream commits used for a result. Retain model, configuration and weather provenance as described in [MODEL_CARD](MODEL_CARD.md). Citations acknowledge the scientific foundation; they do not independently validate the wrapper's predictions.
-
-The upstream researchers are not listed as authors of this interface repository. A repository-level `CITATION.cff` can be added when this wrapper's own author metadata is confirmed. Upstream attribution is provided now through this document and the README.

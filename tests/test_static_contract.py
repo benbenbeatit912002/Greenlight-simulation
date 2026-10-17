@@ -39,7 +39,7 @@ class StaticContractTests(unittest.TestCase):
         cls.html = (ROOT / "index.html").read_text(encoding="utf-8")
         cls.app_js = (ROOT / "frontend/app.js").read_text(encoding="utf-8")
         cls.translations_js = (ROOT / "frontend/translations.js").read_text(encoding="utf-8")
-        cls.engine_js = (ROOT / "frontend/legacy/simulator-engine.js").read_text(encoding="utf-8")
+        cls.model_defaults = (ROOT / "backend/model_defaults.py").read_text(encoding="utf-8")
         cls.styles = (ROOT / "styles.css").read_text(encoding="utf-8")
         cls.parser = IdCollector()
         cls.parser.feed(cls.html)
@@ -74,10 +74,10 @@ class StaticContractTests(unittest.TestCase):
         expected = ["uBoil", "uCO2", "uThScr", "uVent", "uLamp", "uBlScr"]
         self.assertEqual(self.parser.controls, expected)
         for name in expected:
-            self.assertRegex(self.engine_js, rf'"{name}"')
+            self.assertRegex(self.model_defaults, rf'"{name}"')
 
     def test_no_external_runtime_dependencies(self) -> None:
-        combined = "\n".join((self.html, self.app_js, self.engine_js, self.styles))
+        combined = "\n".join((self.html, self.app_js, self.styles))
         self.assertNotRegex(combined, r"https?://(?:cdn|unpkg|esm\.)")
         self.assertNotIn("WebSocket", combined)
         api_paths = set(re.findall(r'requestApi\("(/api/[a-z]+)"', self.app_js))
@@ -207,17 +207,9 @@ class StaticContractTests(unittest.TestCase):
         self.assertIn("render(await resetActiveEngine())", scenario_handler)
         self.assertNotIn("model.setScenario", scenario_handler)
 
-        for metadata in (
-            "BROWSER_MODEL_VERSION",
-            "BROWSER_WEATHER_VERSION",
-            "COST_ASSUMPTIONS",
-            "TARGET_LIMITS",
-            'engine: "browser-approximation"',
-            "modelVersion: BROWSER_MODEL_VERSION",
-            "costModelId: COST_ASSUMPTIONS.id",
-            "weatherFingerprint:",
-        ):
-            self.assertIn(metadata, self.engine_js)
+        self.assertNotIn("browserModelNote", self.translations_js)
+        self.assertNotIn("browserModelTour", self.translations_js)
+        self.assertNotIn("approximateModel", self.app_js)
 
     def test_public_github_project_contract(self) -> None:
         required_files = (
@@ -233,7 +225,6 @@ class StaticContractTests(unittest.TestCase):
             ".github/ISSUE_TEMPLATE/model_validation.yml",
             ".github/ISSUE_TEMPLATE/security_contact.yml",
             ".github/ISSUE_TEMPLATE/config.yml",
-            "tests/browser_model_contract.test.js",
         )
         for name in required_files:
             self.assertTrue((ROOT / name).is_file(), name)
@@ -256,11 +247,11 @@ class StaticContractTests(unittest.TestCase):
         self.assertNotIn("upload-artifact", workflow)
 
         model_card = (ROOT / "MODEL_CARD.md").read_text(encoding="utf-8")
-        self.assertIn("Legacy browser approximation (not active)", model_card)
+        self.assertIn("only GreenLight-Gym2", model_card)
         self.assertIn("not a production climate computer", model_card)
         self.assertIn("Operational", model_card)
         self.assertIn("Uncertainty", model_card)
-        self.assertIn("browser-fixed-eur-2026-07", model_card)
+        self.assertIn("greenlight-gym2-variable-costs", model_card)
         self.assertIn("SHA-256 fingerprint of the exact", model_card)
 
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -282,6 +273,7 @@ class StaticContractTests(unittest.TestCase):
                 "GREENHOUSE_CONFIGURATION.md",
                 "SECURITY.md",
                 "examples/README.md",
+                "data/weather/README.md",
             )
         ]
         documents.extend(sorted((ROOT / "docs").glob("*.md")))

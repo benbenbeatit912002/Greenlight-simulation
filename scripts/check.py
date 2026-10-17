@@ -33,6 +33,7 @@ def main() -> int:
         return 2
     python = [sys.executable, "-B"]
     commands = [
+        [*python, "scripts/check_public_tree.py"],
         [*python, "-m", "ruff", "check", "backend", "tests", "scripts", "examples", "server.py"],
         [
             *python,

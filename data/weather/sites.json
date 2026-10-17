@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "provider": "NASA POWER",
+  "years": [2023, 2024],
+  "timeStandard": "UTC",
+  "standardUtcOffsetsHours": {
+    "amsterdam-nl": 1,
+    "almeria-es": 1,
+    "taipei-tw": 8,
+    "tokyo-jp": 9,
+    "davis-us": -8,
+    "leamington-ca": -5,
+    "melbourne-au": 10,
+    "nairobi-ke": 3
+  },
+  "sites": [
+    {
+      "id": "amsterdam-nl",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "latitude": 52.37,
+      "longitude": 4.9
+    },
+    {
+      "id": "almeria-es",
+      "city": "Almeria",
+      "country": "Spain",
+      "latitude": 36.84,
+      "longitude": -2.46
+    },
+    {
+      "id": "taipei-tw",
+      "city": "Taipei",
+      "country": "Taiwan",
+      "latitude": 25.03,
+      "longitude": 121.57
+    },
+    {
+      "id": "tokyo-jp",
+      "city": "Tokyo",
+      "country": "Japan",
+      "latitude": 35.68,
+      "longitude": 139.69
+    },
+    {
+      "id": "davis-us",
+      "city": "Davis, California",
+      "country": "United States",
+      "latitude": 38.54,
+      "longitude": -121.74
+    },
+    {
+      "id": "leamington-ca",
+      "city": "Leamington, Ontario",
+      "country": "Canada",
+      "latitude": 42.05,
+      "longitude": -82.6
+    },
+    {
+      "id": "melbourne-au",
+      "city": "Melbourne",
+      "country": "Australia",
+      "latitude": -37.81,
+      "longitude": 144.96
+    },
+    {
+      "id": "nairobi-ke",
+      "city": "Nairobi",
+      "country": "Kenya",
+      "latitude": -1.29,
+      "longitude": 36.82
+    }
+  ]
+}

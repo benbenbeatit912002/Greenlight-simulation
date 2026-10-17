@@ -26,12 +26,6 @@ index.html + styles.css
   installed gl-gym 0.3.2 package (or explicit read-only source override)
 ```
 
-## Why keep `backend/`?
-
-The project borrows Scientific Python's tooling and documentation conventions. It retains the existing `backend` package and root `server.py` because users and tests already import them, and the application serves assets from this checkout. Introducing a `src/` installable distribution requires separate packaging of those assets. Moving directories solely to match a template would not provide that capability.
-
-`backend.server` continues to re-export `ApiError` and `SimulatorApplication`; their implementation now lives in `backend.application`. `backend.greenlight_adapter` retains the existing imported constants and fingerprint helpers for compatibility.
-
 ## Reset transaction
 
 1. Capture the current run and validate the requested settings.
@@ -49,11 +43,7 @@ Failure restores the previous environment when it was preserved. `PreservedRunRe
 - Upload validation never starts a model or persists workbook bytes.
 - Formatting belongs to Ruff and Prettier. Scientific units, parameter indices, solver timing and behavior require human review and meaningful tests.
 - Prefer named stages and explicit inputs. Avoid helper modules that only hide unrelated state behind generic `utils` names.
-- The inactive approximation is isolated in `frontend/legacy/` and is not loaded by the page.
+- Browser code displays model results; it does not calculate greenhouse climate.
 - One server process owns one shared simulation. Browser tabs are protected against stale writes, but users are not given independent sessions. Run separate local server processes/ports for independent simulations. Internet hosting, authentication and multi-user isolation are outside the current design.
 
 See [scientific validation](scientific-validation.md) for what the checks do and do not establish.
-
-## Template references
-
-Project organization and contributor tooling are informed by the [Scientific Python development guide and template](https://github.com/scientific-python/cookie). Research metadata and citation planning are informed by [FAIR Python Cookiecutter](https://github.com/Materials-Data-Science-and-Informatics/fair-python-cookiecutter). These are references for conventions; the application was adapted in place and does not depend on either generator at runtime.

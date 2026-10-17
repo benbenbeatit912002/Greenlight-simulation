@@ -200,7 +200,6 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             "/index.html",
             "/frontend/app.js",
             "/styles.css",
-            "/frontend/legacy/simulator-engine.js",
             "/frontend/climate-upload.js",
             "/frontend/run-window.js",
             "/frontend/greenhouse-settings.js",
@@ -211,6 +210,9 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             "/docs/controller-schedules.md",
             "/docs/public-weather-examples.md",
             "/docs/roadmap.md",
+            "/docs/calibration.md",
+            "/data/weather/README.md",
+            "/data/weather/sites.json",
         }
         template = path in {
             "/templates/greenlight-weather-template.xlsx",

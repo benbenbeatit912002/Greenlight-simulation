@@ -1,18 +1,17 @@
 # Model Card: GreenLight Simulation
 
 Status: pre-deployment research and education prototype
-Last reviewed: 2026-10-15
+Last reviewed: 2026-10-17
 
 ## Decision-support claim
 
-This project helps a user compare simulated greenhouse climate-control choices before trying them in a physical greenhouse. It is a local, explainable decision-support workbench, not a production climate computer, a safety alarm, or an autonomous controller.
+This project compares simulated greenhouse weather and equipment settings. It is a learning and research tool, not a production climate computer, a safety alarm, or an autonomous controller.
 
-The current public interface runs only GreenLight-Gym2. Missing connections or solver errors hide simulation values and stop running. The legacy JavaScript approximation remains in the repository for historical regression tests but is not loaded by the interface.
+The current public interface runs only GreenLight-Gym2. Missing connections or solver errors hide simulation values and stop running. There is no simplified-model fallback.
 
 | Engine | What it is | Appropriate use | Evidence status |
 | --- | --- | --- | --- |
 | GreenLight-Gym2 | A read-only adapter to the external `gl_gym/GreenLightTomato-v0` environment, using its 28-state GreenLight model, recorded Amsterdam weather, and six absolute controls. | Local scientific-model exploration and integration testing. | The adapter has reset/step integration tests. It has not yet been validated here against an independent greenhouse dataset. |
-| Legacy browser approximation (not active) | Historical deterministic JavaScript model retained for regression tests. | Historical software testing only. | Not calibrated; not loaded by the public UI. |
 
 The active engine is visible in the interface and returned by `GET /api/status`. A saved comparison records the engine, model identifier, weather fingerprint, cost-assumption identifier, scenario, horizon, targets, controls, resources, crop result, and alert count. The full-model identifier combines the installed package version (or a `source-checkout` label), adapter version, parameter fingerprint, and either an exact 40-character source Git revision or a SHA-256 fingerprint of the exact `gl_gym` Python modules loaded by the adapter. The selected weather array is fingerprinted separately. Comparisons are blocked when either side has sentinel provenance such as `unknown`, `unversioned`, or `local-source`; runs using the same scenario also require an identical weather fingerprint.
 
@@ -31,7 +30,6 @@ The standard installation pins the public **gl-gym 0.3.2** package and uses its 
 - Sending commands to physical greenhouse actuators.
 - Supervising crop safety, worker safety, or equipment safety.
 - Claiming guaranteed yield, energy savings, profit, or crop health.
-- Treating the browser approximation as a calibrated model.
 - Calling this a live digital twin before greenhouse-specific sensor synchronization and calibration exist.
 - Comparing runs made with different engines, model versions, cost assumptions, or horizons as if they were controlled experiments.
 - Using the output as agronomic or investment advice without independent expert review.
@@ -60,9 +58,9 @@ The common user inputs are:
 
 The common outputs include indoor and outdoor climate, crop-state indicators, actuator positions, cumulative heating, lamp electricity, CO2 use, estimated cost, climate-limit warnings, and a short rolling history.
 
-Historical regression context: the retained (inactive) browser model rejects non-finite targets and controls, and requires each step request to be an integer from 1 through 192. Target limits match the interface:
+The API rejects non-finite targets and controls, and accepts integer step batches from 1 through 192. The following narrower limits belong to the dashboard controls, not the API validator:
 
-| Target | Accepted range |
+| Target | Dashboard range |
 | --- | --- |
 | Day temperature | 16 to 30 degrees C |
 | Night temperature | 12 to 24 degrees C |
@@ -71,39 +69,21 @@ Historical regression context: the retained (inactive) browser model rejects non
 
 These are software input bounds, not universal agronomic recommendations.
 
-The inactive approximation applies the following historical software clamps. They are **not applied to GreenLight-Gym2 scientific state**:
-
-| State or record | Software bound |
-| --- | --- |
-| Indoor air temperature | -5 to 48 degrees C |
-| Relative humidity | 28% to 100% |
-| Indoor CO2 | 250 to 1800 ppm |
-| Leaf area index | 0.4 to 4.6 |
-| Rolling history | 1 to 97 records, ending at the current horizon |
-
-These clamps prevent runaway software state. They are not evidence that every value inside the interval is physically realistic.
+The API accepts day temperature 10–35 °C, night temperature 8–30 °C, CO₂ 300–1600 ppm and maximum RH 40–98%. Those wider validation bounds are not recommended operating ranges either.
 
 ## Economic assumptions
 
 Cost is an explanatory output, not a live quotation.
 
-The inactive browser approximation used the versioned assumption set `browser-fixed-eur-2026-07` (not used by the current UI):
-
-| Resource | Fixed illustrative value |
-| --- | ---: |
-| Heat | EUR 0.09/kWh |
-| Lamp electricity | EUR 0.30/kWh |
-| CO2 | EUR 0.30/kg |
-
-The full engine accumulates the `variable_costs` value returned by GreenLight-Gym2 and identifies that calculation as `greenlight-gym2-variable-costs`. Neither engine currently receives a live tariff, time-varying carbon intensity, contract price, tax, or demand charge. Results from different cost-assumption identifiers are blocked from comparison.
+The engine accumulates the `variable_costs` value returned by GreenLight-Gym2 and identifies that calculation as `greenlight-gym2-variable-costs`. It does not receive live tariffs, time-varying carbon intensity, contract prices, taxes or demand charges. Results from different cost-assumption identifiers are blocked from comparison.
 
 ## Current verification evidence
 
 ### Software and diagnostic checks
 
 - The Python API tests cover status, reset, stepping, stale-revision protection, request validation, and loopback-only operation.
-- The JavaScript model tests run all four weather scenarios for 192 steps, require finite bounded state and monotonic cumulative resources, and verify deterministic repeatability.
-- Manual response tests require heating to raise winter temperature, ventilation to lower summer temperature, CO2 dosing to raise concentration and use, and lighting to raise inside radiation and electricity use.
+- JavaScript tests check schedule timing, date calculations, greenhouse geometry, charts and translations.
+- The public-weather checks run the full model with fixed settings and verify finite states, bounded controls, cumulative resources and exact endpoints. Failures are retained in the report.
 - Reset tests require the horizon and cumulative resources to return to zero while model provenance remains stable.
 - The UI contract requires a scenario change to perform a reset before a new run is compared.
 - Calendar-window tests cover non-midnight starts, one-step and one-day windows, the last valid endpoint, batch overshoot, source-year/leap-day validation, unchanged runs after invalid selections, and candidate reset rollback. JavaScript date arithmetic does not depend on the viewer's timezone or daylight saving.
@@ -117,8 +97,8 @@ The project adapts the US EPA model-evaluation distinction between operational, 
 
 | Evaluation layer | Question for this project | Status |
 | --- | --- | --- |
-| Software contract | Does the implementation remain deterministic, finite, bounded, and reproducible? | Automated for the browser model and API. |
-| Diagnostic | Do controlled input changes produce physically plausible response directions? | Initial automated actuator-response checks exist; deeper process tests are still needed. |
+| Software contract | Do validation, timing, configuration and comparison behave as specified? | Automated API, browser-interface and full-model integration checks. |
+| Diagnostic | Do controlled input changes produce physically plausible response directions? | Full-model configuration and auxiliary-output checks exist; broader process tests are still needed. |
 | Operational | How closely do climate, resource, and crop outputs match held-out observations? | Not yet performed in this repository. |
 | Dynamic | Does the model reproduce observed changes across seasons, sites, cultivars, and strategies? | Not yet performed. |
 | Uncertainty | How sensitive are decisions to parameters, weather, initialization, and measurement error? | Not yet performed. |
@@ -127,8 +107,8 @@ No accuracy threshold or commercial fitness claim should be added until the inte
 
 ## Known limitations and risks
 
-- The browser equations and synthetic scenarios are intentionally simplified and can reach unrealistic combinations under extreme manual controls.
-- The browser model has no greenhouse geometry, cultivar calibration, equipment capacity calibration, water or nutrient accounting, disease model, uncertainty interval, or sensor assimilation.
+- Valid weather input does not guarantee numerical completion. In the 2026-10-17 archive check, 30 of 32 default-controller runs completed; Davis summer cases in both 2023 and 2024 failed integration. These failures are not repaired by changing or filling weather values.
+- There is no greenhouse-specific calibration, disease model, uncertainty interval or live sensor assimilation in the dashboard. The separate synthetic fitting example is an optimizer test, not field calibration.
 - Fixed economic assumptions can reverse the apparent preference between strategies when real tariffs differ.
 - End-state fruit dry mass is not a validated marketable-yield forecast.
 - The full adapter's successful software integration does not transfer the validation evidence of the original GreenLight publication to this particular package version, weather configuration, controller, or user experiment.
@@ -137,22 +117,21 @@ No accuracy threshold or commercial fitness claim should be added until the inte
 
 ## Reproducibility
 
-Browser-model contract tests require only Node.js:
+Browser-interface tests require Node.js:
 
 ```powershell
-node --check .\frontend\legacy\simulator-engine.js
 node --check .\frontend\app.js
-node --test .\tests\browser_model_contract.test.js
+npm test
 ```
 
-Default Python checks do not import the protected external model:
+Default Python checks do not load the full model:
 
 ```powershell
 $env:PYTHONDONTWRITEBYTECODE = '1'
 & '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-The optional full-model integration check must run with bytecode disabled and an explicit read-only GreenLight-Gym2 source path, as described in `README.md`.
+The optional full-model integration checks use the pinned installed package with bytecode disabled. See [scientific validation](docs/scientific-validation.md). See the [weather collection](data/weather/README.md) for cross-climate checks and [calibration notes](docs/calibration.md) for the synthetic fitting experiment.
 
 For a publishable validation case, retain at minimum:
 
@@ -184,8 +163,8 @@ Full upstream author attribution and BibTeX are provided in [CITATION.md](CITATI
 
 - van Laatum, Bart; van Henten, Eldert J.; and Boersma, Sjoerd (2025), [GreenLight-Gym: Reinforcement learning benchmark environment for control of greenhouse production systems](https://doi.org/10.1016/j.ifacol.2025.11.827). IFAC-PapersOnLine, 59(23), 437–442. This is the citation requested by the [GreenLight-Gym2 upstream repository](https://github.com/BartvLaatum/GreenLight-Gym2#citation).
 
-- Katzin et al. (2020), [GreenLight - An open source model for greenhouses with supplemental lighting](https://doi.org/10.1016/j.biosystemseng.2020.03.010). This is provenance for the underlying GreenLight model, not validation of this project's browser approximation or adapter configuration.
+- Katzin et al. (2020), [GreenLight - An open source model for greenhouses with supplemental lighting](https://doi.org/10.1016/j.biosystemseng.2020.03.010). This describes the underlying model, not independent validation of this adapter configuration.
 - de Visser et al. (2025), [Towards optimization of tomato cultivation using a digital twin](https://research.wur.nl/en/publications/towards-optimization-of-tomato-cultivation-using-a-digital-twin/). The study describes calibration using sensor data and manual plant observations, followed by scenario-oriented decision support.
-- Gong et al. (2023), [Boosting the prediction accuracy of a process-based greenhouse climate-tomato production model by particle filtering and deep learning](https://research.wur.nl/en/publications/boosting-the-prediction-accuracy-of-a-process-based-greenhouse-cl/). The results show why calibration and held-out validation evidence matter.
+- Zhou et al. (2023), [Boosting the prediction accuracy of a process-based greenhouse climate-tomato production model by particle filtering and deep learning](https://research.wur.nl/en/publications/boosting-the-prediction-accuracy-of-a-process-based-greenhouse-cl/). The study combines parameter estimation with measured data and a separate data-driven correction.
 - US EPA, [CMAQ Model Evaluation Framework](https://www.epa.gov/cmaq/cmaq-model-evaluation-framework). The operational, diagnostic, dynamic, and uncertainty categories are adapted here as a general model-credibility structure.
 - FAIR4RS Working Group (2022), [FAIR Principles for Research Software](https://doi.org/10.15497/RDA00068). Versioning, executability, and transparent reuse motivate the repository's provenance and reproducibility records.

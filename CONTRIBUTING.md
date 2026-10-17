@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping make GreenLight Simulation more reproducible, understandable, and useful. Contributions are welcome as reviewable GitHub pull requests.
+Open an issue to discuss a change, or send a focused pull request with tests.
 
 ## Before you start
 
@@ -38,7 +38,7 @@ Avoid committing `.venv`, `.uv-cache`, `.runtime`, logs, local data, Python byte
 A model change needs more evidence than a visual UI change. Include:
 
 - the process or decision-support need being changed;
-- the engine affected (`greenlight-gym2`, browser approximation, or both);
+- the affected GreenLight equations or adapter behavior;
 - units, valid ranges, timestep, initialization, and cost assumptions;
 - a deterministic reproduction case;
 - at least one normal case and one boundary or failure case;
