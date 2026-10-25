@@ -18,7 +18,7 @@
     />
     <meta property="og:locale" content="zh_TW" />
     <title>GreenLight 2 溫室模擬器</title>
-    <link rel="stylesheet" href="styles.css?v=20261024-ui-polish" />
+    <link rel="stylesheet" href="styles.css?v=20261025-file-picker" />
     <script defer src="frontend/run-window.js?v=20260912"></script>
     <script defer src="frontend/greenhouse-settings.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/charts.js?v=20261023-light"></script>
@@ -27,7 +27,7 @@
     <script defer src="frontend/controller-panel.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/pages.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/app.js?v=20261024-ui-polish"></script>
-    <script defer src="frontend/climate-upload.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/climate-upload.js?v=20261025-file-picker"></script>
   </head>
   <body>
     <div class="app-shell model-unavailable" id="simulatorApp">
@@ -313,14 +313,31 @@
             </p>
           </details>
           <form id="weatherUploadForm">
-            <label for="weatherFile" data-weather-i18n="file">氣候資料檔案（.xlsx）</label>
-            <input
-              id="weatherFile"
-              name="weather"
-              type="file"
-              accept=".xlsx"
-              aria-describedby="weatherLimits weatherPrivacy"
-            />
+            <label id="weatherFileLabel" for="weatherFile" data-weather-i18n="file">
+              氣候資料檔案（.xlsx）
+            </label>
+            <div class="weather-file-control">
+              <input
+                id="weatherFile"
+                name="weather"
+                type="file"
+                accept=".xlsx"
+                aria-describedby="weatherLimits weatherPrivacy"
+                hidden
+              />
+              <button
+                class="showcase-secondary weather-file-button"
+                id="weatherChooseButton"
+                type="button"
+                data-weather-i18n="chooseFile"
+                aria-describedby="weatherFileLabel weatherFileName weatherLimits weatherPrivacy"
+              >
+                選擇檔案
+              </button>
+              <span id="weatherFileName" class="weather-file-name" role="status" aria-atomic="true">
+                尚未選擇檔案
+              </span>
+            </div>
             <button
               class="showcase-primary"
               id="weatherCheckButton"

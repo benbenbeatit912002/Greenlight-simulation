@@ -14,7 +14,7 @@ A dashboard for the GreenLight-Gym2 greenhouse model. Upload your local weather 
 
 ### 1. Upload local weather and choose simulation dates
 
-![Weather page with Excel upload instructions, public weather examples and simulation-date controls](docs/images/weather-and-dates.jpg)
+![Weather page with a localized Excel file picker, public weather examples and the simulation setup guide](docs/images/weather-and-dates.jpg)
 
 Upload an Excel weather file using the provided template, check the data, and choose when to start and stop the simulation. You can also try the included weather examples for Amsterdam, Almería and Taipei. Indoor measurements are not required, but weather alone does not calibrate the greenhouse model to a new location.
 

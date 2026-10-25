@@ -8,6 +8,8 @@ Follow [installation](installation.md), open the printed local URL and choose En
 
 Use the bundled Amsterdam/2010 weather to explore, or upload your own outdoor weather workbook.
 
+The **Choose file** button and empty-file message follow the interface language. Switching languages keeps your selected workbook. The file-selection dialog itself follows your browser or operating-system language.
+
 1. Download the template and keep its headers, units and five-minute row spacing. Its example rows are synthetic, not local measurements.
 2. Upload the workbook and select **Check weather data**. This checks the file; it does not change the active run.
 3. Choose the source year and fixed clock convention (UTC or source-local standard time without daylight saving).

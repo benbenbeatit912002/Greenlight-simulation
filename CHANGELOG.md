@@ -2,6 +2,7 @@
 
 ## 2026-10-25
 
+- Made the weather file button and empty-file message follow the interface language without clearing the selected workbook.
 - Added a soft light workspace, white cards and dark-green controls, with matching chart colours.
 - Added a three-step guide for weather, greenhouse settings and control-plan comparison, showing applied inputs separately from drafts.
 - Improved navigation, keyboard focus, numbered headings and greenhouse disclosure alignment in both languages.

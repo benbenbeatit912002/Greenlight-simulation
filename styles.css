@@ -2641,19 +2641,27 @@ select:disabled {
   gap: 12px;
   margin: 20px 0 12px;
 }
-#weatherFile {
-  max-width: 100%;
+.weather-file-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 1 auto;
+  width: 440px;
   min-width: 0;
-  color: var(--text);
+  max-width: 100%;
 }
-#weatherFile::file-selector-button {
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  padding: 9px;
-  background: var(--panel-strong);
-  color: var(--text);
-  margin-right: 12px;
-  cursor: pointer;
+.weather-file-button {
+  flex: 0 0 auto;
+}
+.weather-file-button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+.weather-file-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 13px;
 }
 .weather-import button:disabled {
   opacity: 0.6;

@@ -11,6 +11,8 @@
       stage: "1a. Check outdoor weather",
       template: "Download Excel template",
       file: "Weather workbook (.xlsx)",
+      chooseFile: "Choose file",
+      noFile: "No file selected",
       check: "Check weather data",
       checking: "Checking workbook…",
       privacy:
@@ -106,6 +108,8 @@
       stage: "1a. 檢查室外天氣",
       template: "下載 Excel 範本",
       file: "氣候資料檔案（.xlsx）",
+      chooseFile: "選擇檔案",
+      noFile: "尚未選擇檔案",
       check: "檢查氣候資料",
       checking: "正在檢查檔案…",
       privacy: "只在這台電腦的記憶體中檢查，不儲存檔案，也不會上傳 GitHub。",
@@ -198,6 +202,8 @@
   if (!panel) return;
   const form = document.getElementById("weatherUploadForm");
   const fileInput = document.getElementById("weatherFile");
+  const chooseButton = document.getElementById("weatherChooseButton");
+  const fileName = document.getElementById("weatherFileName");
   const button = document.getElementById("weatherCheckButton");
   const status = document.getElementById("weatherUploadStatus");
   const output = document.getElementById("weatherPreview");
@@ -248,6 +254,8 @@
     });
     button.disabled = busy || activating;
     fileInput.disabled = busy || activating;
+    chooseButton.disabled = busy || activating;
+    fileName.textContent = fileInput.files[0]?.name || t("noFile");
     form.setAttribute("aria-busy", String(busy));
     button.textContent = t(busy ? "checking" : "check");
     output.replaceChildren();
@@ -458,6 +466,7 @@
     updateSummary();
     output.append(section);
   }
+  chooseButton.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", () => {
     result = null;
     error = null;
