@@ -85,3 +85,18 @@ test("comparison needs identical forcing, initialization, limits and horizon", (
   );
   assert.equal(plan.comparisonIssue(base, base), "sameRun");
 });
+
+test("old model baseline stays blocked even when weather and parameter labels match", () => {
+  const base = {
+    ...summary("baseline"),
+    modelVersion: "gl-gym2@0.3.1+git.83503069.adapter.2026.10-scheduled-control.params.f29a97de",
+  };
+  const candidate = {
+    ...summary("candidate"),
+    modelVersion: "gl-gym2@0.3.2+sha256.fc15a003.adapter.2026.10-scheduled-control.params.f29a97de",
+  };
+  assert.equal(base.weatherFingerprint, candidate.weatherFingerprint);
+  assert.equal(base.configurationFingerprint, candidate.configurationFingerprint);
+  assert.equal(plan.comparisonIssue(base, candidate), "conditions");
+  assert.equal(plan.comparisonIssue(base, candidate, { ignoreHorizon: true }), "conditions");
+});

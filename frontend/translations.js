@@ -2,6 +2,48 @@
   "use strict";
   const translations = {
     zh: {
+      workflowTitle: "用當地天氣，探索你的溫室方案",
+      workflowIntro: "不需要室內量測。先選天氣、確認溫室，再比較控制方案；也可以用內建範例開始。",
+      workflowScope: "情境模擬, 尚未經當地實測校正",
+      workflowWeatherStep: "1. 天氣與日期",
+      workflowGreenhouseStep: "2. 溫室設定",
+      workflowCompareStep: "3. 執行與比較",
+      workflowWeatherHelp: "上傳並檢查檔案，選好日期後套用；也可使用內建 Amsterdam 天氣。",
+      workflowGreenhouseHelp:
+        "確認尺寸、設備和作物起始狀態。空白欄位採參考預設值，修改後需明確套用。",
+      workflowCompareHelp: "先跑自動控制並儲存基準，再以相同天氣與溫室設定測試排程。",
+      workflowUnavailable: "尚未連接完整模型，無法確認目前套用內容。",
+      workflowSampleActive: "目前套用：內建 Amsterdam 天氣；不是你的當地資料。",
+      workflowUploadedActive: "目前套用：已上傳的天氣與所選日期。",
+      workflowReferenceDefaults: "目前套用：全部使用模型參考預設值；不代表當地溫室。",
+      workflowOverrides:
+        "目前套用：{custom} 項自訂，{defaults} 項可編輯設定沿用參考預設值；相關容量會依已套用的設定重新計算。",
+      workflowNoBaseline: "尚未儲存比較基準。先執行一段模擬。",
+      workflowBaselineSaved: "已有儲存基準；是否可比較，請查看下方／比較頁的條件檢查。",
+      workflowAssumptionsTitle: "這些結果建立在哪些假設上？",
+      workflowWeatherAssumption: "天氣是輸入，不是室內環境的正確答案；換地點不會自動校正溫室參數。",
+      workflowGreenhouseAssumption:
+        "空白欄位使用顯示的參考值，相關容量會依已套用的尺寸和設備設定重新計算。未指定的作物狀態採已生長番茄預設值；土壤溫度仍採荷蘭近似方法。",
+      workflowOutputsAssumption:
+        "室內氣候、作物與資源用量是上述假設下的模型估算，不是當地實測或節能保證；使用時不必上傳室內量測。",
+      workflowCompareAssumption:
+        "這裡比較的是不同控制方案，天氣與溫室須保持相同；更換天氣或溫室後需重新建立基準。",
+      workflowStart: "從天氣開始",
+      workflowNextGreenhouse: "下一步：確認溫室設定",
+      workflowNextCompare: "下一步：執行與比較方案",
+      workflowNavigationOnly:
+        "這個連結只切換頁面。檢查檔案或編輯草稿不會改變目前模擬，請另外按下套用。",
+      workflowViewSimulation: "查看即時模擬",
+      workflowComparisonTitle: "用同一組條件，比較兩種控制方案",
+      workflowComparisonA:
+        "A — 固定天氣、溫室和評估界限。按下方「初始化自動控制基準」，再按上方「開始模擬」。",
+      workflowComparisonB: "執行至想比較的時長後暫停，等目前一批運算結束，再在本頁儲存基準。",
+      workflowComparisonC:
+        "B — 編輯每日排程，再按「套用排程並初始化」。這會使用已套用的天氣和溫室設定，建立獨立的新模擬。",
+      workflowComparisonD:
+        "按「執行至已儲存的基準時長」。一起查看溫度、濕度、供暖與超限時間，不只看能源用量。",
+      workflowComparisonBoundary:
+        "這是模型方案之間的比較，不是實測驗證。條件與時長一致才顯示差異；若更換天氣、溫室或評估界限，請先建立新的基準。",
       workspaceNavigation: "工作區頁面",
       pageSimulation: "即時模擬",
       pageWeather: "氣候與日期",
@@ -207,10 +249,10 @@
         "模型、初始狀態、設定、時間區間或成本假設不同，無法安全比較。基準：{baseline}；目前：{candidate}。",
       comparisonWeatherMatch: "天氣情境一致，適合隔離控制策略差異。",
       comparisonWeatherDifference: "天氣情境不同；結果同時包含天氣與控制差異。",
-      comparisonMeta: "STEP {step} · {mode} · {engine} · {version}",
-      comparisonAutoStrategy: "日 {day}°C · 夜 {night}°C · CO₂ {co2} ppm · RH ≤ {rh}%",
+      comparisonMeta: "STEP {step}, {mode}, {engine}, {version}",
+      comparisonAutoStrategy: "日 {day}°C, 夜 {night}°C, CO₂ {co2} ppm, RH ≤ {rh}%",
       comparisonManualStrategy:
-        "鍋爐 {boil}% · CO₂ {co2}% · 保溫幕 {thermal}% · 通風 {vent}% · 燈 {lamp}% · 遮光 {blackout}%",
+        "鍋爐 {boil}%, CO₂ {co2}%, 保溫幕 {thermal}%, 通風 {vent}%, 燈 {lamp}%, 遮光 {blackout}%",
       climateNormal: "氣候狀態正常",
       climateWarning: "氣候限制警示",
       withinLimits: "所有變量皆在 GreenLight 限制範圍內",
@@ -220,9 +262,9 @@
       offlineModel: "科學模型已離線",
       unknownModel: "未識別的模型",
       fullModelNote:
-        "15 分鐘／步 · 28-state GreenLight-Gym2 CasADi 模型 · 阿姆斯特丹實測天氣。六項控制值直接使用 0–1 絕對開度。",
+        "15 分鐘／步, 28-state GreenLight-Gym2 CasADi 模型, 阿姆斯特丹實測天氣。六項控制值直接使用 0–1 絕對開度。",
       fullModelUploadedNote:
-        "15 分鐘／步 · 28-state GreenLight-Gym2 CasADi 模型 · 目前使用記憶體中的上傳氣候資料。六項控制值直接使用 0–1 絕對開度。",
+        "15 分鐘／步, 28-state GreenLight-Gym2 CasADi 模型, 目前使用記憶體中的上傳氣候資料。六項控制值直接使用 0–1 絕對開度。",
       offlineModelNote:
         "GreenLight-Gym2 尚未連接或已停止。模擬數字已隱藏，不會使用瀏覽器近似模型。",
       fullModelTour: "目前連接 28-state GreenLight-Gym2 CasADi 模型與阿姆斯特丹實測天氣。",
@@ -258,6 +300,55 @@
       outdoorSeries: "室外",
     },
     en: {
+      workflowTitle: "Explore greenhouse plans with local weather",
+      workflowIntro:
+        "No indoor measurements needed. Choose weather, review the greenhouse, then compare control plans. You can also start with a built-in example.",
+      workflowScope: "Scenario simulation, not locally calibrated",
+      workflowWeatherStep: "1. Weather & dates",
+      workflowGreenhouseStep: "2. Greenhouse settings",
+      workflowCompareStep: "3. Run & compare",
+      workflowWeatherHelp:
+        "Upload and check your workbook, choose dates, then apply. Or explore with the bundled Amsterdam weather.",
+      workflowGreenhouseHelp:
+        "Review dimensions, equipment and crop starting conditions. Blank fields use reference defaults; apply edits explicitly.",
+      workflowCompareHelp:
+        "Run automatic control, save a baseline, then test a schedule with the same weather and greenhouse.",
+      workflowUnavailable: "Full model not connected; applied inputs cannot be confirmed.",
+      workflowSampleActive: "Applied: bundled Amsterdam weather, not your local weather.",
+      workflowUploadedActive: "Applied: uploaded weather and selected dates.",
+      workflowReferenceDefaults:
+        "Applied: model reference defaults throughout, not a locally calibrated greenhouse.",
+      workflowOverrides:
+        "Applied: {custom} user overrides; {defaults} editable settings retain reference defaults. Dependent capacities are recalculated from the applied settings.",
+      workflowNoBaseline: "No saved baseline yet. Run a simulation first.",
+      workflowBaselineSaved:
+        "A baseline is saved. Check the comparison page for matching conditions before comparing.",
+      workflowAssumptionsTitle: "What these results assume",
+      workflowWeatherAssumption:
+        "Weather is an input, not an indoor reference answer. Changing location does not calibrate greenhouse parameters.",
+      workflowGreenhouseAssumption:
+        "Blank fields use the displayed reference values. Dependent capacities follow applied dimensions and equipment settings. Unspecified crop states retain established-tomato defaults; soil temperature uses the Netherlands approximation.",
+      workflowOutputsAssumption:
+        "Climate, crop and resource results are estimates under these assumptions, not local measurements or guaranteed savings. No indoor measurements are required.",
+      workflowCompareAssumption:
+        "This comparison changes the control plan, not the weather or greenhouse. Changing either requires a new baseline.",
+      workflowStart: "Start with weather",
+      workflowNextGreenhouse: "Next: review greenhouse settings",
+      workflowNextCompare: "Next: run and compare plans",
+      workflowNavigationOnly:
+        "This link only changes the page. Checking a file or editing a draft does not change the active run; apply it explicitly.",
+      workflowViewSimulation: "View the live simulation",
+      workflowComparisonTitle: "Compare two control plans under the same conditions",
+      workflowComparisonA:
+        "A — Keep weather, greenhouse and evaluation limits fixed. Select Initialize automatic baseline below, then Start simulation at the top.",
+      workflowComparisonB:
+        "Pause at the duration you want to compare. Wait for the current batch to finish, then save the baseline on this page.",
+      workflowComparisonC:
+        "B — Edit the daily schedule and select Apply schedule and initialize. This creates a separate run with the applied weather and greenhouse settings.",
+      workflowComparisonD:
+        "Select Run to saved baseline duration. Compare temperature, humidity, heating and time outside limits together, not energy alone.",
+      workflowComparisonBoundary:
+        "This compares model scenarios, not measurements from a real greenhouse. Differences appear only when conditions and duration match. After changing weather, greenhouse settings or limits, create a new baseline first.",
       workspaceNavigation: "Workspace pages",
       pageSimulation: "Live simulation",
       pageWeather: "Weather & dates",
@@ -302,7 +393,7 @@
       controllerWorkflow:
         "Initialize automatic control, run and save a baseline on this page. Then apply your schedule and run to the saved baseline duration. Weather, greenhouse settings, initial state and comparison limits must match.",
       scheduleTimelineTitle: "Draft daily commands",
-      appliedTimelineTitle: "Applied commands · latest 24 hours",
+      appliedTimelineTitle: "Applied commands, latest 24 hours",
       climateComparisonTitle: "Whole-run climate comparison",
       comparisonMetric: "Metric",
       comparisonBaselineLabel: "Saved baseline",
@@ -480,10 +571,10 @@
         "Weather scenarios match, which helps isolate control-strategy effects.",
       comparisonWeatherDifference:
         "Weather scenarios differ; the result combines weather and control effects.",
-      comparisonMeta: "STEP {step} · {mode} · {engine} · {version}",
-      comparisonAutoStrategy: "Day {day}°C · night {night}°C · CO₂ {co2} ppm · RH ≤ {rh}%",
+      comparisonMeta: "STEP {step}, {mode}, {engine}, {version}",
+      comparisonAutoStrategy: "Day {day}°C, night {night}°C, CO₂ {co2} ppm, RH ≤ {rh}%",
       comparisonManualStrategy:
-        "Boiler {boil}% · CO₂ {co2}% · thermal {thermal}% · vent {vent}% · lamp {lamp}% · blackout {blackout}%",
+        "Boiler {boil}%, CO₂ {co2}%, thermal {thermal}%, vent {vent}%, lamp {lamp}%, blackout {blackout}%",
       climateNormal: "Climate status normal",
       climateWarning: "Climate limit warning",
       withinLimits: "All variables are within GreenLight limits",
@@ -493,9 +584,9 @@
       offlineModel: "Scientific model offline",
       unknownModel: "Unrecognized model",
       fullModelNote:
-        "15 min/step · 28-state GreenLight-Gym2 CasADi model · measured Amsterdam weather. The six controls use absolute 0–1 openings.",
+        "15 min/step, 28-state GreenLight-Gym2 CasADi model, measured Amsterdam weather. The six controls use absolute 0–1 openings.",
       fullModelUploadedNote:
-        "15 min/step · 28-state GreenLight-Gym2 CasADi model · active weather is the uploaded in-memory dataset. The six controls use absolute 0–1 openings.",
+        "15 min/step, 28-state GreenLight-Gym2 CasADi model, active weather is the uploaded in-memory dataset. The six controls use absolute 0–1 openings.",
       offlineModelNote:
         "GreenLight-Gym2 is not connected or has stopped. Simulation values are hidden. No browser approximation is used.",
       fullModelTour:
@@ -524,7 +615,7 @@
       humidityExceeded: "{value}% above limit",
       co2TargetValue: "Target {value} ppm",
       boilerValue: "Boiler {value}%",
-      dayClock: "Day {day} · {time}",
+      dayClock: "Day {day}, {time}",
       humidityChart: "Relative humidity over the last 24 hours",
       indoorRh: "Indoor RH",
       outdoorRh: "Outdoor RH",

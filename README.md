@@ -4,7 +4,7 @@ A dashboard for the GreenLight-Gym2 greenhouse model. Upload your local weather 
 
 ![GreenLight greenhouse dashboard showing indoor climate readings, an interactive greenhouse visualization, and automatic control settings](docs/images/greenhouse-dashboard.jpg)
 
-*The dashboard running GreenLight-Gym2 with Amsterdam weather. The drawing shows what the equipment and crop are doing; it is not a 3D simulation. Click any screenshot to see it at full size.*
+*The current light-theme dashboard running GreenLight-Gym2 with the bundled Amsterdam weather. The drawing illustrates equipment and crop states; it is not a 3D simulation. Click any screenshot to see it at full size.*
 
 [![CI](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml)
 
@@ -14,13 +14,13 @@ A dashboard for the GreenLight-Gym2 greenhouse model. Upload your local weather 
 
 ### 1. Upload local weather and choose simulation dates
 
-![Weather import page showing a validated Amsterdam Excel workbook, record count and five-minute interval](docs/images/weather-and-dates.jpg)
+![Weather page with Excel upload instructions, public weather examples and simulation-date controls](docs/images/weather-and-dates.jpg)
 
-Upload an Excel weather file using the provided template, check the data, and choose when to start and stop the simulation. You can also try the included weather examples for Amsterdam, Almería and Taipei.
+Upload an Excel weather file using the provided template, check the data, and choose when to start and stop the simulation. You can also try the included weather examples for Amsterdam, Almería and Taipei. Indoor measurements are not required, but weather alone does not calibrate the greenhouse model to a new location.
 
 ### 2. Set up your greenhouse
 
-![Greenhouse settings showing the length and width calculator, floor and cover areas, heights and air-volume preview](docs/images/greenhouse-configuration.jpg)
+![Greenhouse settings with a length and width calculator, air-volume preview and editable model inputs](docs/images/greenhouse-configuration.jpg)
 
 Enter the greenhouse size, equipment capacities and starting air and crop conditions. Leave fields blank to use the model defaults. Nothing changes in the current run until you apply your settings.
 
@@ -39,7 +39,7 @@ The dashboard has four pages:
 - **Greenhouse settings** — enter the size, equipment and starting conditions.
 - **Controllers & comparison** — set equipment schedules and compare results.
 
-You can switch pages without losing the current run or unsaved settings. The drawing is an illustration; the numbers come from the full GreenLight model. See the [user guide](docs/user-guide.md) for details.
+The three-step guide follows weather, greenhouse settings, then control comparison. It distinguishes applied inputs from unsaved drafts. You can switch pages without losing the current run or unsaved settings. The drawing is an illustration; the numbers come from the full GreenLight model. See the [user guide](docs/user-guide.md) for details.
 
 ## Acknowledgements and citation
 

@@ -8,7 +8,7 @@
       title: "Import your outdoor weather",
       intro:
         "Upload your weather in Excel format. Check the data here before using it in a simulation.",
-      stage: "Step 1 · Validate and run",
+      stage: "1a. Check outdoor weather",
       template: "Download Excel template",
       file: "Weather workbook (.xlsx)",
       check: "Check weather data",
@@ -18,11 +18,11 @@
       limits:
         "Up to 2 MiB and 10,000 records. Amsterdam's nine columns, one row every 300 seconds. Values only, no formulas.",
       empty: "Choose a workbook to see its coverage, ranges and first five records.",
-      valid: "Data checks passed · preview only",
-      ready: "Data checks passed · ready to initialize GreenLight",
+      valid: "Data checks passed, preview only",
+      ready: "Data checks passed, ready to initialize GreenLight",
       unchanged:
-        "Your data was checked in memory. Select Run with this weather to prepare a new GreenLight simulation.",
-      useWeather: "Run with this weather",
+        "Your data was checked in memory. Select Apply weather and dates to prepare a new GreenLight simulation.",
+      useWeather: "Apply weather and dates",
       failed: "Could not validate this workbook",
       select: "Choose a nonempty .xlsx workbook no larger than 2 MiB.",
       unavailable:
@@ -45,7 +45,7 @@
       maximum: "Maximum",
       hash: "Workbook SHA-256",
       scroll: "Scroll tables horizontally to see every column.",
-      windowTitle: "Step 2 · Simulation dates",
+      windowTitle: "1b. Choose simulation dates",
       windowYear: "Weather source year",
       windowConvention: "Clock used in your file",
       windowChoose: "Choose a time convention",
@@ -68,7 +68,8 @@
       windowAssumptions:
         "Initialization uses the applied greenhouse/initial-state settings at the selected start; unspecified states use GreenLight defaults, with 0 hours of warm-up. Upload each simulated day's midnight-to-midnight weather and at least 12 hours after the chosen end. No missing weather is filled. Each physical step stays at 15 minutes.",
       windowInitializing: "Initializing the selected simulation…",
-      windowInitialized: "Selected window initialized. Press Start simulation to run.",
+      windowInitialized:
+        "Weather and dates applied. Next, review greenhouse settings. No simulation steps have run yet.",
       tutorialTitle: "Excel tutorial — match Amsterdam/2010.csv",
       tutorialDownload:
         "1. Download the template. Keep the Weather sheet and replace every synthetic example row with your own outdoor measurements. Instructions is optional.",
@@ -79,7 +80,7 @@
       tutorialValues:
         "4. Enter numeric values only. RH=86 means 86%, not an Excel 0.86 fraction. Radiation is instantaneous global irradiance (W/m²), not PAR or accumulated energy. No blank rows, formulas or missing values.",
       tutorialPreview:
-        "5. Save as .xlsx and click Check weather data. Upload at most 10,000 rows (about 34 days), not the whole year. Provide at least 36 hours so the full model can keep its 0.5-day look-ahead, then select Run with this weather.",
+        "5. Save as .xlsx and click Check weather data. Upload at most 10,000 rows (about 34 days), not the whole year. Provide at least 36 hours so the full model can keep its 0.5-day look-ahead, then select Apply weather and dates.",
       tutorialColumns: "Exact Amsterdam CSV column order",
       tutorialUnit: "Unit",
       tutorialUse: "Current GreenLight loader behavior",
@@ -102,7 +103,7 @@
     zh: {
       title: "匯入你的室外氣候",
       intro: "上傳 Excel 天氣資料，先在這裡檢查，再用來模擬。",
-      stage: "第一階段 · 檢查並執行",
+      stage: "1a. 檢查室外天氣",
       template: "下載 Excel 範本",
       file: "氣候資料檔案（.xlsx）",
       check: "檢查氣候資料",
@@ -111,10 +112,10 @@
       limits:
         "上限 2 MiB、10,000 筆。使用 Amsterdam 的 9 欄格式，每 300 秒一筆。只接受數值，不接受公式。",
       empty: "選擇檔案後，可查看涵蓋時間、數值範圍與前五筆資料。",
-      valid: "資料檢查通過 · 僅供預覽",
-      ready: "資料檢查通過 · 可以初始化 GreenLight",
-      unchanged: "資料已在記憶體中檢查。按「使用這份天氣模擬」，即可準備新的 GreenLight 模擬。",
-      useWeather: "使用這份天氣模擬",
+      valid: "資料檢查通過, 僅供預覽",
+      ready: "資料檢查通過, 可以初始化 GreenLight",
+      unchanged: "資料已在記憶體中檢查。按「套用天氣與日期」，即可準備新的 GreenLight 模擬。",
+      useWeather: "套用天氣與日期",
       failed: "這份檔案未通過檢查",
       select: "請選擇非空白、大小不超過 2 MiB 的 .xlsx 檔案。",
       unavailable: "本機伺服器無法檢查檔案，請確認已啟動更新後的 Python 伺服器。",
@@ -136,7 +137,7 @@
       maximum: "最大值",
       hash: "檔案 SHA-256",
       scroll: "表格可左右滑動，查看全部欄位。",
-      windowTitle: "第二階段 · 模擬起訖時間",
+      windowTitle: "1b. 選擇模擬日期",
       windowYear: "氣候資料的實際年份",
       windowConvention: "檔案使用的時間基準",
       windowChoose: "請選擇時間基準",
@@ -157,7 +158,7 @@
       windowAssumptions:
         "初始化：在所選開始時間使用已套用的溫室／初始狀態設定，未指定者沿用 GreenLight 預設值；暖機為 0 小時。需每個模擬日期從午夜到下一午夜的資料，另需結束後至少 12 小時。缺少的氣候不會補造，每步固定 15 分鐘。",
       windowInitializing: "正在初始化所選模擬區間…",
-      windowInitialized: "區間已初始化，按「開始模擬」即可執行。",
+      windowInitialized: "天氣與日期已套用。下一步請確認溫室設定，目前尚未執行模擬步數。",
       tutorialTitle: "Excel 格式教學（與 Amsterdam/2010.csv 對齊）",
       tutorialDownload:
         "1. 下載範本。保留 Weather 工作表，將全部合成範例列換成你的室外量測資料。Instructions 工作表可保留。",
@@ -168,7 +169,7 @@
       tutorialValues:
         "4. 只貼上數值。RH=86 代表 86%，不是 Excel 的 0.86。輻射是即時全球輻照度（W/m²），不是 PAR 或累積能量。不可有空白列、公式或缺值。",
       tutorialPreview:
-        "5. 存成 .xlsx，按「檢查氣候資料」。最多 10,000 筆（約 34 天），不要上傳整年。請提供至少 36 小時，讓完整模型保留 0.5 天的前瞻資料，再按「使用這份天氣模擬」。",
+        "5. 存成 .xlsx，按「檢查氣候資料」。最多 10,000 筆（約 34 天），不要上傳整年。請提供至少 36 小時，讓完整模型保留 0.5 天的前瞻資料，再按「套用天氣與日期」。",
       tutorialColumns: "Amsterdam CSV 原始欄位順序",
       tutorialUnit: "單位",
       tutorialUse: "目前 GreenLight 讀取程式的處理",
@@ -430,7 +431,7 @@
       );
       message.textContent = checked.error
         ? t(checked.error)
-        : `${checked.hours} ${t("windowHours")} · ${checked.steps} ${t("windowSteps")} · 15 min/${t("windowSteps")}`;
+        : `${checked.hours} ${t("windowHours")}, ${checked.steps} ${t("windowSteps")}, 15 min/${t("windowSteps")}`;
       message.classList.toggle("run-window-error", Boolean(checked.error));
       runButton.disabled = Boolean(checked.error) || activating;
       response.textContent =

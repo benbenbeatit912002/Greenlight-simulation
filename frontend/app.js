@@ -282,7 +282,7 @@
 
   function comparisonStrategy(summary) {
     if (summary.mode === "schedule")
-      return `${t("scheduledControl")} · ${summary.schedule?.entries.map((row) => row.time).join(", ") || "—"}`;
+      return `${t("scheduledControl")}, ${summary.schedule?.entries.map((row) => row.time).join(", ") || "—"}`;
     if (summary.mode === "manual") {
       return formatTranslation("comparisonManualStrategy", {
         boil: Math.round(summary.controls.uBoil * 100),
@@ -342,6 +342,7 @@
 
   function renderComparison(snapshot) {
     controllerPanel?.render(snapshot, baselineRun, createRunSummary(snapshot));
+    pages?.renderWorkflow(snapshot, baselineRun);
     const saveButton = byId("saveBaselineButton");
     const clearButton = byId("clearBaselineButton");
     const empty = byId("comparisonEmpty");
@@ -678,6 +679,7 @@
     remoteRevision = null;
     currentSnapshot = null;
     controllerPanel?.render(null, baselineRun, null);
+    pages?.renderWorkflow(null, baselineRun);
     window.GreenlightSettings.unavailable();
     byId("runProgressPanel").hidden = true;
     root.classList.add("model-unavailable");
@@ -794,7 +796,7 @@
     alertBox.classList.toggle("warning", hasViolation);
     title.textContent = hasViolation ? t("climateWarning") : t("climateNormal");
     message.textContent = hasViolation
-      ? snapshot.violations.map(translateViolation).join(" · ")
+      ? snapshot.violations.map(translateViolation).join(", ")
       : t("withinLimits");
   }
 
@@ -864,10 +866,7 @@
     setText("outsideWind", formatNumber(outdoor.wind));
     setText("stepValue", String(snapshot.modelStep).padStart(4, "0"));
 
-    setText(
-      "svgClimateValue",
-      `${formatNumber(indoor.airTemp)}°C · ${formatNumber(indoor.rh, 0)}%`,
-    );
+    setText("svgClimateValue", `${formatNumber(indoor.airTemp)}°C, ${formatNumber(indoor.rh, 0)}%`);
     setText("svgCo2Value", `${formatNumber(indoor.co2, 0)} ppm`);
     setText("svgCanopyValue", `${formatNumber(indoor.canopyTemp)}°C`);
     setText("legendVent", `${Math.round(u.uVent * 100)}%`);
@@ -1003,7 +1002,7 @@
     byId("runProgressBar").value = progress.percent;
     setText(
       "runProgressText",
-      `${t(state)} · ${progress.completedSteps}/${progress.totalSteps} ${t("progressSteps")} (${formatNumber(progress.percent, 1)}%) · ${t("progressClock")}: ${progress.currentDateTime.replace("T", " ")}`,
+      `${t(state)}, ${progress.completedSteps}/${progress.totalSteps} ${t("progressSteps")} (${formatNumber(progress.percent, 1)}%), ${t("progressClock")}: ${progress.currentDateTime.replace("T", " ")}`,
     );
     setText("runProgressNote", t("progressNote"));
   }

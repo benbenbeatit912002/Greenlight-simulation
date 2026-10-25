@@ -112,7 +112,7 @@
 
       const styles = getComputedStyle(document.documentElement);
       const textColor = styles.getPropertyValue("--muted").trim();
-      const gridColor = "rgba(177, 216, 198, 0.10)";
+      const gridColor = styles.getPropertyValue("--chart-grid").trim();
       const plot = {
         left: 38,
         right: rect.width - 10,

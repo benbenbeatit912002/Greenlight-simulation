@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#07110f" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f6f9f3" />
     <meta name="application-name" content="GreenLight 2 Greenhouse Simulator" />
     <meta
       name="description"
@@ -18,16 +18,16 @@
     />
     <meta property="og:locale" content="zh_TW" />
     <title>GreenLight 2 溫室模擬器</title>
-    <link rel="stylesheet" href="styles.css?v=20261009-pages" />
+    <link rel="stylesheet" href="styles.css?v=20261024-ui-polish" />
     <script defer src="frontend/run-window.js?v=20260912"></script>
-    <script defer src="frontend/greenhouse-settings.js?v=20261014-copy"></script>
-    <script defer src="frontend/charts.js"></script>
-    <script defer src="frontend/translations.js?v=20261014-copy"></script>
+    <script defer src="frontend/greenhouse-settings.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/charts.js?v=20261023-light"></script>
+    <script defer src="frontend/translations.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/control-plan.js?v=20261008"></script>
-    <script defer src="frontend/controller-panel.js?v=20261009"></script>
-    <script defer src="frontend/pages.js?v=20261009"></script>
-    <script defer src="frontend/app.js?v=20261009-pages"></script>
-    <script defer src="frontend/climate-upload.js?v=20261014-copy"></script>
+    <script defer src="frontend/controller-panel.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/pages.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/app.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/climate-upload.js?v=20261024-ui-polish"></script>
   </head>
   <body>
     <div class="app-shell model-unavailable" id="simulatorApp">
@@ -117,6 +117,21 @@
         data-i18n-aria-label="workspaceNavigation"
         aria-label="Workspace pages"
       >
+        <a href="#weatherImport" data-page-link="weatherImport" data-i18n="workflowWeatherStep"
+          >1. Weather &amp; dates</a
+        >
+        <a
+          href="#greenhouseSettings"
+          data-page-link="greenhouseSettings"
+          data-i18n="workflowGreenhouseStep"
+          >2. Greenhouse settings</a
+        >
+        <a
+          href="#controllerPlanner"
+          data-page-link="controllerPlanner"
+          data-i18n="workflowCompareStep"
+          >3. Run &amp; compare</a
+        >
         <a
           href="#simulation"
           data-page-link="simulation"
@@ -124,21 +139,76 @@
           aria-current="page"
           >Live simulation</a
         >
-        <a href="#weatherImport" data-page-link="weatherImport" data-i18n="pageWeather"
-          >Weather &amp; dates</a
-        >
-        <a href="#greenhouseSettings" data-page-link="greenhouseSettings" data-i18n="pageGreenhouse"
-          >Greenhouse settings</a
-        >
-        <a href="#controllerPlanner" data-page-link="controllerPlanner" data-i18n="pageControllers"
-          >Controllers &amp; comparison</a
-        >
       </nav>
       <main id="workspace">
         <div class="workspace-heading">
           <h2 id="workspaceTitle" tabindex="-1">Live simulation</h2>
           <p id="workspaceDescription"></p>
         </div>
+        <section class="workflow-guide" aria-labelledby="workflowTitle">
+          <div class="workflow-heading">
+            <div>
+              <h2 id="workflowTitle" data-i18n="workflowTitle">Start with your local weather</h2>
+              <p data-i18n="workflowIntro">
+                No indoor measurements needed. Choose weather, review the greenhouse, then compare
+                control plans.
+              </p>
+            </div>
+            <span class="workflow-badge" data-i18n="workflowScope"
+              >Scenario simulation, not locally calibrated</span
+            >
+          </div>
+          <ol class="workflow-steps">
+            <li>
+              <a href="#weatherImport" data-i18n="workflowWeatherStep">1. Weather &amp; dates</a>
+              <p data-i18n="workflowWeatherHelp">
+                Upload and check your workbook, choose dates, then apply. Or explore with the
+                bundled Amsterdam weather.
+              </p>
+              <p class="workflow-status" id="workflowWeatherStatus" role="status"></p>
+            </li>
+            <li>
+              <a href="#greenhouseSettings" data-i18n="workflowGreenhouseStep"
+                >2. Greenhouse settings</a
+              >
+              <p data-i18n="workflowGreenhouseHelp">
+                Review dimensions, equipment and crop starting conditions. Blank fields use
+                reference defaults; apply edits explicitly.
+              </p>
+              <p class="workflow-status" id="workflowGreenhouseStatus" role="status"></p>
+            </li>
+            <li>
+              <a href="#controllerPlanner" data-i18n="workflowCompareStep">3. Run &amp; compare</a>
+              <p data-i18n="workflowCompareHelp">
+                Run automatic control, save a baseline, then test a schedule under the same
+                conditions.
+              </p>
+              <p class="workflow-status" id="workflowComparisonStatus" role="status"></p>
+            </li>
+          </ol>
+          <details class="workflow-assumptions">
+            <summary data-i18n="workflowAssumptionsTitle">What these results assume</summary>
+            <ul>
+              <li data-i18n="workflowWeatherAssumption">
+                Weather is an input, not an indoor reference answer. Uploading another location does
+                not calibrate the greenhouse.
+              </li>
+              <li data-i18n="workflowGreenhouseAssumption">
+                Blank fields use the displayed reference values. Dependent capacities follow applied
+                dimensions and equipment settings. Unspecified crop states retain established-tomato
+                defaults; soil temperature uses the Netherlands approximation.
+              </li>
+              <li data-i18n="workflowOutputsAssumption">
+                Climate, crop and resource results are model estimates under these assumptions, not
+                local measurements or guaranteed savings. No indoor-measurement upload is required.
+              </li>
+              <li data-i18n="workflowCompareAssumption">
+                The comparison here changes the control plan, not the weather or greenhouse.
+                Changing either requires a new baseline.
+              </li>
+            </ul>
+          </details>
+        </section>
         <section class="showcase-intro" aria-labelledby="showcaseTitle" data-page="simulation">
           <div class="showcase-copy">
             <span class="eyebrow">GREENHOUSE SIMULATION</span>
@@ -148,6 +218,9 @@
               模型觀察溫度、濕度、作物和能源用量的變化。
             </p>
             <div class="showcase-actions">
+              <a class="showcase-primary" href="#weatherImport" data-i18n="workflowStart"
+                >Start with weather</a
+              >
               <a
                 class="showcase-secondary greenhouse-design-link"
                 href="#greenhouseSettings"
@@ -212,7 +285,7 @@
         >
           <div class="weather-import-heading">
             <div>
-              <span class="eyebrow" data-weather-i18n="stage">第一階段 · 檢查並執行</span>
+              <span class="eyebrow" data-weather-i18n="stage">1a. 檢查室外天氣</span>
               <h2 id="weatherImportTitle" data-weather-i18n="title">匯入你的室外氣候</h2>
               <p data-weather-i18n="intro">上傳 Excel 天氣資料，先在這裡檢查，再用來模擬。</p>
             </div>
@@ -234,11 +307,9 @@
               not five-minute site observations.
             </p>
             <p class="controller-reference-links">
-              <a href="templates/weather-amsterdam-winter.xlsx" download
-                >Amsterdam · January 2023</a
-              >
-              · <a href="templates/weather-almeria-summer.xlsx" download>Almería · July 2023</a> ·
-              <a href="templates/weather-taipei-summer.xlsx" download>Taipei · July 2023</a>
+              <a href="templates/weather-amsterdam-winter.xlsx" download>Amsterdam, January 2023</a>
+              <a href="templates/weather-almeria-summer.xlsx" download>Almería, July 2023</a>
+              <a href="templates/weather-taipei-summer.xlsx" download>Taipei, July 2023</a>
             </p>
           </details>
           <form id="weatherUploadForm">
@@ -349,6 +420,18 @@
           </p>
           <p id="weatherUploadStatus" role="status" aria-live="polite"></p>
           <div id="weatherPreview"></div>
+          <div class="workflow-next">
+            <a
+              class="showcase-primary"
+              href="#greenhouseSettings"
+              data-i18n="workflowNextGreenhouse"
+              >Next: review greenhouse settings</a
+            >
+            <p data-i18n="workflowNavigationOnly">
+              This link only changes the page. Apply weather or settings explicitly; checking a file
+              or editing a draft does not change the active run.
+            </p>
+          </div>
           <section
             id="runProgressPanel"
             class="run-progress"
@@ -390,6 +473,37 @@
             Set when equipment turns on, turns off, or changes its level. Applying a schedule
             creates a new simulation. The example is for practice, not growing advice.
           </p>
+          <section class="comparison-guide" aria-labelledby="comparisonGuideTitle">
+            <h3 id="comparisonGuideTitle" data-i18n="workflowComparisonTitle">
+              Compare two control plans
+            </h3>
+            <ol>
+              <li data-i18n="workflowComparisonA">
+                A — Keep weather, greenhouse and comparison limits fixed. Select Initialize
+                automatic baseline below; then Start simulation at the top.
+              </li>
+              <li data-i18n="workflowComparisonB">
+                Pause at the duration you want to compare and save the baseline here. Wait for the
+                current batch to finish before saving.
+              </li>
+              <li data-i18n="workflowComparisonC">
+                B — Edit the daily schedule and select Apply schedule and initialize. This starts a
+                separate run with the applied weather and greenhouse settings.
+              </li>
+              <li data-i18n="workflowComparisonD">
+                Select Run to saved baseline duration. Compare temperature, humidity, heating and
+                time outside limits together, not energy alone.
+              </li>
+            </ol>
+            <p data-i18n="workflowComparisonBoundary">
+              This is a model-to-model comparison, not validation against a real greenhouse. Results
+              appear only when conditions and duration match. If you change weather, greenhouse
+              settings or limits, create a new baseline first.
+            </p>
+            <a class="showcase-secondary" href="#simulation" data-i18n="workflowViewSimulation"
+              >View the live simulation</a
+            >
+          </section>
           <p id="activeControllerText" role="status"></p>
           <p id="appliedComparisonLimits"></p>
           <div id="comparisonWorkspace"></div>
@@ -401,7 +515,6 @@
               data-i18n="controllerGuide"
               >Controller guide and papers</a
             >
-            ·
             <a
               href="docs/public-weather-examples.md"
               target="_blank"
@@ -536,11 +649,14 @@
           <div class="equipment-columns">
             <section>
               <h3 data-i18n="scheduleTimelineTitle">Draft daily commands</h3>
-              <p class="timeline-scale">00:00 · 06:00 · 12:00 · 18:00 · 24:00</p>
+              <p class="timeline-scale">
+                <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span
+                ><span>24:00</span>
+              </p>
               <div id="scheduleTimeline"></div>
             </section>
             <section>
-              <h3 data-i18n="appliedTimelineTitle">Applied commands · latest 24 hours</h3>
+              <h3 data-i18n="appliedTimelineTitle">Applied commands, latest 24 hours</h3>
               <p id="appliedTimelineClock" class="timeline-scale"></p>
               <div id="appliedTimeline"></div>
             </section>
@@ -1020,7 +1136,7 @@
                       <circle cx="18" cy="22" r="5" />
                       <text x="32" y="18" data-i18n="indoorClimate">室內氣候</text>
                       <text class="sensor-value" id="svgClimateValue" x="32" y="34">
-                        19.2°C · 73%
+                        19.2°C, 73%
                       </text>
                     </g>
                     <g transform="translate(741 269)">
@@ -1550,7 +1666,7 @@
               <p data-i18n="radiationNote"></p>
             </section>
             <p class="model-note" id="modelNote">
-              15 分鐘／步 · 6 項 GreenLight 2
+              15 分鐘／步, 6 項 GreenLight 2
               控制量。此介面使用簡化氣候動態作即時互動展示，數值不取代完整 28-state 科學模型。
             </p>
           </aside>

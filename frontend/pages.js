@@ -10,18 +10,57 @@
     const name = hash.replace(/^#/, "");
     return Object.hasOwn(routes, name) ? name : "simulation";
   }
+  // Describe applied server state only; an upload preview or a settings draft is not applied.
+  function workflowState(snapshot, baseline) {
+    if (!snapshot || snapshot.engine !== "greenlight-gym2" || !snapshot.greenhouse) {
+      return {
+        weather: "workflowUnavailable",
+        greenhouse: "workflowUnavailable",
+        comparison: "workflowUnavailable",
+        values: {},
+      };
+    }
+    const fields = snapshot.greenhouse.fields || [];
+    const overrides = snapshot.greenhouse.request?.overrides || {};
+    const custom = fields.filter((field) => Object.hasOwn(overrides, field.key)).length;
+    return {
+      weather: snapshot.weatherId ? "workflowUploadedActive" : "workflowSampleActive",
+      greenhouse: custom ? "workflowOverrides" : "workflowReferenceDefaults",
+      comparison: baseline ? "workflowBaselineSaved" : "workflowNoBaseline",
+      values: { custom, defaults: fields.length - custom },
+    };
+  }
   function create({ t, onChange, document: doc = root.document, window: win = root }) {
     const panels = Array.from(doc.querySelectorAll("[data-page]"));
     const links = Array.from(doc.querySelectorAll("[data-page-link]"));
     const title = doc.getElementById("workspaceTitle");
     const description = doc.getElementById("workspaceDescription");
     let active = resolve(win.location.hash);
+    let snapshot = null;
+    let baseline = null;
+    function renderWorkflow(next = snapshot, saved = baseline) {
+      snapshot = next;
+      baseline = saved;
+      const state = workflowState(snapshot, baseline);
+      for (const [name, id] of [
+        ["weather", "workflowWeatherStatus"],
+        ["greenhouse", "workflowGreenhouseStatus"],
+        ["comparison", "workflowComparisonStatus"],
+      ]) {
+        const text = t(state[name]).replace(/\{(\w+)\}/g, (match, key) =>
+          Object.hasOwn(state.values, key) ? String(state.values[key]) : match,
+        );
+        const element = doc.getElementById(id);
+        if (element.textContent !== text) element.textContent = text;
+      }
+    }
     // Move the existing nodes once; their model state and event listeners survive navigation.
     doc.getElementById("comparisonWorkspace").append(doc.querySelector(".comparison-section"));
     doc.getElementById("runProgressHost").append(doc.getElementById("runProgressPanel"));
     function translate() {
       title.textContent = t(routes[active].title);
       description.textContent = t(routes[active].description);
+      renderWorkflow();
     }
     function show(name, { focus = true } = {}) {
       active = resolve(name);
@@ -61,9 +100,9 @@
     });
     win.addEventListener("hashchange", () => show(win.location.hash));
     show(active, { focus: false });
-    return { navigate, translate };
+    return { navigate, translate, renderWorkflow };
   }
-  const api = { resolve, create };
+  const api = { resolve, workflowState, create };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.GreenlightPages = api;
 })(typeof window === "object" ? window : globalThis);

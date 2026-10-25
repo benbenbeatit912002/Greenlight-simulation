@@ -14,7 +14,10 @@ function chartHarness() {
         (_, name) =>
         (...args) =>
           calls.push([name, ...args]),
-      set: () => true,
+      set: (_, name, value) => {
+        calls.push([`set:${name}`, value]);
+        return true;
+      },
     },
   );
   const element = () => ({
@@ -34,7 +37,9 @@ function chartHarness() {
   const sandbox = {
     window: { devicePixelRatio: 1 },
     document: { documentElement: {}, createElement: element, createTextNode: (text) => text },
-    getComputedStyle: () => ({ getPropertyValue: () => "#abcdef" }),
+    getComputedStyle: () => ({
+      getPropertyValue: (name) => (name === "--chart-grid" ? "#dce5da" : "#226343"),
+    }),
   };
   vm.runInNewContext(
     fs.readFileSync(path.join(__dirname, "../frontend/charts.js"), "utf8"),
@@ -67,6 +72,10 @@ for (const [mode, label] of [
     render(history, { maxRh: 82, co2: 900 }, mode);
     assert.equal(canvas["aria-label"], label);
     assert.ok(calls.some(([name]) => name === "stroke"));
+    assert.ok(
+      calls.some(([name, value]) => name === "set:strokeStyle" && value === "#dce5da"),
+      "grid lines use the theme token instead of a fixed dark-theme color",
+    );
     for (const [, ...arguments_] of calls) {
       for (const value of arguments_) {
         if (typeof value === "number") assert.ok(Number.isFinite(value));

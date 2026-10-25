@@ -226,7 +226,7 @@
         : t("offlineModelNote");
       const limits = snapshot?.climateMetrics?.limits;
       byId("appliedComparisonLimits").textContent = limits
-        ? `${t("appliedEvaluationLimits")}: ${limits.temperatureMin}–${limits.temperatureMax} °C · ${limits.humidityMin}–${limits.humidityMax}% RH`
+        ? `${t("appliedEvaluationLimits")}: ${limits.temperatureMin}–${limits.temperatureMax} °C, ${limits.humidityMin}–${limits.humidityMax}% RH`
         : "";
       renderComparison();
       updateButtons();

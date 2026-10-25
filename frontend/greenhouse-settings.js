@@ -24,9 +24,12 @@
   const panel = document.getElementById("greenhouseSettings");
   const text = {
     en: {
-      title: "Step 3 · Greenhouse and initial state",
+      next: "Next: run and compare plans",
+      nextNote:
+        "Navigation does not apply this draft. Apply changes above, or continue with the currently applied settings.",
+      title: "2. Greenhouse and initial state",
       intro:
-        "Enter your own settings or leave fields blank to use the model defaults. Applying settings creates a new simulation.",
+        "Enter your design or leave fields blank to use the displayed reference defaults. These are not country-specific or calibrated to your greenhouse. Applying settings creates a new simulation.",
       geometry: "Greenhouse dimensions and air volume",
       sizeCalculator: "Start with length × width",
       sizeIntro:
@@ -41,7 +44,7 @@
       sizeNotCopied: "Not copied to the draft. Select Copy floor area to draft.",
       sizeNote:
         "Length and width are a calculator only and are not saved on reload. GreenLight uses aggregate areas and heights, not a 3D floor plan. Cover and vent areas are never guessed or resized.",
-      spacePreview: "Space preview · settings draft",
+      spacePreview: "Space preview (settings draft)",
       previewInvalid: "Correct the greenhouse settings to preview air volumes.",
       floorPreview: "Floor area",
       mainVolume: "Main-compartment volume",
@@ -57,10 +60,10 @@
         "Area fields are independent: changing floor area does not resize the cover or vents. Boiler and CO₂ capacities are per floor area; total capacities update automatically. Zero capacity disables output, not the physical presence of equipment or leakage. Cover settings retain other material/screen properties: no named material preset is implied.",
       initialNote:
         "Only the named initial states change. Top air, surfaces and soil retain GreenLight defaults. Changing main-air temperature preserves its default RH and CO₂ ppm unless overridden. LAI is derived from leaf dry mass. Tomato defaults describe an established crop, not a seedling. No warm-up or greenhouse calibration is performed.",
-      defaults: "Use model defaults",
+      defaults: "Clear draft to reference defaults",
       apply: "Apply settings and initialize",
       applying: "Initializing…",
-      inherited: "Model default",
+      inherited: "Reference default",
       review: "Review settings before applying",
       noChanges: "No unapplied changes.",
       pending: "Unapplied changes — the active run is unchanged.",
@@ -69,7 +72,8 @@
       invalid: "Check the highlighted input and its supported range.",
       geometryError:
         "Cover area must cover floor area, roof vent area must not exceed floor area, and total height must exceed main height by at least 0.1 m.",
-      success: "Settings applied to a new run. Press Start simulation.",
+      success:
+        "Settings applied to a new run. Continue to Run & compare, or start the live simulation.",
       field: "Setting",
       value: "Next run",
       origin: "Source",
@@ -88,8 +92,11 @@
         "Weather selection and the top reset button keep applied settings. Use the button below to apply this draft.",
     },
     zh: {
-      title: "第三階段 · 溫室設定與初始狀態",
-      intro: "填入你的設定，或留空使用模型預設值。按下套用後會建立新的模擬。",
+      next: "下一步：執行與比較方案",
+      nextNote: "切換頁面不會套用草稿。請先套用上方修改，或保留目前已套用的設定。",
+      title: "2. 溫室設定與初始狀態",
+      intro:
+        "填入你的設計，或留空使用欄位下方的參考預設值。它們不是各國專用或已校正的溫室參數。套用後會建立新的模擬。",
       geometry: "溫室尺寸與空間",
       sizeCalculator: "從長 × 寬開始設定",
       sizeIntro: "輸入長、寬（公尺）來計算矩形地板面積。套用設定前，不會改變目前的模擬。",
@@ -103,7 +110,7 @@
       sizeNotCopied: "尚未填入草稿，請按「將地板面積填入草稿」。",
       sizeNote:
         "長、寬只是換算工具，重新整理後不保留。GreenLight 使用總面積與高度，不解析三維平面配置；覆蓋與通風口面積不會被猜測或自動縮放。",
-      spacePreview: "空間預覽 · 設定草稿",
+      spacePreview: "空間預覽（設定草稿）",
       previewInvalid: "請修正溫室設定後再預覽空氣體積。",
       floorPreview: "地板面積",
       mainVolume: "主空氣室體積",
@@ -119,10 +126,10 @@
         "面積欄位彼此獨立：改地板面積不會自動改覆蓋或通風口面積。供暖與 CO₂ 容量以每平方米輸入，全溫室容量會同步換算。容量為 0 只停用輸出，並不移除設備實體或漏風。覆蓋材料的其他參數與幕簾仍沿用預設值，不代表已選定某種材料。",
       initialNote:
         "只改變列出的初始狀態；頂部空氣、表面與土壤仍採 GreenLight 預設值。只改主空氣室溫度時會維持原本 RH 與 CO₂ ppm，除非另行指定。LAI 由葉片乾重計算；番茄預設值為已有生長量的作物，並非幼苗。沒有暖機，也不代表已完成溫室校正。",
-      defaults: "使用模型預設值",
+      defaults: "清空草稿，採用參考預設值",
       apply: "套用設定並初始化",
       applying: "正在初始化…",
-      inherited: "模型預設",
+      inherited: "參考預設值",
       review: "套用前確認設定",
       noChanges: "沒有尚未套用的變更。",
       pending: "尚未套用：目前模擬不會改變。",
@@ -131,7 +138,7 @@
       invalid: "請檢查標記的欄位與可接受範圍。",
       geometryError:
         "覆蓋面積不可小於地板面積；通風口面積不可大於地板面積；平均高度須比主空氣室至少高 0.1 公尺。",
-      success: "已套用至新的模擬，按「開始模擬」即可執行。",
+      success: "已套用至新的模擬。下一步可前往執行與比較，或開始即時模擬。",
       field: "設定",
       value: "下次模擬",
       origin: "來源",
@@ -356,11 +363,11 @@
     const active = document.getElementById("greenhouseActive"),
       totals = document.getElementById("greenhouseResourceTotals");
     if (!active || !config) return;
-    active.textContent = `${t("active")}: ${number(config.floorAreaM2)} m² · ${t("volume")}: ${number(config.mainAirVolumeM3)} / ${number(config.topAirVolumeM3)} m³. ${t("totals")}: ${t("boiler")} ${number(config.boilerCapacityKw)} kW · ${t("lamp")} ${number(config.lampCapacityKw)} kW · ${t("co2")} ${number(config.co2CapacityKgH)} kg/h · LAI ${number(config.initialLai)}.`;
+    active.textContent = `${t("active")}: ${number(config.floorAreaM2)} m². ${t("volume")}: ${number(config.mainAirVolumeM3)} / ${number(config.topAirVolumeM3)} m³. ${t("totals")}: ${t("boiler")} ${number(config.boilerCapacityKw)} kW, ${t("lamp")} ${number(config.lampCapacityKw)} kW, ${t("co2")} ${number(config.co2CapacityKgH)} kg/h, LAI ${number(config.initialLai)}.`;
     const r = snapshot?.wholeGreenhouseResources;
     totals.hidden = !r || !available;
     if (r)
-      totals.textContent = `${t("total")}: ${t("heat")} ${number(r.heatKwh)} kWh · ${t("electricity")} ${number(r.lampKwh)} kWh · CO₂ ${number(r.co2Kg)} kg · ${t("cost")} €${number(r.costEur)}.`;
+      totals.textContent = `${t("total")}: ${t("heat")} ${number(r.heatKwh)} kWh, ${t("electricity")} ${number(r.lampKwh)} kWh, CO₂ ${number(r.co2Kg)} kg, ${t("cost")} €${number(r.costEur)}.`;
   }
   function build() {
     panel.setAttribute("aria-label", t("title"));
@@ -406,7 +413,7 @@
         input.placeholder = number(config.defaults[field.key]);
         const hint = node(
           "small",
-          `${t("inherited")}: ${number(config.defaults[field.key])} ${field.unit} · ${field.min}–${number(field.max)}`,
+          `${t("inherited")}: ${number(config.defaults[field.key])} ${field.unit} (${field.min}–${number(field.max)})`,
         );
         hint.id = `gh-help-${field.key}`;
         input.setAttribute("aria-describedby", hint.id);
@@ -493,6 +500,13 @@
     const totals = node("p");
     totals.id = "greenhouseResourceTotals";
     panel.append(totals);
+    const next = node("div");
+    next.className = "workflow-next";
+    const link = node("a", t("next"));
+    link.href = "#controllerPlanner";
+    link.className = "showcase-primary";
+    next.append(link, node("p", t("nextNote")));
+    panel.append(next);
     refresh();
   }
   window.GreenlightSettings = {
