@@ -1,170 +1,102 @@
-# Model Card: GreenLight Simulation
+# Model notes: GreenLight Simulation
 
-Status: pre-deployment research and education prototype
-Last reviewed: 2026-10-17
+Documentation updated: 2026-10-26. This is a learning and research tool, not a production climate computer or a system for controlling real equipment.
 
-## Decision-support claim
+## Model and scope
 
-This project compares simulated greenhouse weather and equipment settings. It is a learning and research tool, not a production climate computer, a safety alarm, or an autonomous controller.
+The dashboard runs only GreenLight-Gym2, installed as **gl-gym 0.3.2**. It uses the 28-state `gl_gym/GreenLightTomato-v0` environment with six actuator controls. The standard installation includes Amsterdam/2010 weather; an advanced source-checkout override is described in [installation](docs/installation.md).
 
-The current public interface runs only GreenLight-Gym2. Missing connections or solver errors hide simulation values and stop running. There is no simplified-model fallback.
+All simulated climate, crop and resource values come from the full model. A missing connection or solver error stops playback and hides results. There is no simplified-model fallback.
 
-| Engine | What it is | Appropriate use | Evidence status |
-| --- | --- | --- | --- |
-| GreenLight-Gym2 | A read-only adapter to the external `gl_gym/GreenLightTomato-v0` environment, using its 28-state GreenLight model, recorded Amsterdam weather, and six absolute controls. | Local scientific-model exploration and integration testing. | The adapter has reset/step integration tests. It has not yet been validated here against an independent greenhouse dataset. |
+This project adds the interface and adapter. It has software and full-model integration tests, but predictions have not been independently validated here against a real greenhouse. Validation of the original GreenLight model does not automatically validate this package, controller or a user's configuration. Upstream authors and publications are credited in [CITATION.md](CITATION.md).
 
-The active engine is visible in the interface and returned by `GET /api/status`. A saved comparison records the engine, model identifier, weather fingerprint, cost-assumption identifier, scenario, horizon, targets, controls, resources, crop result, and alert count. The full-model identifier combines the installed package version (or a `source-checkout` label), adapter version, parameter fingerprint, and either an exact 40-character source Git revision or a SHA-256 fingerprint of the exact `gl_gym` Python modules loaded by the adapter. The selected weather array is fingerprinted separately. Comparisons are blocked when either side has sentinel provenance such as `unknown`, `unversioned`, or `local-source`; runs using the same scenario also require an identical weather fingerprint.
+## Weather, settings and initialization
 
-The standard installation pins the public **gl-gym 0.3.2** package and uses its bundled Amsterdam/2010 weather. No private checkout is required. Installed-package runs report a loaded-source hash, not the containing simulator repository's Git revision. An explicit `GREENLIGHT_GYM_PATH` remains available for advanced use and is labeled separately. The `--check-model` command verifies initialization and one finite 15-minute step; this is an installation check, not predictive validation. The adapter's physical equations, parameter mappings and time step are unchanged by this packaging update.
+Weather uploads follow the nine-column Amsterdam format. They provide outdoor inputs; they do not identify the properties of a greenhouse or calibrate the model to a country.
 
-## Intended uses
+- Uploaded CO₂ is used as outdoor concentration. Built-in Amsterdam loading retains the upstream 400 ppm assumption.
+- Soil temperature uses the upstream Netherlands `soilTempNl(time)` approximation with source-year seconds, even for other locations.
+- The undocumented `??` column and uploaded day-number column are retained for compatibility, not interpreted as additional model inputs.
+- Uploaded runs need an explicit source year and fixed clock convention: UTC or local standard time without daylight saving.
+- Start and end must align to 15-minute boundaries. Each simulated day needs full midnight-to-midnight weather plus at least 12 hours after the selected end.
+- No missing weather is filled and no next-year file is read. The interval is `[start, end)`; the run stops at its exact endpoint.
+- Initialization uses the applied greenhouse and crop settings with zero warm-up. Unspecified compartments and states keep upstream defaults, including an established tomato crop. Startup transients remain in the results.
 
-- Learn how heating, ventilation, screens, CO2 dosing, and supplemental lighting interact in a greenhouse simulation.
-- Compare a baseline and a candidate strategy at the same simulated horizon.
-- Discuss climate, crop, resource, and cost trade-offs with students, researchers, advisers, or growers.
-- Demonstrate a safe architecture for connecting a browser interface to a local scientific model.
-- Develop reproducible validation cases before adding real greenhouse data.
+See [weather input](docs/weather-input.md) for file limits and [greenhouse configuration](GREENHOUSE_CONFIGURATION.md) for the 22 supported parameter/state inputs, units and bounds. Geometry-dependent air/CO₂ capacities and installed equipment totals are recalculated. Blank settings retain reference values; applying a configuration does not rewrite model source defaults. Accepting a combination of settings does not establish that it represents a real greenhouse.
 
-## Uses that are not supported
+## Controls and outputs
 
-- Sending commands to physical greenhouse actuators.
-- Supervising crop safety, worker safety, or equipment safety.
-- Claiming guaranteed yield, energy savings, profit, or crop health.
-- Calling this a live digital twin before greenhouse-specific sensor synchronization and calibration exist.
-- Comparing runs made with different engines, model versions, cost assumptions, or horizons as if they were controlled experiments.
-- Using the output as agronomic or investment advice without independent expert review.
+Automatic control uses the upstream rule-based controller. Manual and scheduled modes supply six absolute control values between 0 and 1: heating, CO₂ injection, thermal screen, roof ventilation, lamps and blackout screen. Scheduled controls repeat daily according to the weather clock; they do not react to indoor conditions. See [the schedule guide](docs/controller-schedules.md).
 
-## Inputs and outputs
+The physical timestep is 900 seconds. Playback speed changes request batching, not model time. The API accepts integer batches of 1–192 steps.
 
-Radiation is now evaluated directly from the same upstream `aux_states.update` equations as the ODE: above-canopy global radiation from sun and top lamps is `a[42]+a[43]` (W/m2, not including interlighting), and canopy-absorbed PAR is `a[191]` (umol/m2/s). LAI is `a[31]`; heat, lamp electricity and CO2 use integrate `a[220]`, `a[37]` and `a[222]`. Auxiliary values use the forcing row of the just-completed step, matching the upstream observation timing. This replaces the adapter's earlier approximate indoor-radiation formula.
+Outputs include indoor/outdoor climate, crop states, actuator positions, heating, lamp electricity, CO₂ use, estimated cost and climate-limit warnings. The live chart is a short rolling history, not a complete result archive.
 
-Greenhouse parameters are in upstream `gl_gym/configs/default_params.py`; initial climate and crop state are in `gl_gym/environments/utils.py::init_state`. These parameters have not been calibrated for an arbitrary visitor's greenhouse. Recorded forcing is limited to the explicitly enabled `Amsterdam/2010.csv`, with cross-year reads blocked. Amsterdam-format uploads can be converted in memory for a full-model run after at least 36 hours of coverage. The converter consumes uploaded outdoor CO2, estimates soil temperature with upstream `soilTempNl(time)` using source-year seconds, and retains the undocumented `??` and uploaded day-number columns without interpreting them. Uploaded weather compatibility does not establish accuracy or greenhouse-specific calibration.
+Radiation and resource values use the upstream auxiliary equations evaluated at the just-completed step's forcing:
 
-Custom uploaded runs require an explicit source year and fixed clock convention (UTC or source-local standard time without DST). The model clock and time state begin at the selected source timestamp, including non-midnight starts. Windows are half-open and aligned to the fixed 900-second model step. Coverage includes each simulated day's complete midnight-to-midnight radiation context and a 0.5-day prediction horizon after the chosen end. The adapter stops at exactly the requested number of steps without filling missing weather. Initial states use the applied run configuration; unspecified states inherit GreenLight defaults, with zero warm-up. Startup transients are part of the reported run. The Netherlands soil-temperature approximation remains an assumption, not a site-calibrated soil model.
-
-The first greenhouse-settings release exposes 22 audited parameter/state inputs, described in [GREENHOUSE_CONFIGURATION.md](GREENHOUSE_CONFIGURATION.md). Height-dependent capacities and area-dependent total equipment capacities are recomputed. Empty overrides exactly preserve upstream parameter/state arrays. Only named initial states are changed; other compartments/surfaces keep defaults. The reward's equipment-dependent normalization is refreshed and observations are recomputed before reporting results. All edits remain in a run-local candidate environment.
-
-Parameter fingerprints now hash the effective model vector; initial-state fingerprints hash the actual 28-state initial array. The configuration fingerprint also includes selected-window metadata. Numeric comparisons require matching configuration evidence, including initial state, so old baselines without that evidence are blocked. Whole-greenhouse resource totals use actual floor area and unrounded cumulative per-area values. These software checks do not establish realistic behavior for every accepted parameter combination.
-
-Cutaway geometry, cloud/sun placement, plant animation, threshold warnings and rounded displays are presentation choices, not additional GreenLight measurements or spatial predictions. Cloud amount is unavailable rather than falsely reported as a measured zero.
-
-The common user inputs are:
-
-- weather scenario;
-- automatic or manual control mode;
-- day and night temperature targets;
-- CO2 and relative-humidity targets; and
-- six normalized actuator controls in the interval 0 to 1.
-
-The common outputs include indoor and outdoor climate, crop-state indicators, actuator positions, cumulative heating, lamp electricity, CO2 use, estimated cost, climate-limit warnings, and a short rolling history.
-
-The API rejects non-finite targets and controls, and accepts integer step batches from 1 through 192. The following narrower limits belong to the dashboard controls, not the API validator:
-
-| Target | Dashboard range |
-| --- | --- |
-| Day temperature | 16 to 30 degrees C |
-| Night temperature | 12 to 24 degrees C |
-| CO2 | 400 to 1500 ppm |
-| Maximum relative humidity | 60% to 90% |
-
-These are software input bounds, not universal agronomic recommendations.
-
-The API accepts day temperature 10–35 °C, night temperature 8–30 °C, CO₂ 300–1600 ppm and maximum RH 40–98%. Those wider validation bounds are not recommended operating ranges either.
-
-## Economic assumptions
-
-Cost is an explanatory output, not a live quotation.
-
-The engine accumulates the `variable_costs` value returned by GreenLight-Gym2 and identifies that calculation as `greenlight-gym2-variable-costs`. It does not receive live tariffs, time-varying carbon intensity, contract prices, taxes or demand charges. Results from different cost-assumption identifiers are blocked from comparison.
-
-## Current verification evidence
-
-### Software and diagnostic checks
-
-- The Python API tests cover status, reset, stepping, stale-revision protection, request validation, and loopback-only operation.
-- JavaScript tests check schedule timing, date calculations, greenhouse geometry, charts and translations.
-- The public-weather checks run the full model with fixed settings and verify finite states, bounded controls, cumulative resources and exact endpoints. Failures are retained in the report.
-- Reset tests require the horizon and cumulative resources to return to zero while model provenance remains stable.
-- The UI contract requires a scenario change to perform a reset before a new run is compared.
-- Calendar-window tests cover non-midnight starts, one-step and one-day windows, the last valid endpoint, batch overshoot, source-year/leap-day validation, unchanged runs after invalid selections, and candidate reset rollback. JavaScript date arithmetic does not depend on the viewer's timezone or daylight saving.
-- An opt-in integration test constructs the real GreenLight-Gym2 adapter, resolves Git provenance when available or hashes the exact loaded source modules when it is not, fingerprints parameters and selected weather without modifying the checkout, advances one model step, and checks finite output and immutable provenance.
-
-These tests show that the software behaves consistently with its declared contract. They do not establish predictive accuracy for a commercial greenhouse.
-
-### Evaluation status
-
-The project adapts the US EPA model-evaluation distinction between operational, diagnostic, dynamic, and uncertainty evaluation as a useful general credibility framework:
-
-| Evaluation layer | Question for this project | Status |
+| Output | Upstream value | Unit or interpretation |
 | --- | --- | --- |
-| Software contract | Do validation, timing, configuration and comparison behave as specified? | Automated API, browser-interface and full-model integration checks. |
-| Diagnostic | Do controlled input changes produce physically plausible response directions? | Full-model configuration and auxiliary-output checks exist; broader process tests are still needed. |
-| Operational | How closely do climate, resource, and crop outputs match held-out observations? | Not yet performed in this repository. |
-| Dynamic | Does the model reproduce observed changes across seasons, sites, cultivars, and strategies? | Not yet performed. |
-| Uncertainty | How sensitive are decisions to parameters, weather, initialization, and measurement error? | Not yet performed. |
+| Above-canopy global radiation | `a[42] + a[43]` | W/m² from sun and top lamps; excludes interlighting |
+| Canopy-absorbed PAR | `a[191]` | µmol/m²/s |
+| Leaf area index | `a[31]` | LAI |
+| Heating, lamp electricity and CO₂ use | Integrals of `a[220]`, `a[37]` and `a[222]` | Cumulative resources |
 
-No accuracy threshold or commercial fitness claim should be added until the intended greenhouse, variables, horizon, data quality, calibration split, and decision context are specified.
+Resources are reported per m²; whole-greenhouse totals use the applied floor area and unrounded values. Fruit dry mass is not a validated forecast of marketable yield.
 
-## Known limitations and risks
+The greenhouse drawing, plant animation and warning colours are visual aids, not spatial predictions or extra measurements. Cloud amount is unavailable rather than reported as a measured zero.
 
-- Valid weather input does not guarantee numerical completion. In the 2026-10-17 archive check, 30 of 32 default-controller runs completed; Davis summer cases in both 2023 and 2024 failed integration. These failures are not repaired by changing or filling weather values.
-- There is no greenhouse-specific calibration, disease model, uncertainty interval or live sensor assimilation in the dashboard. The separate synthetic fitting example is an optimizer test, not field calibration.
-- Fixed economic assumptions can reverse the apparent preference between strategies when real tariffs differ.
-- End-state fruit dry mass is not a validated marketable-yield forecast.
-- The full adapter's successful software integration does not transfer the validation evidence of the original GreenLight publication to this particular package version, weather configuration, controller, or user experiment.
-- The active model may depend on an external local GreenLight-Gym2 source checkout. Its package label, Git revision or loaded-source fingerprint, parameter fingerprint, weather fingerprint, adapter version, and repository commit must be retained with any result intended for review. A source that cannot produce either a Git identity or a loaded-source fingerprint is intentionally not comparable in the UI.
-- Baseline-versus-candidate deltas are descriptive. A lower resource value can accompany an unacceptable climate or crop outcome.
+### Target limits
 
-## Reproducibility
+| Target | Dashboard range | API range |
+| --- | --- | --- |
+| Day temperature | 16–30 °C | 10–35 °C |
+| Night temperature | 12–24 °C | 8–30 °C |
+| CO₂ | 400–1500 ppm | 300–1600 ppm |
+| Maximum RH | 60–90% | 40–98% |
 
-Browser-interface tests require Node.js:
+These are software input bounds, not recommended growing conditions. Non-finite targets and controls are rejected.
 
-```powershell
-node --check .\frontend\app.js
-npm test
-```
+## Comparing runs
 
-Default Python checks do not load the full model:
+A control-plan comparison requires matching model identity, weather, greenhouse configuration, initial state, cost assumptions, scoring limits and duration. Runs must be separate and keep their strategies unchanged. Baselines from another model version or without enough identifying information are blocked.
 
-```powershell
-$env:PYTHONDONTWRITEBYTECODE = '1'
-& '.\.venv\Scripts\python.exe' -B -m unittest discover -s tests -p 'test_*.py' -v
-```
+The model identifier combines the package version or source-checkout label, adapter version, effective parameter fingerprint, and either an exact source Git revision or a SHA-256 fingerprint of the exact `gl_gym` Python modules loaded by the adapter. Weather and the actual 28-state initial array have separate fingerprints; configuration identity includes the selected time window. Installed-package runs do not use this dashboard repository's commit as the model's source revision.
 
-The optional full-model integration checks use the pinned installed package with bytecode disabled. See [scientific validation](docs/scientific-validation.md). See the [weather collection](data/weather/README.md) for cross-climate checks and [calibration notes](docs/calibration.md) for the synthetic fitting experiment.
+These identifiers are visible in the interface and API. Keep them with any result you want to reproduce. Unknown or unversioned model identity is not accepted for comparison.
 
-For a publishable validation case, retain at minimum:
+### Cost assumptions
 
-1. repository commit and branch;
-2. engine, package label, source Git revision or fingerprint, parameter fingerprint, weather fingerprint, and adapter version;
-3. cost-assumption identifier;
-4. source dataset identifier and license;
-5. calibration and held-out validation periods;
-6. greenhouse/crop configuration and initialization;
-7. scenario, seed, controls, targets, timestep, and horizon;
-8. metric definitions, units, missing-data handling, and uncertainty method; and
-9. generated plots/tables plus the command that recreates them.
+The adapter accumulates GreenLight-Gym2's `variable_costs` under the identifier `greenlight-gym2-variable-costs`. It does not use live tariffs, time-varying carbon intensity, taxes or demand charges. Estimated cost is not a utility quote, and a lower resource total does not necessarily mean a better crop outcome.
 
-Do not place private greenhouse data, thesis material, credentials, or protected research outputs in this public repository.
+## What has been checked
 
-## Validation roadmap
+| Evidence | Current status |
+| --- | --- |
+| Software behavior | Automated tests cover requests, dates, configuration, uploads, translations, schedules and comparison checks. |
+| Full-model integration | Tests initialize, reset and step the installed model, check resource accounting and exercise uploaded weather. |
+| Diagnostic checks | Some configuration and auxiliary-output checks exist; broader tests of physical response are still needed. |
+| Operational comparison with measurements | Independent predictive validation is not completed in this public version. |
+| Dynamic validation across seasons or greenhouses | Not completed. |
+| Uncertainty in parameters and predictions | No uncertainty intervals are available in the dashboard. |
 
-1. Add a machine-readable experiment recipe and exportable comparison report.
-2. Add time-varying tariff, carbon-intensity, and resource-price inputs with explicit provenance.
-3. Select an openly licensed greenhouse dataset and define a calibration/validation split before tuning parameters.
-4. Report climate MAE, RMSE, and bias; resource error; crop error; missing-data coverage; and naive-baseline comparisons.
-5. Add parameter sensitivity and bounded uncertainty ensembles so decisions show ranges, not only point estimates.
-6. Repeat evaluation across a second period or greenhouse before making broader claims.
-7. Consider live read-only sensor synchronization only after the offline evaluation protocol is stable.
+Passing these checks is not proof of prediction accuracy.
 
-## Scientific and software-quality references
+The 2026-10-17 weather-archive test completed **30 of 32** default-controller runs. Davis summer cases for both 2023 and 2024 failed integration. The cause has not been isolated; valid weather input therefore does not guarantee numerical completion. See [the weather collection results](data/weather/README.md).
 
-Full upstream author attribution and BibTeX are provided in [CITATION.md](CITATION.md). The underlying GreenLight model is credited to Katzin and collaborators; the GreenLight-Gym2 environment is credited to van Laatum and contributors. This repository supplies the interface and adapter.
+The separate [synthetic fitting example](docs/calibration.md) tests an optimizer using targets generated by the same simulator. It is not real-greenhouse calibration, and its fitted value is not adopted by the dashboard.
 
-- van Laatum, Bart; van Henten, Eldert J.; and Boersma, Sjoerd (2025), [GreenLight-Gym: Reinforcement learning benchmark environment for control of greenhouse production systems](https://doi.org/10.1016/j.ifacol.2025.11.827). IFAC-PapersOnLine, 59(23), 437–442. This is the citation requested by the [GreenLight-Gym2 upstream repository](https://github.com/BartvLaatum/GreenLight-Gym2#citation).
+## Remaining limits
 
-- Katzin et al. (2020), [GreenLight - An open source model for greenhouses with supplemental lighting](https://doi.org/10.1016/j.biosystemseng.2020.03.010). This describes the underlying model, not independent validation of this adapter configuration.
-- de Visser et al. (2025), [Towards optimization of tomato cultivation using a digital twin](https://research.wur.nl/en/publications/towards-optimization-of-tomato-cultivation-using-a-digital-twin/). The study describes calibration using sensor data and manual plant observations, followed by scenario-oriented decision support.
-- Zhou et al. (2023), [Boosting the prediction accuracy of a process-based greenhouse climate-tomato production model by particle filtering and deep learning](https://research.wur.nl/en/publications/boosting-the-prediction-accuracy-of-a-process-based-greenhouse-cl/). The study combines parameter estimation with measured data and a separate data-driven correction.
-- US EPA, [CMAQ Model Evaluation Framework](https://www.epa.gov/cmaq/cmaq-model-evaluation-framework). The operational, diagnostic, dynamic, and uncertainty categories are adapted here as a general model-credibility structure.
-- FAIR4RS Working Group (2022), [FAIR Principles for Research Software](https://doi.org/10.15497/RDA00068). Versioning, executability, and transparent reuse motivate the repository's provenance and reproducibility records.
+There is no live sensor connection, hardware control, disease model, automatic regional calibration or full time-series export. Results do not guarantee yield, energy savings, profit or safe growing conditions.
+
+Calibration needs indoor measurements, greenhouse and equipment information, and actual control histories. Parameters should be fitted on one period and evaluated on another. Defaults are not automatically appropriate for every site.
+
+For test commands and recording a repeatable experiment, see [scientific validation](docs/scientific-validation.md). Planned exports, additional settings and measurement-based calibration are listed in the [roadmap](docs/roadmap.md).
+
+## Further reading
+
+- [GreenLight (Katzin et al., 2020)](https://doi.org/10.1016/j.biosystemseng.2020.03.010) and [GreenLight-Gym (van Laatum et al., 2025)](https://doi.org/10.1016/j.ifacol.2025.11.827): the model and environment used here.
+- [Tomato digital twin (de Visser et al., 2025)](https://research.wur.nl/en/publications/towards-optimization-of-tomato-cultivation-using-a-digital-twin/): calibration with sensor and plant observations.
+- [Greenhouse model prediction (Zhou et al., 2023)](https://research.wur.nl/en/publications/boosting-the-prediction-accuracy-of-a-process-based-greenhouse-cl/): parameter estimation and a separate data-driven correction.
+- [US EPA model evaluation framework](https://www.epa.gov/cmaq/cmaq-model-evaluation-framework): the distinction between operational, diagnostic, dynamic and uncertainty evaluation used above.
+- [FAIR Principles for Research Software](https://doi.org/10.15497/RDA00068): reproducibility and reuse of research software.

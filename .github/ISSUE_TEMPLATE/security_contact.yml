@@ -1,29 +1,15 @@
 name: Security contact request
-description: Ask the maintainer to establish a private channel without publishing vulnerability details.
-title: "[Security contact] Private reporting channel requested"
+description: Ask how to report a security problem privately.
+title: "[Security contact] Request for a private reporting channel"
 body:
   - type: markdown
     attributes:
       value: |
-        Use this form only when GitHub private vulnerability reporting is unavailable. Do not include exploit details, credentials, private data, personal paths, or protected research information. The public issue should contain only a request for private contact.
-  - type: dropdown
-    id: area
-    attributes:
-      label: General affected area
-      options:
-        - Local server or API
-        - Browser interface
-        - Dependency or project configuration
-        - Protected-source boundary
-        - Other or unknown
-    validations:
-      required: true
+        This issue is public. Use it only to ask for a private reporting channel. Do not include vulnerability details, credentials or confidential files. If GitHub offers Report a vulnerability on the Security page, use that instead.
   - type: checkboxes
     id: confirmation
     attributes:
-      label: Public-content safety
+      label: Public request
       options:
-        - label: I have not included vulnerability details, credentials, private data, personal paths, or protected research information.
-          required: true
-        - label: I am requesting only a private reporting channel from the repository owner.
+        - label: I am only requesting a private reporting channel and have not included vulnerability details or sensitive data.
           required: true

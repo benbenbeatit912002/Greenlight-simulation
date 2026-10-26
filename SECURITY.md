@@ -1,35 +1,13 @@
-# Security Policy
+# Security and safe use
 
-## Supported code
+Run the simulator on your own computer at `127.0.0.1`. It has no user accounts or multi-user isolation and is not designed to be exposed to the internet. It does not control real greenhouse equipment or provide safety alarms.
 
-Security fixes are applied to the latest code on the default branch. Older commits, local experiments, and unmerged branches are not maintained as supported releases.
+Weather workbooks are processed in memory by the local server. Do not include passwords, access tokens or confidential data in public issues, screenshots or attachments.
 
-## Report a vulnerability
+## Reporting a security problem
 
-Please do not publish credentials, private greenhouse data, protected research paths, exploit details, or other sensitive information in a public issue.
+If GitHub offers **Report a vulnerability** on the [Security page](https://github.com/benbenbeatit912002/Greenlight-simulation/security), use it to send details privately.
 
-Use GitHub's **Report a vulnerability** option on the repository Security page when it is available:
+Otherwise, use the [security contact form](https://github.com/benbenbeatit912002/Greenlight-simulation/issues/new?template=security_contact.yml) to ask for a private reporting channel. **That issue is public: do not include vulnerability details or sensitive files.** Share the affected version and reproduction steps only after a private channel has been agreed.
 
-<https://github.com/benbenbeatit912002/Greenlight-simulation/security/advisories/new>
-
-If private vulnerability reporting is unavailable, use the repository's **Security contact request** issue form. It is intentionally limited to a general affected area and confirmations; do not include vulnerability details. The repository owner can then establish a private contact channel.
-
-Include, when safe:
-
-- the affected commit or version;
-- the affected component and engine;
-- the conditions required to reproduce the problem;
-- the potential impact;
-- a minimal proof of concept with secrets and personal paths removed; and
-- any suggested mitigation.
-
-The maintainer will acknowledge a usable report, assess severity and scope, and coordinate a fix before public disclosure where practical. No response-time guarantee is currently offered.
-
-## Scope and security boundaries
-
-- The server is designed for local loopback use at `127.0.0.1`; exposing it to an untrusted network is unsupported.
-- The application is not a production greenhouse controller, safety alarm, or authorization system.
-- The optional GreenLight-Gym2 source path is imported read-only. The simulator must not install into, modify, test inside, or create bytecode/cache files in that external repository.
-- Keep `.venv`, dependency caches, logs, outputs, and generated files inside this repository.
-- Never commit API keys, GitHub tokens, greenhouse credentials, private sensor data, thesis files, experiment results, or unpublished research artifacts.
-- Model inaccuracy and unsafe agronomic interpretation are tracked as model-quality issues unless they also create a software security impact.
+For ordinary bugs or unexpected simulation results, open a [bug report](https://github.com/benbenbeatit912002/Greenlight-simulation/issues/new?template=bug_report.yml). See the [model limitations](MODEL_CARD.md) before interpreting results as real greenhouse performance.

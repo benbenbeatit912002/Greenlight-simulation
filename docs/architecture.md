@@ -35,14 +35,12 @@ index.html + styles.css
 5. Record configuration identity and start the run history.
 6. Create a valid snapshot before closing the previous environment.
 
-Failure restores the previous environment when it was preserved. `PreservedRunResetError` communicates this distinction to the application layer. Keep initialization order and numerical expressions stable during structural refactors.
+Failure restores the previous environment when it was preserved. `PreservedRunResetError` tells the application layer whether the previous run is still available.
 
-## Boundaries for future changes
+## Runtime behavior
 
 - HTTP handlers parse transport; application methods manage revisions and locks; adapters own model state.
 - Upload validation never starts a model or persists workbook bytes.
-- Formatting belongs to Ruff and Prettier. Scientific units, parameter indices, solver timing and behavior require human review and meaningful tests.
-- Prefer named stages and explicit inputs. Avoid helper modules that only hide unrelated state behind generic `utils` names.
 - Browser code displays model results; it does not calculate greenhouse climate.
 - One server process owns one shared simulation. Browser tabs are protected against stale writes, but users are not given independent sessions. Run separate local server processes/ports for independent simulations. Internet hosting, authentication and multi-user isolation are outside the current design.
 

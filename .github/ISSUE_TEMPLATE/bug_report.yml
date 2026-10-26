@@ -1,72 +1,43 @@
 name: Bug report
-description: Report reproducible software behavior that differs from the documented contract.
+description: Tell us what went wrong and how to reproduce it.
 title: "[Bug] "
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for helping improve the simulator. Do not include secrets, private greenhouse data, thesis material, or protected research paths.
+        Remove credentials and confidential data from anything you share. For a security problem, follow [the security guide](https://github.com/benbenbeatit912002/Greenlight-simulation/blob/main/SECURITY.md) instead.
   - type: dropdown
-    id: engine
+    id: component
     attributes:
-      label: Engine
+      label: Where did it happen?
       options:
-        - Browser approximation
-        - GreenLight-Gym2 full model
-        - Server or API
-        - Documentation or project tooling
-        - Unknown
-    validations:
-      required: true
-  - type: input
-    id: commit
-    attributes:
-      label: Commit or branch
-      description: Paste the commit SHA, branch, or release identifier.
-      placeholder: main at abc1234
-    validations:
-      required: true
+        - Installation or startup
+        - Weather upload or dates
+        - Greenhouse settings
+        - Controls or comparisons
+        - Full-model simulation
+        - Documentation
+        - Not sure
   - type: textarea
     id: steps
     attributes:
-      label: Reproduction steps
-      description: Give the smallest deterministic sequence that reproduces the problem.
-      placeholder: |
-        1. Start with ...
-        2. Select ...
-        3. Run ... steps
+      label: What did you do?
+      description: Include the steps or command that led to the problem.
     validations:
       required: true
   - type: textarea
-    id: expected
+    id: result
     attributes:
-      label: Expected behavior
-    validations:
-      required: true
-  - type: textarea
-    id: observed
-    attributes:
-      label: Observed behavior
+      label: What happened, and what did you expect?
     validations:
       required: true
   - type: textarea
     id: environment
     attributes:
-      label: Environment
-      description: Include operating system, browser, Python, Node.js, uv, and model version when relevant.
-    validations:
-      required: true
+      label: Setup
+      description: Operating system, browser, project commit and model version, if known.
   - type: textarea
     id: evidence
     attributes:
-      label: Non-sensitive evidence
-      description: Add scrubbed logs, screenshots, or a minimal input recipe. Remove tokens and personal paths.
-  - type: checkboxes
-    id: safety
-    attributes:
-      label: Safety check
-      options:
-        - label: I removed credentials, private data, protected research material, and personal file paths.
-          required: true
-        - label: This is not a confidential security report; if it is, I will follow SECURITY.md instead.
-          required: true
+      label: Screenshots or error messages
+      description: A small example can help. Only attach files you can share publicly.

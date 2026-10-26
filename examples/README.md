@@ -12,6 +12,6 @@ The example reads `templates/greenlight-weather-template.xlsx`, which contains i
 Synthetic weather validation passed. No scientific simulation was run.
 ```
 
-No model checkout, private measurements, credentials, or external service is needed. This verifies installation and workbook compatibility; it does not verify greenhouse predictions. The JSON describes validation output, not simulated crop or climate values.
+The example runs offline without the full model. It checks installation and workbook compatibility, not greenhouse predictions. The JSON describes the parsed weather, not simulated crop or climate values.
 
 To try the same example in the interface, start `server.py --engine browser`, open the local URL, and upload the workbook. Validation succeeds; the full model remains unavailable. Follow [installation](../docs/installation.md) to configure a compatible model before running a scientific simulation.

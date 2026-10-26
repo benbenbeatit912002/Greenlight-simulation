@@ -1,6 +1,6 @@
-# Public weather examples for model robustness checks
+# Public weather examples
 
-The three new Excel examples use [NASA POWER hourly data](https://power.larc.nasa.gov/docs/services/api/temporal/hourly/), a gridded satellite/reanalysis product—not measurements at a greenhouse. They follow the existing nine-column Amsterdam upload contract. Their provenance sidecars record the full query URL, units, source metadata, retrieval time, and raw-response SHA-256.
+These three Excel examples use [NASA POWER hourly data](https://power.larc.nasa.gov/docs/services/api/temporal/hourly/), a gridded satellite/reanalysis product, not measurements at a greenhouse. They follow the nine-column Amsterdam upload format. Each accompanying source record includes the query URL, units, retrieval time and raw-response SHA-256.
 
 | Workbook | Coordinates | Source-clock range | Fixed UTC offset | Suggested 72-hour run |
 | --- | --- | --- | --- | --- |
@@ -26,12 +26,12 @@ Select **source year 2023** and **source-local-standard** when applying one of t
 | Source | Suitable use | Conversion caution |
 | --- | --- | --- |
 | [NASA POWER](https://power.larc.nasa.gov/docs/services/api/temporal/hourly/) | Global reproducible example weather; also used by an upstream Gym2 weather helper | Explicit clock/units and derived sky temperature; not site observations |
-| [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) | Historical reanalysis scenarios | Check variables, units, radiation interval convention, data-use terms, and fixed timezone; not downloaded in this task |
-| [EnergyPlus weather / EPW](https://energyplus.net/weather) | Building/greenhouse weather scenarios; supported in GreenLight platform input tooling | Distinguish typical meteorological year from an actual recorded year; convert EPW hour-ending conventions; not downloaded in this task |
+| [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) | Historical reanalysis scenarios | Check variables, units, radiation interval convention, data-use terms and fixed timezone; not bundled here |
+| [EnergyPlus weather / EPW](https://energyplus.net/weather) | Building/greenhouse weather scenarios; supported in GreenLight platform input tooling | Distinguish a typical meteorological year from an actual recorded year and convert hour-ending conventions; not bundled here |
 
-Sources were inspected on 2026-10-08. The reproducible fetch script is `examples/fetch_public_weather.py`; it uses a free public weather endpoint, no API key and no AI service. All download output stays inside this repository.
+Sources were reviewed on 2026-10-08. To retrieve the NASA examples, run `examples/fetch_public_weather.py` using the [comparison test instructions](controller-schedules.md#api-and-tests). The NASA endpoint needs no API key.
 
-## Measured numerical test outcome, 2026-10-08
+## Recorded simulation results, 2026-10-08
 
 Each scenario used the same default greenhouse, seed 42, initial-state settings, weather, and limits (15–34 °C, 50–85% RH) for both strategies. Each run lasted 72 hours / 288 physical steps. Scheduled runs were repeated with batches of 48 steps and matched the one-step results exactly.
 

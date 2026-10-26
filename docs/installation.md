@@ -8,7 +8,7 @@
 | Interface only | Same tools, without the `greenlight` extra | UI, weather validation, synthetic example; no simulation values |
 | Contributor | Above plus Node.js 22+ and npm | Formatting, lint, software and model integration tests |
 
-This is a source application: run it from its checkout. The model is installed automatically as a dependency; no second repository is needed. A standalone application installer is not currently published. Installation needs internet access. Normal simulation and bundled examples run locally without an API key or online AI service.
+Run the application from the cloned project folder. Setup installs the model automatically; no second repository is needed. There is no standalone installer yet. Installation needs internet access, but normal simulation and bundled examples run offline.
 
 ## Windows PowerShell
 
@@ -49,7 +49,7 @@ For end users who do not need Ruff, add `--no-dev` to the sync command. Keep `--
 
 The `greenlight` extra pins [gl-gym 0.3.2](https://pypi.org/project/gl-gym/0.3.2/). `uv.lock` records its artifact hashes and supporting dependency versions. Everything is installed in this checkout's `.venv`; the commands above also keep downloads, temporary files and any uv-provisioned Python inside this checkout. Existing system Python can be reused.
 
-The upstream package includes `gl_gym/data/weather/Amsterdam/2010.csv`, which is used for the built-in scenarios. The simulator does not search neighboring folders or require private research data. Excel uploads remain in memory. Upstream training extras (PyTorch, W&B and reinforcement-learning training tools) are not installed.
+The package includes `gl_gym/data/weather/Amsterdam/2010.csv` for the built-in scenarios. You can use it immediately or upload your own Excel weather. Uploads remain in memory. Reinforcement-learning training tools are not needed or installed.
 
 The dependency declares AGPL-3.0-or-later and includes its license. Attribution is in [CITATION.md](../CITATION.md). The wrapper's software license remains undecided; separate installation does not waive upstream license terms.
 
@@ -83,12 +83,12 @@ npm ci --ignore-scripts --cache .npm-cache
 uv run --no-sync python -B scripts/check.py
 ```
 
-`scripts/check.py` runs the same checks as CI. Dependencies and caches stay in this checkout. See [CONTRIBUTING](../CONTRIBUTING.md) for the formatting commands and review expectations.
+`scripts/check.py` runs the same software checks as CI; full-model integration is separate. See [CONTRIBUTING](../CONTRIBUTING.md) for formatting and test commands.
 
 ## Troubleshooting
 
 - **Model not installed or wrong version:** run the locked sync command with `--extra greenlight`, then repeat `--check-model`.
 - **Optional dependencies missing:** rerun `uv sync --locked --extra greenlight --python 3.12`. A later sync without this extra can remove optional packages.
-- **Import/API mismatch or unexpected source:** unset an old `GREENLIGHT_GYM_PATH` to use the tested package. Do not edit another model repository to silence an import error.
+- **Import/API mismatch or unexpected source:** unset an old `GREENLIGHT_GYM_PATH` to use the tested package. A custom model revision may not provide the API this adapter needs.
 - **Asset 404 after updating:** restart the server and reload the page. Browser scripts now live under `frontend/`.
 - **Different results between users:** compare source revision, loaded-source hash, configuration, weather, initialization and solver versions before comparing outputs.

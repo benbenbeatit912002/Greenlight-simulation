@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-26
+
+- Shortened the security, contribution and model guides, keeping installation steps, data requirements and known limitations.
+- Simplified GitHub issue forms and corrected old model options and dashboard button names in the guides.
+
 ## 2026-10-25
 
 - Made the weather file button and empty-file message follow the interface language without clearing the selected workbook.

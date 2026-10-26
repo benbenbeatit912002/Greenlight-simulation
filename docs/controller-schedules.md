@@ -1,6 +1,6 @@
 # Scheduled control and fair comparisons
 
-This dashboard now supports a **prescribed daily open-loop schedule**. It is not an optimal-control solver, MPC, automatic regional calibration, or hardware controller. Every simulated response still comes from the full GreenLight-Gym2 model; no browser climate approximation is used.
+Set a daily schedule for the six greenhouse controls and compare it with automatic control. This is **open-loop control**: equipment follows the chosen times and levels rather than responding to indoor conditions. It is not an optimizer, MPC or a hardware controller. All simulated responses come from the full GreenLight-Gym2 model.
 
 ## Research basis and upstream capabilities
 
@@ -9,7 +9,7 @@ This dashboard now supports a **prescribed daily open-loop schedule**. It is not
 - [GreenLight-Gym2](https://github.com/BartvLaatum/GreenLight-Gym2) exposes an environment action interface and a rule-based controller. External scheduled actions can already drive its model. No ready-made daily schedule editor was found in the inspected upstream controller components.
 - The [GreenLight platform](https://github.com/davkat1/GreenLight) also contains a [constant-control example for the Van Henten 2003 model](https://github.com/davkat1/GreenLight/blob/main/greenlight/models/van_henten_2003/definition/main_evh2003_constant_control.json). This is evidence of prescribed-input support, not the same model definition as the 28-state GreenLight-Gym2 greenhouse used here.
 
-It would therefore be inaccurate to say that GreenLight cannot run open-loop controls. This project adds the user-facing editor, scheduling adapter, audit timeline, and guarded comparisons around the existing scientific action interface.
+GreenLight already accepts prescribed control inputs. This project adds the schedule editor, equipment timeline and comparison checks around that model interface.
 
 ## Using the panel
 
@@ -50,4 +50,4 @@ At initialization the metrics have zero evaluated minutes and no mean/min/max. A
 
 Malformed schedules, missing actuators, non-finite values, overlaps, duplicate times, and unsupported keys fail without applying a partial reset. Schedules are selected before each fixed 900-second model action, including inside batched requests.
 
-Run `python -B scripts/check.py` for offline checks. With the pinned model package installed and the documented project-local cache environment, run `python -B examples/fetch_public_weather.py` followed by `python -B scripts/check_controller_weather.py` for opt-in numerical robustness checks. The latter performs automatic, scheduled, and batched-scheduled 72-hour runs for three sites and verifies matched initial conditions, finite states, resource monotonicity, exact stopping, and batch invariance. It does not establish predictive accuracy or agronomic safety.
+Run `uv run --no-sync python -B scripts/check.py` for software checks. With the pinned model installed, run `uv run --no-sync python -B examples/fetch_public_weather.py`, then `uv run --no-sync python -B scripts/check_controller_weather.py` for the weather comparison tests. These perform automatic, scheduled and batched-scheduled 72-hour runs for three sites and check matched initial conditions, finite states, cumulative resources, exact stopping and consistent batching. They do not establish predictive accuracy or agronomic safety.

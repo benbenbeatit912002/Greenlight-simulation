@@ -1,12 +1,12 @@
 # Greenhouse configuration reference
 
-Implemented 2026-09-15 for the GreenLight-Gym2 208-parameter, 28-state adapter. This is a bounded software interface, not greenhouse-specific calibration.
+Supported settings for the GreenLight-Gym2 208-parameter, 28-state model. Entering greenhouse properties is not the same as calibrating the model against measurements.
 
 ## Using the panel
 
-Open **Step 3 · Greenhouse and initial state** below the weather panel. Expand a group, review the displayed upstream defaults and enter overrides. Blank fields inherit defaults. The review table shows every effective input and whether it is inherited or user-supplied. **Apply settings and initialize** stops playback and starts a new run with the currently active weather/window. Editing alone does not change the model.
+Open **2. Greenhouse settings**. Expand a group, review the displayed defaults and enter the values you know. Blank fields inherit defaults. The review table shows every effective input and whether it is inherited or user-supplied. **Apply settings and initialize** stops playback and starts a new run with the active weather and dates. Editing alone does not change the model.
 
-**Use model defaults** clears only the draft. Apply it to return the model to defaults. The top reset button and weather selection preserve already applied settings; they do not apply an unfinished draft. Drafts are not saved across page reloads. Applied settings are returned by the server on reconnect/reload.
+**Clear draft to reference defaults** clears only the draft. Apply it to return the model to defaults. The top reset button and weather selection preserve already applied settings; they do not apply an unfinished draft. Drafts are not saved across page reloads. Applied settings are returned by the server on reconnect/reload.
 
 All values are validated by the backend. A rejected candidate preserves the existing environment, state, configuration and revision. Each reset creates a candidate environment; overrides live in its parameter provider, never in an upstream source file.
 
@@ -16,7 +16,7 @@ Use **Set greenhouse dimensions** near the top of the page. The dimensions group
 
 The space preview uses the next-run draft: main volume = floor area × main-compartment height; top volume = floor area × (mean greenhouse height − main-compartment height); total volume = floor area × mean greenhouse height. Mean height is total volume divided by floor area, **not the roof ridge's maximum height**. Cover area includes the roof and walls. Invalid settings hide the preview until corrected. Applied settings remain separately identified above the form.
 
-Length and width are only a convenience calculator, not new model parameters or a spatial/3D simulation. They are not inferred from a saved area and are not retained across page reloads. Only the copied area and the other explicitly applied settings reach the model. Reloading restores the applied model settings, not an unfinished draft. **Use model defaults** also clears the calculator, without changing the active run until Apply is selected.
+Length and width are only a convenience calculator, not new model parameters or a spatial/3D simulation. They are not inferred from a saved area and are not retained across page reloads. Only the copied area and the other explicitly applied settings reach the model. Reloading restores the applied model settings, not an unfinished draft. **Clear draft to reference defaults** also clears the calculator, without changing the active run until Apply is selected.
 
 ## Parameter mapping
 
