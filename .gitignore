@@ -12,6 +12,14 @@ htmlcov/
 .ruff_cache/
 .npm-cache/
 
+# Local environment and generated files
+.env
+.env.*
+*.log
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
 # Local development instructions and private notes
 /AGENTS.md
 /AGENTS.override.md

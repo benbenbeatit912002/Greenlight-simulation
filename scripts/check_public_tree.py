@@ -26,6 +26,8 @@ PRIVATE_NAMES = {
     "IMPLEMENTATION_PLAN.md",
     "PRODUCT_STRATEGY.md",
     ".env",
+    ".DS_Store",
+    "Thumbs.db",
 }
 SECRET = re.compile(
     rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|"
@@ -40,7 +42,9 @@ def inspect_paths(paths):
         if (
             path.parts[0] in PRIVATE_ROOTS
             or path.name in PRIVATE_NAMES
+            or path.name.startswith(".env.")
             or "__pycache__" in path.parts
+            or ".ipynb_checkpoints" in path.parts
             or path.suffix in {".pyc", ".pyo", ".log"}
             or name.startswith(
                 ("frontend/legacy/", "data/weather/downloads/", "data/weather/reports/")

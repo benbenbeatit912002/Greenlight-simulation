@@ -10,6 +10,24 @@ A dashboard for the GreenLight-Gym2 greenhouse model. Upload local weather from 
 
 **Still in development:** intended for learning and research, not production decisions. All simulation results come from the full GreenLight model. This dashboard has not been independently validated against a real greenhouse; calibration and full time-series export are not yet available.
 
+## Quick start
+
+Install Git, Python 3.12 and [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+
+```sh
+git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
+cd Greenlight-simulation
+uv sync --locked --extra greenlight --python 3.12 --cache-dir .uv-cache
+uv run --no-sync python -B server.py --check-model
+uv run --no-sync python -B server.py
+```
+
+Open <http://127.0.0.1:4173/>. Stop the server with Ctrl+C.
+
+Setup installs **gl-gym 0.3.2** and its Amsterdam example weather into `.venv`. You do not need a separate model checkout or Node.js to run the dashboard. Installation needs an internet connection; normal simulation runs work offline. The check command initializes the full model and runs one 15-minute step without starting a server.
+
+See [installation and troubleshooting](docs/installation.md) for Windows, Linux and macOS instructions. If you previously set `GREENLIGHT_GYM_PATH`, unset it to use the installed package.
+
 ## What you can try
 
 ### 1. Upload weather and choose dates
@@ -31,24 +49,6 @@ Enter the greenhouse size, equipment capacities and starting air and crop condit
 Choose when to heat, ventilate, use lights, add CO₂, or open and close the screens. Compare your schedule with automatic control using the same weather, greenhouse settings and run length. Review temperature, humidity, heating energy and time outside your chosen limits together.
 
 The **Live simulation** page shows the running model. You can switch pages without losing the run or your draft settings. See the [user guide](docs/user-guide.md) for the full workflow.
-
-## Quick start
-
-Install Git, Python 3.12 and [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
-
-```sh
-git clone https://github.com/benbenbeatit912002/Greenlight-simulation.git
-cd Greenlight-simulation
-uv sync --locked --extra greenlight --python 3.12 --cache-dir .uv-cache
-uv run --no-sync python -B server.py --check-model
-uv run --no-sync python -B server.py
-```
-
-Open <http://127.0.0.1:4173/>. Stop the server with Ctrl+C.
-
-Setup installs **gl-gym 0.3.2** and its Amsterdam example weather into `.venv`. You do not need a separate model checkout or Node.js to run the dashboard. Installation needs an internet connection; normal simulation runs work offline. The check command initializes the full model and runs one 15-minute step without starting a server.
-
-See [installation and troubleshooting](docs/installation.md) for Windows, Linux and macOS instructions. If you previously set `GREENLIGHT_GYM_PATH`, unset it to use the installed package.
 
 ## Before interpreting the results
 

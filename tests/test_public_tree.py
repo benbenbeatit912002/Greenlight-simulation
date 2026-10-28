@@ -21,6 +21,20 @@ class PublicTreeTests(unittest.TestCase):
         ]
         self.assertEqual(len(inspect_paths(paths)), len(paths))
 
+    def test_rejects_environment_variants_and_generated_files(self):
+        paths = [
+            ".env.local",
+            ".env.production",
+            "frontend/.env.test",
+            "docs/.DS_Store",
+            "docs/images/Thumbs.db",
+            "examples/.ipynb_checkpoints/demo-checkpoint.ipynb",
+            "server.log",
+        ]
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertEqual(inspect_paths([path]), [f"Local-only file is tracked: {path}"])
+
     def test_keeps_useful_sources_tests_docs_and_samples(self):
         self.assertEqual(
             inspect_paths(
@@ -30,6 +44,14 @@ class PublicTreeTests(unittest.TestCase):
                     "tests/test_weather_archive.py",
                     "data/weather/sites.json",
                     "templates/weather-taipei-summer.xlsx",
+                    "docs/images/greenhouse-dashboard.jpg",
+                    "pyproject.toml",
+                    "uv.lock",
+                    "package-lock.json",
+                    ".github/workflows/ci.yml",
+                    "SECURITY.md",
+                    "CONTRIBUTING.md",
+                    "CITATION.md",
                 ]
             ),
             [],
