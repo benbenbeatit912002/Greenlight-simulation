@@ -111,6 +111,27 @@ class ApiServerTests(unittest.TestCase):
         self.assertIsInstance(body, bytes)
         self.assertTrue(body.startswith(b"PK"))
 
+    def test_license_and_notices_are_public_for_get_and_head(self):
+        documents = {
+            "/LICENSE": "GNU AFFERO GENERAL PUBLIC LICENSE",
+            "/CITATION.md": "Upstream acknowledgements",
+            "/THIRD_PARTY_NOTICES.md": "Software and data notices",
+        }
+        for path, text in documents.items():
+            with self.subTest(path=path):
+                status, body, headers = self.request("GET", path)
+                self.assertEqual(status, 200)
+                self.assertIn(text, body)
+                self.assertEqual(self.request("HEAD", path)[0], 200)
+                if path == "/LICENSE":
+                    self.assertEqual(headers["content-type"], "text/plain; charset=utf-8")
+
+    def test_license_mime_does_not_depend_on_system_associations(self):
+        with patch("mimetypes.guess_type", return_value=("application/octet-stream", None)):
+            status, _, headers = self.request("GET", "/LICENSE")
+        self.assertEqual(status, 200)
+        self.assertEqual(headers["content-type"], "text/plain; charset=utf-8")
+
     def test_frontend_assets_are_public_and_source_is_private(self):
         for path in (
             "/frontend/app.js",

@@ -85,6 +85,8 @@ The greenhouse model comes from **GreenLight**, developed by **David Katzin and 
 
 Full references and BibTeX are in [CITATION.md](CITATION.md).
 
-The [upstream gl-gym package](https://pypi.org/project/gl-gym/0.3.2/) declares **AGPL-3.0-or-later**. Its source, license and weather are installed as a dependency; separate installation does not remove applicable upstream license obligations.
+Copyright (C) 2026 Hao Yu Liu and contributors. The original dashboard and integration code, tests and documentation are licensed under **AGPL-3.0-or-later**, except where different terms are identified. You may use, modify and share them under those terms. The software is provided without warranty. See [LICENSE](LICENSE).
 
-This dashboard does not yet have a software license. Public visibility alone does not grant permission to redistribute its code. The model and weather data have their own terms.
+The [upstream gl-gym package](https://pypi.org/project/gl-gym/0.3.2/) also declares **AGPL-3.0-or-later**. Its source, license and weather are installed as a dependency; separate installation does not remove applicable upstream license obligations. Weather data and other third-party material retain their own terms.
+
+See [software and data notices](THIRD_PARTY_NOTICES.md) for upstream sources, the pinned model source archive and guidance on sharing or hosting a modified version. A hosted modified version must offer the corresponding source required by AGPL; keep its Source code link matched to the version users run.

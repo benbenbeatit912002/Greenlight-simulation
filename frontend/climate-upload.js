@@ -23,7 +23,7 @@
       valid: "Data checks passed, preview only",
       ready: "Data checks passed, ready to initialize GreenLight",
       unchanged:
-        "Your data was checked in memory. Select Apply weather and dates to prepare a new GreenLight simulation.",
+        "Checking a file does not change the simulation. Select Apply weather and dates when you are ready.",
       useWeather: "Apply weather and dates",
       failed: "Could not validate this workbook",
       select: "Choose a nonempty .xlsx workbook no larger than 2 MiB.",
@@ -118,7 +118,7 @@
       empty: "選擇檔案後，可查看涵蓋時間、數值範圍與前五筆資料。",
       valid: "資料檢查通過, 僅供預覽",
       ready: "資料檢查通過, 可以初始化 GreenLight",
-      unchanged: "資料已在記憶體中檢查。按「套用天氣與日期」，即可準備新的 GreenLight 模擬。",
+      unchanged: "檢查檔案不會改變目前模擬。準備好後，請按「套用天氣與日期」。",
       useWeather: "套用天氣與日期",
       failed: "這份檔案未通過檢查",
       select: "請選擇非空白、大小不超過 2 MiB 的 .xlsx 檔案。",

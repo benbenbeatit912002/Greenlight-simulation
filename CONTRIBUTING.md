@@ -28,6 +28,6 @@ npm run format
 
 If model results change, include a reproducible example with the weather, greenhouse settings, controls, units and time window. Explain which assumptions changed and update the [model notes](MODEL_CARD.md). Keep calibration and evaluation periods separate: passing software tests is not validation against a real greenhouse.
 
-Only share code and data you have permission to publish, and remove credentials or confidential information. This dashboard does not yet have a software license; see the [license status](README.md#model-provenance-and-license-status). The upstream model and weather data have their own terms.
+Only share code and data you have permission to publish, and remove credentials or confidential information. Contributions to the dashboard should use the project's [AGPL-3.0-or-later license](LICENSE), with existing third-party notices preserved. The upstream model and weather data have their own terms; see [software and data notices](THIRD_PARTY_NOTICES.md).
 
 For sensitive security reports, follow [SECURITY.md](SECURITY.md) instead of posting the details in an issue.

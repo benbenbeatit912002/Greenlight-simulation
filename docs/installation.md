@@ -51,7 +51,7 @@ The `greenlight` extra pins [gl-gym 0.3.2](https://pypi.org/project/gl-gym/0.3.2
 
 The package includes `gl_gym/data/weather/Amsterdam/2010.csv` for the built-in scenarios. You can use it immediately or upload your own Excel weather. Uploads remain in memory. Reinforcement-learning training tools are not needed or installed.
 
-The dependency declares AGPL-3.0-or-later and includes its license. Attribution is in [CITATION.md](../CITATION.md). The wrapper's software license remains undecided; separate installation does not waive upstream license terms.
+Both the dashboard's original code and the pinned model use AGPL-3.0-or-later. See [LICENSE](../LICENSE), [attribution](../CITATION.md) and [software and data notices](../THIRD_PARTY_NOTICES.md). Dependencies retain their own notices, and the software license does not relicense weather data. Separate installation does not waive upstream license terms.
 
 ## Advanced: use a source checkout
 

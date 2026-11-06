@@ -3,6 +3,8 @@ name = "greenlight-2-simulator"
 version = "0.2.0"
 description = "Interactive frontend and local API bridge for GreenLight-Gym2"
 readme = "README.md"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 requires-python = ">=3.11,<3.14"
 dependencies = [
   "openpyxl>=3.1.5,<4",

@@ -17,6 +17,30 @@ test("workflow headings use decimal numbering in both languages", () => {
   }
 });
 
+test("weather guidance has no warning stripe and does not claim an unchecked file passed", () => {
+  const css = read("styles.css");
+  const note = css.match(/\.weather-import \.weather-stage-note\s*\{([^}]+)\}/)[1];
+  assert.match(note, /border-left:\s*none/);
+  assert.match(note, /padding-left:\s*0/);
+  assert.match(note, /color:\s*var\(--muted\)/);
+  assert.doesNotMatch(note, /amber|#c9a35d/);
+  assert.match(copy.en.unchanged, /Checking a file does not change the simulation/);
+  assert.match(copy.zh.unchanged, /檢查檔案不會改變目前模擬/);
+  assert.ok(read("frontend/climate-upload.js").includes('warnings.className = "weather-warnings"'));
+});
+
+test("initial markup does not advertise a removed approximation engine", () => {
+  const html = read("index.html");
+  assert.doesNotMatch(html, /即時近似模型|使用簡化氣候動態/);
+  assert.match(html, /id="engineLabel">完整模型尚未連接/);
+  assert.match(translations.en.fullModelNote, /bundled Amsterdam example weather/);
+  assert.doesNotMatch(translations.en.fullModelNote, /measured Amsterdam/);
+  assert.match(translations.en.bundledWeather, /bundled Amsterdam example weather/);
+  assert.match(translations.zh.bundledWeather, /內建 Amsterdam 範例天氣/);
+  assert.doesNotMatch(html, /阿姆斯特丹實測天氣/);
+  assert.doesNotMatch(read("backend/server.py"), /Select Use this weather/);
+});
+
 test("live interface has no decorative middle dots but preserves degree-day units", () => {
   const html = read("index.html");
   assert.ok(html.includes("°C·day"));

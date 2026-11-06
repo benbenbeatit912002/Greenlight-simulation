@@ -18,16 +18,16 @@
     />
     <meta property="og:locale" content="zh_TW" />
     <title>GreenLight 2 溫室模擬器</title>
-    <link rel="stylesheet" href="styles.css?v=20261025-file-picker" />
+    <link rel="stylesheet" href="styles.css?v=20261106-release" />
     <script defer src="frontend/run-window.js?v=20260912"></script>
     <script defer src="frontend/greenhouse-settings.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/charts.js?v=20261023-light"></script>
-    <script defer src="frontend/translations.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/translations.js?v=20261106-release"></script>
     <script defer src="frontend/control-plan.js?v=20261008"></script>
     <script defer src="frontend/controller-panel.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/pages.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/app.js?v=20261024-ui-polish"></script>
-    <script defer src="frontend/climate-upload.js?v=20261025-file-picker"></script>
+    <script defer src="frontend/climate-upload.js?v=20261106-release"></script>
   </head>
   <body>
     <div class="app-shell model-unavailable" id="simulatorApp">
@@ -257,7 +257,7 @@
             </div>
             <div>
               <dt>2010</dt>
-              <dd data-i18n="measuredWeather">阿姆斯特丹實測天氣</dd>
+              <dd data-i18n="bundledWeather">內建 Amsterdam 範例天氣</dd>
             </div>
           </dl>
         </section>
@@ -433,7 +433,7 @@
             只在這台電腦的記憶體中檢查，不儲存檔案，也不會上傳 GitHub。
           </p>
           <p class="weather-stage-note" data-weather-i18n="unchanged">
-            檔案只在記憶體中檢查。通過模型檢查後，可使用這份天氣初始化完整 GreenLight 模型。
+            檢查檔案不會改變目前模擬。準備好後，請按「套用天氣與日期」。
           </p>
           <p id="weatherUploadStatus" role="status" aria-live="polite"></p>
           <div id="weatherPreview"></div>
@@ -1328,7 +1328,7 @@
                 </button>
                 <span class="engine-badge" id="engineBadge" data-engine="error">
                   <i aria-hidden="true"></i>
-                  <span id="engineLabel">即時近似模型</span>
+                  <span id="engineLabel">完整模型尚未連接</span>
                 </span>
                 <span class="model-step"
                   ><span data-i18n="step">STEP</span> <b id="stepValue">0000</b></span
@@ -1683,12 +1683,39 @@
               <p data-i18n="radiationNote"></p>
             </section>
             <p class="model-note" id="modelNote">
-              15 分鐘／步, 6 項 GreenLight 2
-              控制量。此介面使用簡化氣候動態作即時互動展示，數值不取代完整 28-state 科學模型。
+              GreenLight-Gym2 尚未連接。連接完整模型後才會顯示模擬數值，不提供近似模型運算。
             </p>
           </aside>
         </div>
       </main>
+
+      <footer class="legal-footer" aria-label="授權與原始碼" data-i18n-aria-label="legalLinks">
+        <p data-i18n="legalSummary">
+          © 2026 Hao Yu Liu 與貢獻者。AGPL-3.0-or-later 授權，不提供任何擔保。
+        </p>
+        <div class="legal-links">
+          <a
+            href="https://github.com/benbenbeatit912002/Greenlight-simulation"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-i18n="sourceCode"
+            >原始碼</a
+          >
+          <a href="LICENSE" target="_blank" rel="noopener noreferrer" data-i18n="softwareLicense"
+            >軟體授權</a
+          >
+          <a href="CITATION.md" target="_blank" rel="noopener noreferrer" data-i18n="modelCredits"
+            >模型作者與引用</a
+          >
+          <a
+            href="THIRD_PARTY_NOTICES.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-i18n="thirdPartyNotices"
+            >第三方與資料聲明</a
+          >
+        </div>
+      </footer>
 
       <dialog
         class="project-dialog"

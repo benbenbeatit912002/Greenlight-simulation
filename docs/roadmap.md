@@ -23,7 +23,7 @@ Export the complete results and the settings used to produce them. A repeatable 
 
 ### Make installation easier
 
-The model dependency is now pinned and has a command-line startup check. Next, improve first-run error messages and consider a desktop launcher. A project software license still needs to be selected before broad redistribution is invited.
+The model dependency is now pinned and has a command-line startup check. Next, improve first-run error messages and consider a desktop launcher. Before distributing a bundled launcher, include dependency notices and the corresponding source required by their licenses; see [software and data notices](../THIRD_PARTY_NOTICES.md).
 
 ### Expand greenhouse settings
 

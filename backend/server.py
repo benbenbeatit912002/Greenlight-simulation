@@ -45,6 +45,11 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
     # Windows registry associations can otherwise label Excel workbooks as text.
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".xlsx": XLSX_MIME}
 
+    def guess_type(self, path):
+        if Path(path).name == "LICENSE":
+            return "text/plain; charset=utf-8"
+        return super().guess_type(path)
+
     def end_headers(self) -> None:
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
@@ -158,7 +163,6 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
                         }
                     )
                     result["warnings"] = [
-                        "Weather conversion is ready in memory. Select Use this weather to initialize the full GreenLight 2 model.",
                         "The model uses the uploaded CO2 concentration, estimates soil temperature with soilTempNl(time), and retains the undocumented ?? column without consuming it.",
                     ]
             self._send_json(200, {"ok": True, "weather": result})
@@ -204,6 +208,9 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             "/frontend/run-window.js",
             "/frontend/greenhouse-settings.js",
             "/README.md",
+            "/LICENSE",
+            "/CITATION.md",
+            "/THIRD_PARTY_NOTICES.md",
             "/MODEL_CARD.md",
             "/CHANGELOG.md",
             "/GREENHOUSE_CONFIGURATION.md",

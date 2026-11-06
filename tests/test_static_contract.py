@@ -269,6 +269,7 @@ class StaticContractTests(unittest.TestCase):
                 "CONTRIBUTING.md",
                 "CHANGELOG.md",
                 "CITATION.md",
+                "THIRD_PARTY_NOTICES.md",
                 "MODEL_CARD.md",
                 "GREENHOUSE_CONFIGURATION.md",
                 "SECURITY.md",

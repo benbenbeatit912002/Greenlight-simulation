@@ -268,6 +268,12 @@ class GreenLightIntegrationTests(unittest.TestCase):
             body = json.loads(response.read())
             self.assertEqual(response.status, 200)
             self.assertTrue(body["weather"]["conversionReady"])
+            self.assertFalse(
+                any("Use this weather" in warning for warning in body["weather"]["warnings"])
+            )
+            self.assertTrue(
+                any("soilTempNl(time)" in warning for warning in body["weather"]["warnings"])
+            )
             self.assertFalse(body["weather"]["modelReady"])
             weather_id = body["weather"]["weatherId"]
             connection.request(

@@ -19,7 +19,8 @@ test("weather UI translations are complete and explain explicit model activation
   assert.equal(copy.en.noFile, "No file selected");
   assert.equal(copy.zh.chooseFile, "選擇檔案");
   assert.equal(copy.zh.noFile, "尚未選擇檔案");
-  assert.match(copy.en.unchanged, /checked in memory/);
+  assert.match(copy.en.unchanged, /Checking a file does not change the simulation/);
+  assert.match(copy.en.privacy, /in memory only/);
   assert.equal(copy.en.useWeather, "Apply weather and dates");
   assert.equal(copy.zh.useWeather, "套用天氣與日期");
   assert.ok(copy.en.unchanged.includes(copy.en.useWeather));

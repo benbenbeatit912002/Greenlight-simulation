@@ -2,6 +2,12 @@
   "use strict";
   const translations = {
     zh: {
+      legalLinks: "授權與原始碼",
+      legalSummary: "© 2026 Hao Yu Liu 與貢獻者。AGPL-3.0-or-later 授權，不提供任何擔保。",
+      sourceCode: "原始碼",
+      softwareLicense: "軟體授權",
+      modelCredits: "模型作者與引用",
+      thirdPartyNotices: "第三方與資料聲明",
       workflowTitle: "用當地天氣，探索你的溫室方案",
       workflowIntro: "不需要室內量測。先選天氣、確認溫室，再比較控制方案；也可以用內建範例開始。",
       workflowScope: "情境模擬, 尚未經當地實測校正",
@@ -148,7 +154,7 @@
       howItWorks: "了解運作方式",
       stateVariables: "狀態變數",
       stepDuration: "每個模型步長",
-      measuredWeather: "阿姆斯特丹實測天氣",
+      bundledWeather: "內建 Amsterdam 範例天氣",
       projectHighlights: "專案重點",
       simulationStatus: "溫室即時狀態",
       indoorAir: "室內空氣",
@@ -262,12 +268,12 @@
       offlineModel: "科學模型已離線",
       unknownModel: "未識別的模型",
       fullModelNote:
-        "15 分鐘／步, 28-state GreenLight-Gym2 CasADi 模型, 阿姆斯特丹實測天氣。六項控制值直接使用 0–1 絕對開度。",
+        "15 分鐘／步, 28-state GreenLight-Gym2 CasADi 模型, 內建 Amsterdam 範例天氣。六項控制值直接使用 0–1 絕對開度。",
       fullModelUploadedNote:
         "15 分鐘／步, 28-state GreenLight-Gym2 CasADi 模型, 目前使用記憶體中的上傳氣候資料。六項控制值直接使用 0–1 絕對開度。",
       offlineModelNote:
         "GreenLight-Gym2 尚未連接或已停止。模擬數字已隱藏，不會使用瀏覽器近似模型。",
-      fullModelTour: "目前連接 28-state GreenLight-Gym2 CasADi 模型與阿姆斯特丹實測天氣。",
+      fullModelTour: "目前連接 28-state GreenLight-Gym2 CasADi 模型與內建 Amsterdam 範例天氣。",
       fullModelUploadedTour:
         "目前連接 28-state GreenLight-Gym2 CasADi 模型與記憶體中的上傳氣候資料。",
       offlineModelTour: "完整模型未連接，請重新連接。此面板不提供近似模型運算。",
@@ -300,6 +306,12 @@
       outdoorSeries: "室外",
     },
     en: {
+      legalLinks: "License and source",
+      legalSummary: "© 2026 Hao Yu Liu and contributors. AGPL-3.0-or-later. No warranty.",
+      sourceCode: "Source code",
+      softwareLicense: "Software license",
+      modelCredits: "Model credits",
+      thirdPartyNotices: "Third-party and data notices",
       workflowTitle: "Explore greenhouse plans with local weather",
       workflowIntro:
         "No indoor measurements needed. Choose weather, review the greenhouse, then compare control plans. You can also start with a built-in example.",
@@ -467,7 +479,7 @@
       howItWorks: "How it works",
       stateVariables: "state variables",
       stepDuration: "per model step",
-      measuredWeather: "measured Amsterdam weather",
+      bundledWeather: "bundled Amsterdam example weather",
       projectHighlights: "Project highlights",
       simulationStatus: "Live greenhouse status",
       indoorAir: "Indoor air",
@@ -584,13 +596,13 @@
       offlineModel: "Scientific model offline",
       unknownModel: "Unrecognized model",
       fullModelNote:
-        "15 min/step, 28-state GreenLight-Gym2 CasADi model, measured Amsterdam weather. The six controls use absolute 0–1 openings.",
+        "15 min/step, 28-state GreenLight-Gym2 CasADi model, bundled Amsterdam example weather. The six controls use absolute 0–1 openings.",
       fullModelUploadedNote:
         "15 min/step, 28-state GreenLight-Gym2 CasADi model, active weather is the uploaded in-memory dataset. The six controls use absolute 0–1 openings.",
       offlineModelNote:
         "GreenLight-Gym2 is not connected or has stopped. Simulation values are hidden. No browser approximation is used.",
       fullModelTour:
-        "Connected to the 28-state GreenLight-Gym2 CasADi model with measured Amsterdam weather.",
+        "Connected to the 28-state GreenLight-Gym2 CasADi model with bundled Amsterdam example weather.",
       fullModelUploadedTour:
         "Connected to the 28-state GreenLight-Gym2 CasADi model with the uploaded in-memory weather dataset.",
       offlineModelTour:

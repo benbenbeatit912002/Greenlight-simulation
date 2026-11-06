@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-06
+
+- Removed the yellow stripe from weather guidance, clarified that checking a workbook does not apply it, and corrected outdated model labels shown during loading.
+- Licensed the original dashboard code, tests and documentation under AGPL-3.0-or-later, with separate terms preserved for third-party code and data.
+- Added software and data notices, the pinned model source archive, and bilingual source/license links in the dashboard.
+- Kept model calculations, parameters and weather unchanged.
+
 ## 2026-10-26
 
 - Shortened the security, contribution and model guides, keeping installation steps, data requirements and known limitations.
