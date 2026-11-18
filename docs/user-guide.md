@@ -46,9 +46,25 @@ Use **Controllers & comparison** to compare automatic control with a daily sched
 
 A saved baseline is not automatically comparable. The existing checks require matching model, weather, greenhouse configuration, initial state, scoring limits and horizon, plus separate runs with unchanged strategies. Changing weather, greenhouse settings or limits means you must create a new matching baseline. This workflow compares control plans, not different greenhouse designs against one fixed baseline.
 
-See the [schedule and comparison guide](controller-schedules.md) for details. Measured validation and parameter fitting remain separate research tasks, not prerequisites or steps in this workflow.
+See the [schedule and comparison guide](controller-schedules.md) for details. [Open greenhouse measurements](greenhouse-measurements.md) are useful for checking predictions against real rooms; they are not required for weather-driven scenarios.
 
 ## Navigation and run behaviour
+
+### Save and reproduce a run
+
+On the controller comparison page, pause the model and let the current batch finish. **Save baseline** and **Download run (ZIP)** then use the same displayed step. Download the first run before initializing the second one. Each ZIP contains `timeseries.csv` and `settings.json`. The CSV starts at initialization and includes every accepted 15-minute step, even when playback advances several steps at once. The six requested and applied commands describe the **preceding interval**; those cells are blank on the initial row. An unused schedule carried over from an earlier run is not included.
+
+Give a colleague the ZIP, this simulator version and, for uploaded weather, the **same weather workbook**, if you are allowed to share them. The ZIP contains weather inputs for the simulated intervals as well as greenhouse settings and control history; it does not contain the workbook itself, private paths or a temporary session ID. From an installed checkout:
+
+```console
+uv run --locked --extra greenlight python -B scripts/replay_run.py RUN.zip --weather WEATHER.xlsx
+```
+
+Omit `--weather` for the built-in Amsterdam scenarios. The script starts its own model, not your live dashboard. It checks the model, effective weather including look-ahead, parameters, initial state, evaluation limits and cost assumptions. It reports exact reproduction only if the entire regenerated CSV has the same SHA-256. A different solver build or platform can produce small numerical differences; a mismatch is not reported as a verified replay.
+
+**Example:** run `uv run --locked --extra greenlight python -B examples/taipei_heating_replay.py`. The two 48-hour schedules use the included Taipei workbook and the same greenhouse. Only heating from 04:00 to 06:00 changes; both turn it off at 08:00, source local time. Compare heat per square metre, mean indoor temperature and hours outside 18–30°C. These are simulated effects, not a local calibration.
+
+### Moving between pages
 
 Four pages are available: **Weather & dates**, **Greenhouse settings**, **Controllers & comparison**, and **Live simulation**. The guide and next-step links only navigate; they never apply drafts, change model settings or start a run. You can skip uploading weather or editing settings and use the active reference example.
 
@@ -58,4 +74,4 @@ Playback speed changes the number of steps per request, not the physical timeste
 
 Each local server owns a shared run. Another tab is not a private session; different people should use separate local instances. The default server binds only to the local computer.
 
-The live chart is a short history, not a complete experiment archive. Full result export remains planned. Predictions have not been independently validated in this wrapper; see [MODEL_CARD](../MODEL_CARD.md). API requests are documented in [the API guide](api.md).
+The live chart keeps a short history. For every completed step, use [Download run](#save-and-reproduce-a-run). Replaying the file checks that the model produced the same series, not that it predicted a real greenhouse accurately. See the [model notes](../MODEL_CARD.md) and [API guide](api.md).

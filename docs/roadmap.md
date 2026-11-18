@@ -9,6 +9,7 @@ This project helps people try local weather and equipment settings in the GreenL
 - Set greenhouse dimensions, equipment capacities and starting conditions.
 - Run the full GreenLight-Gym2 model with automatic, manual or daily scheduled controls.
 - Compare runs with matching weather, greenhouse settings and duration.
+- Download the full 15-minute time series and settings, and [replay a run locally](user-guide.md#save-and-reproduce-a-run) with the same model and weather.
 - Use the dashboard in English or Traditional Chinese.
 - Install the pinned public model and example weather with the `greenlight` extra; no separate source checkout is needed.
 - Collect and validate hourly NASA POWER weather for eight example locations. Run cross-climate numerical checks and a separate synthetic parameter-recovery experiment.
@@ -17,9 +18,9 @@ The simulator stops if the full model is unavailable. It does not switch to a si
 
 ## Next
 
-### Save and repeat a simulation
+### Make replay easier to use
 
-Export the complete results and the settings used to produce them. A repeatable run needs the weather file as well as the model version, parameters, initial conditions and control settings. Full time-series export and recipe import are not available yet.
+The dashboard exports each run, and the offline replay command verifies the regenerated CSV. A future browser-based importer could preview a saved configuration before starting a separate run.
 
 ### Make installation easier
 

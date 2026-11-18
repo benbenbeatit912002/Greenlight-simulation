@@ -11,6 +11,19 @@
       workflowTitle: "用當地天氣，探索你的溫室方案",
       workflowIntro: "不需要室內量測。先選天氣、確認溫室，再比較控制方案；也可以用內建範例開始。",
       workflowScope: "情境模擬, 尚未經當地實測校正",
+      archiveTitle: "帶走這次模擬結果",
+      archiveButton: "下載這次模擬（ZIP）",
+      archiveInside: "檔案包含什麼？怎麼重跑？",
+      archiveHelp:
+        "CSV 保留初始狀態、每 15 分鐘的結果，以及這段時間的室外天氣輸入；JSON 記錄溫室、控制、日期與模型版本。原始 Excel 不會包進 ZIP。請在初始化下一次前先下載。",
+      archiveReplayHelp: "安裝專案後，在專案資料夾執行下方指令；使用內建天氣時不必加 --weather。",
+      archiveEmpty: "先執行至少 15 分鐘的模擬，再暫停下載。",
+      archivePause: "模擬中。暫停後即可下載目前為止的完整紀錄。",
+      archiveSettling: "正在完成這批運算。畫面更新後即可儲存基準或下載。",
+      archiveContext:
+        "{weather}，已完成 {steps} 步（{hours} 小時）。累計用熱 {heat} kWh/m²，超出溫度範圍 {outside} 小時。",
+      archiveDone: "下載檔已備妥。",
+      archiveError: "無法下載目前這次模擬。請確認模型已暫停，重新整理以取得最新狀態。",
       workflowWeatherStep: "1. 天氣與日期",
       workflowGreenhouseStep: "2. 溫室設定",
       workflowCompareStep: "3. 執行與比較",
@@ -316,6 +329,22 @@
       workflowIntro:
         "No indoor measurements needed. Choose weather, review the greenhouse, then compare control plans. You can also start with a built-in example.",
       workflowScope: "Scenario simulation, not locally calibrated",
+      archiveTitle: "Take this run with you",
+      archiveButton: "Download run (ZIP)",
+      archiveInside: "What is saved, and how do I replay it?",
+      archiveHelp:
+        "The CSV includes the initial state, each 15-minute result and the outdoor weather used during the run. The JSON records greenhouse settings, controls, dates and model identity. The workbook itself is not included. Download each run before initializing the next one.",
+      archiveReplayHelp:
+        "With the project installed, run this from its folder. Omit --weather for built-in weather.",
+      archiveEmpty: "Run at least 15 minutes of model time, then pause to download.",
+      archivePause: "The model is running. Pause to download the complete record so far.",
+      archiveSettling:
+        "Finishing the current batch. Save the baseline or download once the displayed step updates.",
+      archiveContext:
+        "{weather}, {steps} steps ({hours} h). Heating: {heat} kWh/m². Outside the temperature limits: {outside} h.",
+      archiveDone: "Your download is ready.",
+      archiveError:
+        "Could not download this run. Pause the model and refresh to get its latest state.",
       workflowWeatherStep: "1. Weather & dates",
       workflowGreenhouseStep: "2. Greenhouse settings",
       workflowCompareStep: "3. Run & compare",

@@ -23,6 +23,8 @@
   let selectedWeatherId = null;
   let selectedRunWindow = null;
   let resetBusy = false;
+  let exportBusy = false;
+  let exportNotice = "";
   let pendingStep = Promise.resolve();
   let selectedGreenhouseConfig = { schemaVersion: 1, overrides: {} };
   let controllerPanel = null;
@@ -347,10 +349,10 @@
     const clearButton = byId("clearBaselineButton");
     const empty = byId("comparisonEmpty");
     const content = byId("comparisonContent");
-    const canSave = Number(snapshot.modelStep) > 0;
+    const canSave = captureState(snapshot) === "ready";
 
     saveButton.disabled = !canSave;
-    saveButton.title = canSave ? "" : t("baselineNeedsRun");
+    saveButton.title = canSave ? "" : t(captureState(snapshot));
     saveButton.textContent = t(baselineRun ? "replaceBaseline" : "saveBaseline");
     clearButton.disabled = !baselineRun;
     empty.classList.toggle("hidden", Boolean(baselineRun));
@@ -478,8 +480,7 @@
   }
 
   function saveBaseline() {
-    if (!currentSnapshot) return;
-    if (Number(currentSnapshot.modelStep) <= 0) return;
+    if (captureState() !== "ready") return;
     baselineRun = createRunSummary(currentSnapshot);
     try {
       window.localStorage.setItem(BASELINE_STORAGE_KEY, JSON.stringify(baselineRun));
@@ -497,6 +498,79 @@
       // Clearing the in-memory baseline is sufficient when storage is blocked.
     }
     if (currentSnapshot) renderComparison(currentSnapshot);
+  }
+
+  function captureState(snapshot = currentSnapshot) {
+    return window.GreenlightControlPlan.captureState(
+      snapshot?.modelStep || 0,
+      activeEngine === "greenlight2",
+      isRunning,
+      remoteBusy,
+      resetBusy,
+    );
+  }
+
+  function renderArchive() {
+    const snapshot = currentSnapshot;
+    const state = captureState();
+    byId("exportRunButton").disabled = state !== "ready" || exportBusy;
+    byId("saveBaselineButton").disabled = state !== "ready";
+    byId("saveBaselineButton").title = state === "ready" ? "" : t(state);
+    if (!baselineRun) {
+      const hint =
+        state === "ready"
+          ? "comparisonReadyToSave"
+          : state === "archiveEmpty"
+            ? "comparisonEmpty"
+            : state;
+      setText("comparisonEmpty", t(hint));
+    }
+    setText(
+      "archiveContext",
+      state !== "ready"
+        ? t(state)
+        : formatTranslation("archiveContext", {
+            weather: translatedScenario(snapshot),
+            steps: snapshot.modelStep,
+            hours: formatNumber(snapshot.elapsedMinutes / 60, 2),
+            heat: formatNumber(snapshot.resources.heatKwh, 3),
+            outside: formatNumber(snapshot.climateMetrics.temperatureOutsideMinutes / 60, 2),
+          }),
+    );
+    setText("archiveNotice", exportNotice ? t(exportNotice) : "");
+  }
+
+  async function downloadRun() {
+    if (exportBusy || captureState() !== "ready") return;
+    exportBusy = true;
+    exportNotice = "";
+    renderArchive();
+    try {
+      await pendingStep;
+      if (captureState() !== "ready") throw new Error();
+      const { runId, modelStep, scenario } = currentSnapshot;
+      const response = await fetch("/api/run/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ runId, expectedRevision: remoteRevision }),
+      });
+      if (!response.ok || response.headers.get("Content-Type") !== "application/zip")
+        throw new Error();
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `greenlight-${scenario}-${modelStep}-${runId.slice(0, 8)}.zip`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      if (currentSnapshot?.runId === runId) exportNotice = "archiveDone";
+    } catch {
+      exportNotice = "archiveError";
+    } finally {
+      exportBusy = false;
+      renderArchive();
+    }
   }
 
   function updateEngineStatus(engine, reason = "") {
@@ -678,6 +752,8 @@
     activeEngine = "unavailable";
     remoteRevision = null;
     currentSnapshot = null;
+    exportNotice = "";
+    renderArchive();
     controllerPanel?.render(null, baselineRun, null);
     pages?.renderWorkflow(null, baselineRun);
     window.GreenlightSettings.unavailable();
@@ -814,6 +890,11 @@
 
   function render(snapshot = currentSnapshot) {
     if (!snapshot) return;
+    if (
+      snapshot.runId !== currentSnapshot?.runId ||
+      snapshot.modelStep !== currentSnapshot?.modelStep
+    )
+      exportNotice = "";
     root.classList.remove("model-unavailable");
     currentSnapshot = snapshot;
     selectedGreenhouseConfig = snapshot.greenhouse?.request || selectedGreenhouseConfig;
@@ -926,6 +1007,7 @@
       showModelUnavailable(error instanceof Error ? error.message : String(error));
     } finally {
       remoteBusy = false;
+      renderArchive();
       if (isRunning) {
         timerId = window.setTimeout(runTick, 700);
       }
@@ -957,6 +1039,7 @@
   }
 
   function updateRunStateCopy() {
+    renderArchive();
     const completed = Boolean(currentSnapshot?.episode?.terminated);
     setText(
       "playLabel",
@@ -1034,6 +1117,7 @@
   }
 
   function bindEvents() {
+    byId("exportRunButton").addEventListener("click", downloadRun);
     byId("languageToggle").addEventListener("click", toggleLanguage);
     byId("languageToggleTop").addEventListener("click", toggleLanguage);
     byId("retryModelButton").addEventListener("click", () => probeBackend(true));

@@ -8,7 +8,7 @@ A dashboard for the GreenLight-Gym2 greenhouse model. Upload local weather from 
 
 [![CI](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/benbenbeatit912002/Greenlight-simulation/actions/workflows/ci.yml)
 
-**Still in development:** intended for learning and research, not production decisions. All simulation results come from the full GreenLight model. This dashboard has not been independently validated against a real greenhouse; calibration and full time-series export are not yet available.
+**Still in development:** intended for learning and research, not production decisions. All simulated responses come from the full GreenLight model. You can export and replay a run; weather uploads do not calibrate the model, and no locally validated parameter set is supplied.
 
 ## Quick start
 
@@ -48,7 +48,17 @@ Enter the greenhouse size, equipment capacities and starting air and crop condit
 
 Choose when to heat, ventilate, use lights, add CO₂, or open and close the screens. Compare your schedule with automatic control using the same weather, greenhouse settings and run length. Review temperature, humidity, heating energy and time outside your chosen limits together.
 
-The **Live simulation** page shows the running model. You can switch pages without losing the run or your draft settings. See the [user guide](docs/user-guide.md) for the full workflow.
+The **Live simulation** page shows the running model. Pause either run and download its settings and complete 15-minute time series from **Run & compare**. The [user guide](docs/user-guide.md#save-and-reproduce-a-run) explains how someone else can reproduce it with the same weather.
+
+**Try the Taipei comparison.** After the quick start, run these commands from the project folder. Both schedules turn heating off at 08:00; one starts at 04:00 and the other at 06:00. The example uses the same greenhouse and 48 hours of Taipei weather for both. Choose a new output directory each time.
+
+```sh
+uv run --no-sync python -B examples/taipei_heating_replay.py --save-dir outputs/taipei-demo
+uv run --no-sync python -B scripts/replay_run.py outputs/taipei-demo/0400.zip --weather templates/weather-taipei-summer.xlsx
+uv run --no-sync python -B scripts/replay_run.py outputs/taipei-demo/0600.zip --weather templates/weather-taipei-summer.xlsx
+```
+
+Each replay prints the number of verified 15-minute steps and the regenerated CSV checksum. See `summary.json` in the output directory to compare heating use with hours outside the chosen temperature and humidity limits.
 
 ## Before interpreting the results
 

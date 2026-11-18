@@ -3,6 +3,15 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const plan = require("../frontend/control-plan.js");
 
+test("baseline and archive become available only at the same settled physical endpoint", () => {
+  assert.equal(plan.captureState(12, true, true, false, false), "archivePause");
+  assert.equal(plan.captureState(12, true, false, true, false), "archiveSettling");
+  assert.equal(plan.captureState(16, true, false, false, false), "ready");
+  assert.equal(plan.captureState(16, true, false, false, true), "simulationInitializing");
+  assert.equal(plan.captureState(0, true, false, false, false), "archiveEmpty");
+  assert.equal(plan.captureState(16, false, false, false, false), "archiveEmpty");
+});
+
 test("schedule switches on boundaries and repeats after midnight", () => {
   const schedule = plan.example();
   assert.equal(plan.at(schedule, 359).uBoil, 0.35);

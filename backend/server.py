@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -23,6 +24,20 @@ from .weather_upload import (
 STATIC_ROOT = Path(__file__).resolve().parents[1]
 MAX_BODY_BYTES = 128 * 1024
 _AUTO_ENGINE = object()
+
+
+def local_export_origin(peer, host, origin, port):
+    """Provenance tokens are not credentials: private archives are loopback-only."""
+    try:
+        if not ipaddress.ip_address(peer).is_loopback:
+            return False
+    except ValueError:
+        return False
+    names = {"localhost", "127.0.0.1", "[::1]"}
+    allowed = {f"{name}:{port}" for name in names}
+    if port == 80:
+        allowed.update(names)
+    return host in allowed and (origin is None or origin == f"http://{host}")
 
 
 class SimulatorHTTPServer(ThreadingHTTPServer):
@@ -80,12 +95,30 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
         if path == "/api/weather/preview":
             self._preview_weather()
             return
-        if path not in {"/api/reset", "/api/step"}:
+        if path not in {"/api/reset", "/api/step", "/api/run/export"}:
             self._send_error(404, "NOT_FOUND", "unknown API endpoint")
+            return
+        if path == "/api/run/export" and not local_export_origin(
+            self.client_address[0],
+            self.headers.get("Host"),
+            self.headers.get("Origin"),
+            self.server.server_port,
+        ):
+            self._send_error(403, "EXPORT_ORIGIN", "Download from the local simulator page.")
             return
 
         try:
             payload = self._read_json_body()
+            if path == "/api/run/export":
+                body = self.server.application.export(payload)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Disposition", 'attachment; filename="greenlight-run.zip"')
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path == "/api/reset":
                 response = self.server.application.reset(payload)
             else:
@@ -216,6 +249,12 @@ class SimulatorRequestHandler(SimpleHTTPRequestHandler):
             "/GREENHOUSE_CONFIGURATION.md",
             "/docs/controller-schedules.md",
             "/docs/public-weather-examples.md",
+            "/docs/user-guide.md",
+            "/docs/greenhouse-measurements.md",
+            "/docs/scientific-validation.md",
+            "/docs/weather-input.md",
+            "/docs/installation.md",
+            "/docs/api.md",
             "/docs/roadmap.md",
             "/docs/calibration.md",
             "/data/weather/README.md",

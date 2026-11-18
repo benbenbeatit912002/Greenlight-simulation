@@ -41,6 +41,7 @@ def fake_adapter():
         "obs": {"previous": True},
         "resources": {"heatKwh": 5.0},
         "history": [{"hour": 1.0}],
+        "archive": object(),
         "terminated": False,
         "truncated": False,
         "last_reward": 2.0,
@@ -67,10 +68,11 @@ def fake_adapter():
     adapter._initialize_run_state = Mock(return_value={"default": True})
     adapter._describe_configuration = Mock()
 
-    def begin_history():
+    def begin_history(seed):
         adapter.run_id = "candidate-run"
         adapter.resources = {"heatKwh": 0.0}
         adapter.history = []
+        adapter.archive = {"seed": seed}
 
     adapter._begin_run_history = Mock(side_effect=begin_history)
     adapter.snapshot = Mock(return_value={"runId": "candidate-run"})
@@ -94,6 +96,7 @@ class ResetTransactionTests(unittest.TestCase):
         result = adapter.reset({"scenario": "winter", "seed": 123})
         self.assertEqual(events, ["snapshot", "close previous"])
         self.assertEqual(result["runId"], "candidate-run")
+        self.assertEqual(adapter.archive, {"seed": 123})
         self.assertIs(adapter.env, candidate)
         self.assertEqual(previous.unwrapped.parameter_provider.base_p, [1.0])
         self.assertEqual(candidate.unwrapped.parameter_provider.base_p, [2.0])
@@ -124,6 +127,7 @@ class ResetTransactionTests(unittest.TestCase):
                 with self.assertRaises(PreservedRunResetError):
                     adapter.reset({"scenario": "winter", "mode": "manual"})
                 self.assertIs(adapter.env, previous)
+                self.assertIs(adapter.archive, before["archive"])
                 self.assertEqual(adapter._capture_run_state(), before)
                 self.assertIsNone(adapter._pending_previous_environment)
                 previous.close.assert_not_called()

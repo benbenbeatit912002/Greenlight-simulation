@@ -24,6 +24,8 @@ Uploaded resets require `runWindow` with exactly four fields: `sourceYear` (inte
 
 Example manual step:
 
+The manual command below also illustrates the six actuator names used in run exports.
+
 ```json
 {
   "steps": 1,
@@ -45,3 +47,11 @@ Example manual step:
   "expectedRevision": 1
 }
 ```
+
+### Exporting a run
+
+`POST /api/run/export` takes a JSON object containing the current `runId` and integer `expectedRevision`. After at least one completed step it returns a non-cached ZIP (`application/zip`). The server requires a loopback peer, local Host and, when supplied, a matching Origin; run identifiers are not access credentials. There is no mutation or revision increment. A changed run or stale revision returns 409. Failure of the scientific engine is not exported as a completed run.
+
+`settings.json` records the `greenlight-run/1` format, 900-second step, initialization request, scientific fingerprints, completed interval count, run-length encoded control commands and CSV SHA-256. Uploaded weather is identified by the actual model forcing fingerprint. Re-uploading the same workbook in a new session does not require reusing a server ID.
+
+`timeseries.csv` has one initial row and one row per completed interval, with no 24-hour display truncation. State and cumulative energy/cost/limit durations are at the end of the interval. `forcing_d0` through `forcing_d9` are the model inputs for the preceding interval (the first forcing row at reset); `state_x0` through `state_x27` are the pinned model's ordered native states. Named climate/output columns give explicit units. Each row includes requested and applied control fractions, which may differ. Thermal and lighting energy use kWh per square metre, not whole-house kWh.

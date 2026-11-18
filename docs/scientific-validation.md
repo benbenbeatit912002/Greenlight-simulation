@@ -14,7 +14,7 @@ The public synthetic workbook demonstrates software compatibility. It is not mea
 
 Record the application commit and uncommitted changes, upstream source commit and loaded-source fingerprint, dependency lock, parameters, initial states, weather file identity, requested time window, source clock, seed and solver configuration. Retain the exact authorized input file; a hash alone cannot reconstruct it. Preserve full output series when available instead of relying on a screenshot or the short live chart.
 
-The current adapter reports much of this identity in status/snapshots. A complete export/replay bundle is not yet available; see the [roadmap](roadmap.md).
+Pause the run and use **Download run (ZIP)**. The archive contains its settings and a CSV spanning initialization through the last completed step. The [replay command](user-guide.md#save-and-reproduce-a-run) checks model, parameters, weather and initial conditions, regenerates the series, and compares its SHA-256. Retain the original workbook for uploaded weather. Exact replay demonstrates repeatability on the tested installation, not predictive accuracy.
 
 ## Before reporting predictive performance
 
@@ -28,7 +28,7 @@ After installing the pinned public model with `uv sync --locked --extra greenlig
 $env:PYTHONDONTWRITEBYTECODE = '1'
 $env:RUN_GREENLIGHT_INTEGRATION = '1'
 uv run --no-sync python -B server.py --check-model
-uv run --no-sync python -B -m unittest discover -s tests -p 'test_greenlight_integration.py' -v
+uv run --no-sync python -B -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 On Linux/macOS, set those environment variables with `export`. Leave `GREENLIGHT_GYM_PATH` unset to test the installed package. The default `scripts/check.py` disables these tests; CI runs them separately against the pinned dependency. Custom model revisions need their own compatibility checks. Read [the model notes](../MODEL_CARD.md) for assumptions and limitations.

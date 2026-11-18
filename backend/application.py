@@ -195,6 +195,23 @@ class SimulatorApplication:
             self.revision += 1
             return self._success(snapshot)
 
+    def export(self, payload: Mapping[str, Any]) -> bytes:
+        """Export one immutable cut of the run the visitor actually saw."""
+        self._reject_unknown(payload, {"runId", "expectedRevision"})
+        with self.lock:
+            self._require_engine()
+            if type(payload.get("expectedRevision")) is not int:
+                raise ApiError(400, "INVALID_REQUEST", "The current revision is required.")
+            self._check_revision(payload)
+            if self.model_error:
+                raise ApiError(503, "MODEL_ERROR", self.model_error)
+            if payload.get("runId") != self.engine.run_id:
+                raise ApiError(409, "RUN_CHANGED", "The displayed run has changed.")
+            archive = self.engine.archive
+            if archive.count < 2:
+                raise ApiError(409, "NO_STEPS", "Run at least one physical interval first.")
+            return archive.bundle()
+
     def step(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         allowed = {"steps", "mode", "controls", "targets", "expectedRevision"}
         self._reject_unknown(payload, allowed)

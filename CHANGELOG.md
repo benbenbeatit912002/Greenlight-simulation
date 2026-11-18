@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-18
+
+- Download an entire run as a CSV and settings file, including steps beyond the live chart. A local replay command verifies the result with the same model and weather.
+- Added a 48-hour Taipei heating comparison and documented what the Davis solver failures and WUR measurement checks do, and do not, establish. No scientific defaults changed.
+
 ## 2026-11-06
 
 - Removed the yellow stripe from weather guidance, clarified that checking a workbook does not apply it, and corrected outdated model labels shown during loading.

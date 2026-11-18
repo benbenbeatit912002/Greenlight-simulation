@@ -22,11 +22,11 @@
     <script defer src="frontend/run-window.js?v=20260912"></script>
     <script defer src="frontend/greenhouse-settings.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/charts.js?v=20261023-light"></script>
-    <script defer src="frontend/translations.js?v=20261106-release"></script>
-    <script defer src="frontend/control-plan.js?v=20261008"></script>
+    <script defer src="frontend/translations.js?v=20261118-replay"></script>
+    <script defer src="frontend/control-plan.js?v=20261118-replay"></script>
     <script defer src="frontend/controller-panel.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/pages.js?v=20261024-ui-polish"></script>
-    <script defer src="frontend/app.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/app.js?v=20261118-replay"></script>
     <script defer src="frontend/climate-upload.js?v=20261106-release"></script>
   </head>
   <body>
@@ -697,6 +697,37 @@
               <tbody id="climateComparisonRows"></tbody>
             </table>
           </div>
+          <section class="comparison-guide" aria-labelledby="archiveTitle">
+            <h3 id="archiveTitle" data-i18n="archiveTitle">Take this run with you</h3>
+            <p id="archiveContext"></p>
+            <button
+              type="button"
+              class="showcase-primary"
+              id="exportRunButton"
+              disabled
+              data-i18n="archiveButton"
+            >
+              Download run (ZIP)
+            </button>
+            <p id="archiveNotice" role="status"></p>
+            <details>
+              <summary data-i18n="archiveInside">What is saved, and how do I replay it?</summary>
+              <p data-i18n="archiveHelp">
+                The CSV includes the initial state, each 15-minute result and the outdoor weather
+                used during the run. The JSON records greenhouse settings, controls, dates and model
+                identity. The workbook itself is not included. Download each run before initializing
+                the next one.
+              </p>
+              <p data-i18n="archiveReplayHelp">
+                With the project installed, run this from its folder. Omit --weather for built-in
+                weather.
+              </p>
+              <code
+                >uv run --locked --extra greenlight python -B scripts/replay_run.py RUN.zip
+                --weather WEATHER.xlsx</code
+              >
+            </details>
+          </section>
         </section>
 
         <div class="dashboard" data-page="simulation">

@@ -32,6 +32,7 @@ from backend.model_source import (
 from backend.provenance import _array_fingerprint as _array_fingerprint
 from backend.provenance import _git_revision as _git_revision
 from backend.provenance import _loaded_source_fingerprint as _loaded_source_fingerprint
+from backend.run_archive import WINDOW_KEYS, RunArchive
 from backend.run_window import STEP_SECONDS, source_datetime, validate_window
 from backend.weather_conversion import prepare_uploaded_weather
 from backend.weather_source import single_year_loader
@@ -167,6 +168,7 @@ class GreenLightGymAdapter:
         self.configuration_fingerprint = "unversioned"
         self.weather_fingerprint = "unversioned"
         self.run_id = ""
+        self.archive = None
         self.weather_id: str | None = None
         self.weather_label: str | None = None
         self._custom_weather_active = False
@@ -348,7 +350,7 @@ class GreenLightGymAdapter:
             )
             default_initial = self._initialize_run_state(config)
             self._describe_configuration(config, default_initial)
-            self._begin_run_history()
+            self._begin_run_history(seed)
             snapshot = self.snapshot()
             previous_environment = getattr(self, "_pending_previous_environment", None)
             if previous_environment is not None:
@@ -391,6 +393,7 @@ class GreenLightGymAdapter:
             "custom_weather_days": self._custom_weather_days,
             "obs": self.obs,
             "run_id": self.run_id,
+            "archive": self.archive,
             "resources": dict(self.resources),
             "history": list(self.history),
             "terminated": self.terminated,
@@ -541,7 +544,7 @@ class GreenLightGymAdapter:
             "max"
         ] = float(self.core.p[144] / 1000)
 
-    def _begin_run_history(self):
+    def _begin_run_history(self, seed):
         """Start a new run identity and zero its cumulative resources."""
         self.weather_fingerprint = (
             _array_fingerprint(self._np, self.core.weather_data) or "unversioned"
@@ -562,6 +565,33 @@ class GreenLightGymAdapter:
         self.truncated = False
         self.last_reward = 0.0
         self.last_info = {}
+        reset = {
+            "scenario": self.scenario_key,
+            "seed": seed,
+            "mode": self.mode,
+            "targets": self.targets,
+            "greenhouseConfig": self.greenhouse_config,
+            "evaluationLimits": self.evaluation_limits,
+        }
+        if self.run_window:
+            reset["runWindow"] = {key: self.run_window[key] for key in WINDOW_KEYS}
+        if self.schedule is not None:
+            reset["schedule"] = self.schedule
+        self.archive = RunArchive(
+            reset,
+            {
+                "modelVersion": self.model_identifier,
+                "costModelId": "greenlight-gym2-variable-costs",
+                "weatherFingerprint": self.weather_fingerprint,
+                "initialStateFingerprint": self.initial_state_fingerprint,
+                "parameterFingerprint": self.parameter_fingerprint,
+                "configurationFingerprint": self.configuration_fingerprint,
+                "limitsFingerprint": fingerprint(self.evaluation_limits),
+            },
+        )
+        if self.git_revision:
+            # A revision alone cannot distinguish uncommitted changes in a checkout.
+            self.archive.identity["sourceSha256"] = self.source_fingerprint or "unversioned"
         self._record_history()
 
     def _restore_run_state(self, previous_state):
@@ -576,6 +606,7 @@ class GreenLightGymAdapter:
         self._custom_weather_days = previous_state["custom_weather_days"]
         self.obs = previous_state["obs"]
         self.run_id = previous_state["run_id"]
+        self.archive = previous_state["archive"]
         self.resources = previous_state["resources"]
         self.history = previous_state["history"]
         self.terminated = previous_state["terminated"]
@@ -786,6 +817,49 @@ class GreenLightGymAdapter:
         )
         if len(self.history) > 97:
             self.history.pop(0)
+        self._record_archive(values)
+
+    def _record_archive(self, values):
+        step = int(self.core.timestep)
+        climate, weather = values["climate"], values["weather"]
+        point = self.control_history[-1] if step else None
+        command = None
+        if point:
+            command = {"mode": point["mode"], "targets": self.targets}
+            if point["mode"] == "manual":
+                command["controls"] = point["requested"]
+        metrics = self.climate_metrics
+        forcing = self.core.weather_data[max(0, step - 1)]
+        self.archive.append(
+            step,
+            (
+                step * self.step_minutes,
+                int(round(float(self.core.hour_of_day) * 60)) % 1440,
+                float(climate[1]),
+                float(climate[2]),
+                float(climate[0]),
+                values["canopyTemp"],
+                float(climate[3]),
+                values["insideRadiation"],
+                values["canopyAbsorbedPar"],
+                values["leafAreaIndex"],
+                float(values["crop"][1]) / 1000,
+                float(weather[1]),
+                float(weather[2]),
+                float(weather[0]),
+                float(weather[4]),
+                *(self.resources[k] for k in ("heatKwh", "lampKwh", "co2Kg", "costEur")),
+                metrics.temperature_outside,
+                metrics.humidity_outside,
+                metrics.either_outside,
+                point["mode"] if point else "",
+                *(point["requested"][k] if point else "" for k in CONTROL_NAMES),
+                *(point["applied"][k] if point else "" for k in CONTROL_NAMES),
+                *map(float, self.core.x),
+                *map(float, forcing),
+            ),
+            command,
+        )
 
     def snapshot(self) -> dict[str, Any]:
         if self.truncated:

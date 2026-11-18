@@ -121,7 +121,15 @@
       "WEATHER_EXPIRED",
     ].includes(error?.code);
   }
+  function captureState(steps, connected, running, inFlight, resetting) {
+    if (!connected) return "archiveEmpty";
+    if (resetting) return "simulationInitializing";
+    if (running) return "archivePause";
+    if (inFlight) return "archiveSettling";
+    return steps > 0 ? "ready" : "archiveEmpty";
+  }
   const api = {
+    captureState,
     names,
     limits,
     minute,

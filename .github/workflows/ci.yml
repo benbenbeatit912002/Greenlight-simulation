@@ -77,4 +77,4 @@ jobs:
           TMPDIR: ${{ github.workspace }}/.runtime/tmp
           MPLCONFIGDIR: ${{ github.workspace }}/.runtime/matplotlib
           XDG_CACHE_HOME: ${{ github.workspace }}/.runtime/cache
-        run: uv run --no-sync python -B -m unittest discover -s tests -p 'test_greenlight_integration.py' -v
+        run: uv run --no-sync python -B -m unittest discover -s tests -p 'test_*.py' -v
