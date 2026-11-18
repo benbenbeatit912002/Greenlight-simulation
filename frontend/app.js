@@ -11,6 +11,7 @@
   let timerId = null;
   let resizeFrame = null;
   let currentSnapshot = null;
+  let confirmedSnapshot = null;
   let activeEngine = "unavailable";
   let engineDisplayState = "error";
   let engineDisplayReason = "";
@@ -19,7 +20,6 @@
   let connectionBusy = false;
   let language = "zh";
   let baselineRun = null;
-  let currentRunId = createRunId();
   let selectedWeatherId = null;
   let selectedRunWindow = null;
   let resetBusy = false;
@@ -128,15 +128,10 @@
     );
   }
 
-  function createRunId() {
-    if (window.crypto?.randomUUID) return window.crypto.randomUUID();
-    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  }
-
   function createRunSummary(snapshot) {
     return {
       schemaVersion: 3,
-      runId: currentRunId,
+      runId: snapshot.runId,
       savedAt: new Date().toISOString(),
       modelStep: Number(snapshot.modelStep),
       elapsedMinutes: Number(snapshot.elapsedMinutes),
@@ -342,7 +337,9 @@
           : "unfavourable";
   }
 
-  function renderComparison(snapshot) {
+  function renderComparison() {
+    const snapshot = confirmedSnapshot;
+    if (!snapshot) return;
     controllerPanel?.render(snapshot, baselineRun, createRunSummary(snapshot));
     pages?.renderWorkflow(snapshot, baselineRun);
     const saveButton = byId("saveBaselineButton");
@@ -481,13 +478,13 @@
 
   function saveBaseline() {
     if (captureState() !== "ready") return;
-    baselineRun = createRunSummary(currentSnapshot);
+    baselineRun = createRunSummary(confirmedSnapshot);
     try {
       window.localStorage.setItem(BASELINE_STORAGE_KEY, JSON.stringify(baselineRun));
     } catch {
       // The saved comparison remains usable for this page session.
     }
-    if (currentSnapshot) renderComparison(currentSnapshot);
+    if (confirmedSnapshot) renderComparison();
   }
 
   function clearBaseline() {
@@ -497,10 +494,10 @@
     } catch {
       // Clearing the in-memory baseline is sufficient when storage is blocked.
     }
-    if (currentSnapshot) renderComparison(currentSnapshot);
+    if (confirmedSnapshot) renderComparison();
   }
 
-  function captureState(snapshot = currentSnapshot) {
+  function captureState(snapshot = confirmedSnapshot) {
     return window.GreenlightControlPlan.captureState(
       snapshot?.modelStep || 0,
       activeEngine === "greenlight2",
@@ -511,7 +508,7 @@
   }
 
   function renderArchive() {
-    const snapshot = currentSnapshot;
+    const snapshot = confirmedSnapshot;
     const state = captureState();
     byId("exportRunButton").disabled = state !== "ready" || exportBusy;
     byId("saveBaselineButton").disabled = state !== "ready";
@@ -548,7 +545,7 @@
     try {
       await pendingStep;
       if (captureState() !== "ready") throw new Error();
-      const { runId, modelStep, scenario } = currentSnapshot;
+      const { runId, modelStep, scenario } = confirmedSnapshot;
       const response = await fetch("/api/run/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -659,7 +656,6 @@
       requireScientificResponse(status);
       activeEngine = "greenlight2";
       remoteRevision = status.revision;
-      currentRunId = status.snapshot.runId;
       selectedWeatherId = status.snapshot.weatherId || null;
       selectedRunWindow = window.GreenlightRunWindow.recipe(status.snapshot.runWindow);
       updateEngineStatus("greenlight2");
@@ -693,6 +689,8 @@
     ) {
       throw new Error(response.engine?.fallbackReason || t("offlineModelNote"));
     }
+    // Draft slider, target and mode edits may render before another step is applied.
+    confirmedSnapshot = response.snapshot;
   }
 
   async function stepActiveEngine(stepCount) {
@@ -737,7 +735,6 @@
       });
       remoteRevision = response.revision;
       requireScientificResponse(response);
-      currentRunId = response.snapshot.runId;
       selectedRunWindow = window.GreenlightRunWindow.recipe(response.snapshot.runWindow);
       return response.snapshot;
     } finally {
@@ -752,6 +749,7 @@
     activeEngine = "unavailable";
     remoteRevision = null;
     currentSnapshot = null;
+    confirmedSnapshot = null;
     exportNotice = "";
     renderArchive();
     controllerPanel?.render(null, baselineRun, null);
@@ -899,7 +897,6 @@
     currentSnapshot = snapshot;
     selectedGreenhouseConfig = snapshot.greenhouse?.request || selectedGreenhouseConfig;
     window.GreenlightSettings.sync(snapshot);
-    currentRunId = snapshot.runId;
     const { indoor, outdoor, crop, resources, controls: u } = snapshot;
     const tempTarget =
       outdoor.daylight > 0.06 ? snapshot.targets.dayTemp : snapshot.targets.nightTemp;
@@ -965,7 +962,7 @@
     setText("resourceCo2", formatNumber(resources.co2Kg, 3));
     setText("resourceCost", formatNumber(resources.costEur, 3));
 
-    renderComparison(snapshot);
+    renderComparison();
     updateScene(snapshot);
     updateControls(snapshot);
     updateEngineStatus("greenlight2");
@@ -1319,7 +1316,7 @@
         !currentSnapshot ||
         window.GreenlightControlPlan.comparisonIssue(
           baselineRun,
-          createRunSummary(currentSnapshot),
+          createRunSummary(confirmedSnapshot),
           { ignoreHorizon: true },
         )
       )

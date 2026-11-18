@@ -34,6 +34,16 @@ class ReplayIntegrationTests(unittest.TestCase):
             end = app.step({"mode": "schedule", "steps": 2})["snapshot"]
             blob = app.export({"expectedRevision": app.revision, "runId": snap["runId"]})
             recipe = read_bundle(blob)
+            self.assertEqual(
+                recipe["calendar"],
+                {
+                    "sourceYear": 2010,
+                    "timeConvention": "bundled-source-clock",
+                    "start": "2010-03-01T00:00",
+                    "plannedEnd": "2010-04-30T00:15",
+                    "capturedEnd": "2010-03-02T02:00",
+                },
+            )
             with zipfile.ZipFile(io.BytesIO(blob)) as z:
                 rows = list(csv.DictReader(io.StringIO(z.read("timeseries.csv").decode())))
             self.assertEqual(len(end["history"]), 97)
@@ -47,6 +57,15 @@ class ReplayIntegrationTests(unittest.TestCase):
             self.assertEqual([s["steps"] for s in recipe["commands"]], [99, 3, 2])
             verified, _ = replay(recipe)
             self.assertEqual(verified["climateMetrics"], end["climateMetrics"])
+            legacy = {k: v for k, v in recipe.items() if k != "calendar"}
+            legacy["format"] = "greenlight-run/1"
+            self.assertEqual(replay(legacy)[0]["modelStep"], 104)
+            wrong = {
+                **recipe,
+                "calendar": {**recipe["calendar"], "capturedEnd": "2010-03-04T12:00"},
+            }
+            with self.assertRaisesRegex(ValueError, "calendar"):
+                replay(wrong)
             with self.assertRaisesRegex(ValueError, "modelVersion"):
                 replay({**recipe, "identity": {**recipe["identity"], "modelVersion": "other"}})
         finally:
@@ -69,13 +88,23 @@ class ReplayIntegrationTests(unittest.TestCase):
                         "sourceYear": 2023,
                         "timeConvention": "source-local-standard",
                         "startSeconds": start,
-                        "endSeconds": start + 900,
+                        "endSeconds": start + 1800,
                     },
                 }
             )
             app.step({"mode": "auto", "steps": 1})
             recipe = read_bundle(app.engine.archive.bundle())
             self.assertNotIn("weatherId", recipe["reset"])
+            self.assertEqual(
+                recipe["calendar"],
+                {
+                    "sourceYear": 2023,
+                    "timeConvention": "source-local-standard",
+                    "start": "2023-07-15T00:00",
+                    "plannedEnd": "2023-07-15T00:30",
+                    "capturedEnd": "2023-07-15T00:15",
+                },
+            )
             with self.assertRaisesRegex(ValueError, "workbook"):
                 replay(recipe)
             replaced = {

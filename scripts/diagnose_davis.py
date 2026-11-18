@@ -6,6 +6,7 @@ dashboard default, live environment, or archived weather row is changed.
 
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import os
@@ -22,7 +23,13 @@ sys.path.insert(0, str(ROOT))
 
 from backend.model_defaults import CONTROL_NAMES  # noqa: E402
 from examples.collect_weather import DATA, DEFAULT_COLLECTION, json_bytes, save_new  # noqa: E402
-from examples.weather_runs import load_year, new_adapter, prepare_request  # noqa: E402
+from examples.weather_runs import (  # noqa: E402
+    _step_sequence,
+    load_year,
+    new_adapter,
+    prepare_request,
+)
+from scripts.replay_run import project_destination  # noqa: E402
 
 FORCING = (
     "globalWm2",
@@ -182,8 +189,28 @@ def single_step_probe(adapter, case, probe, stable):
     return comparison
 
 
-def trace(adapter, year, offset, probe, stable):
-    rows, manifest = load_year("davis-us", year)
+def case_inputs(year, collection):
+    # Check every component from the simulator root before the loader resolves it.
+    for member in ("source.json", "manifest.json", "hourly.csv"):
+        project_destination(DATA / "downloads" / collection / "davis-us" / str(year) / member)
+    return load_year("davis-us", year, collection=collection)
+
+
+def source_offset():
+    return json.loads(project_destination(DATA / "sites.json").read_text())[
+        "standardUtcOffsetsHours"
+    ]["davis-us"]
+
+
+def attempt_messages(case, stderr):
+    tag = f"DAVIS_NATIVE_{case['year']}_{case['completedSteps']}"
+    before, sep, tail = stderr.partition(tag + "_BEGIN\n")
+    msg, end, _ = tail.partition(tag + "_END\n")
+    return msg if sep and end else ""
+
+
+def trace(adapter, year, offset, probe, stable, collection):
+    rows, manifest = case_inputs(year, collection)
     req = prepare_request(adapter, rows, "davis-us", year, 7, utc_offset_hours=offset)
     initial = adapter.reset({**req, "mode": "auto"})
     frames = deque(maxlen=5)
@@ -192,7 +219,7 @@ def trace(adapter, year, offset, probe, stable):
         "clock": f"UTC{offset:+d} fixed",
         "site": "davis-us",
         "sourceSha256": manifest["source"]["sha256"],
-        "collection": DEFAULT_COLLECTION,
+        "collection": collection,
         "model": initial["modelVersion"],
         "weather": initial["weatherFingerprint"],
         "initial": initial["initialStateFingerprint"],
@@ -204,9 +231,12 @@ def trace(adapter, year, offset, probe, stable):
     }
     for step in range(initial["runWindow"]["totalSteps"]):
         frames.append(capture(adapter, req, year, offset))
+        tag = f"DAVIS_NATIVE_{year}_{step}"
+        print(tag + "_BEGIN", file=sys.stderr, flush=True)
         try:
             adapter.step({"steps": 1, "mode": "auto"})
         except RuntimeError as exc:
+            print(tag + "_END", file=sys.stderr, flush=True)
             result.update(
                 status="failed",
                 completedSteps=step,
@@ -216,19 +246,20 @@ def trace(adapter, year, offset, probe, stable):
             )
             result["matchedStepExperiment"] = single_step_probe(adapter, result, probe, stable)
             return result
+        print(tag + "_END", file=sys.stderr, flush=True)
     return {**result, "status": "completed", "completedSteps": int(adapter.core.timestep)}
 
 
 CASE_MARKER = "DAVIS_CASE_JSON: "
 
 
-def emit_case(year):
+def emit_case(year, collection):
     """One child per year so the native solver's stderr has an unambiguous owner."""
-    offset = json.loads((DATA / "sites.json").read_text())["standardUtcOffsetsHours"]["davis-us"]
+    offset = source_offset()
     adapter = new_adapter()
     try:
         probe, stable = probe_graphs()
-        case = trace(adapter, year, offset, probe, stable)
+        case = trace(adapter, year, offset, probe, stable, collection)
     finally:
         adapter.close()
     print(CASE_MARKER + json.dumps(case, allow_nan=False))
@@ -250,19 +281,20 @@ def classify(case, messages):
     )
     return {
         "verdict": "matched numerical contrast reproduced" if contrast else "inconclusive",
-        "row5Col5NanReportedByThisCase": row55,
+        "row5Col5NanDuringFailedNativeStep": row55,
         "correctorFailureSeconds": sorted({float(t) for t in times}),
     }
 
 
-def isolated_case(year):
+def isolated_case(year, collection):
     proc = subprocess.run(
         [
             sys.executable,
             "-B",
             "-c",
-            "from scripts.diagnose_davis import emit_case; import sys; emit_case(int(sys.argv[1]))",
+            "from scripts.diagnose_davis import emit_case; import sys; emit_case(int(sys.argv[1]), sys.argv[2])",
             str(year),
+            collection,
         ],
         cwd=ROOT,
         env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
@@ -281,23 +313,75 @@ def isolated_case(year):
     if len(result_lines) != 1:
         raise RuntimeError("No unique model trace returned from the case process.")
     case = json.loads(result_lines[0])
-    other_stdout = "\n".join(
-        line for line in proc.stdout.splitlines() if not line.startswith(CASE_MARKER)
-    )
-    case.update(classify(case, proc.stderr + "\n" + other_stdout))
+    case.update(classify(case, attempt_messages(case, proc.stderr)))
     return case
 
 
-def main():
-    cases = [isolated_case(year) for year in (2023, 2024)]
+def matched_window(case, initial, source_hash):
+    fields = {
+        "model": "modelVersion",
+        "initial": "initialStateFingerprint",
+        "parameters": "parameterFingerprint",
+        "configuration": "configurationFingerprint",
+        "weather": "weatherFingerprint",
+        "window": "runWindow",
+    }
+    return (
+        source_hash == case["sourceSha256"]
+        and initial["runWindow"]["totalSteps"] == 288
+        and all(case[k] == initial[v] for k, v in fields.items())
+    )
+
+
+def diagnostic_window(case, stable):
+    """Run the bounded graph from initialization, with normal feedback and no state restarts."""
+    year = case["year"]
+    offset = source_offset()
+    rows, manifest = case_inputs(year, case["collection"])
+    adapter = new_adapter()
+    try:
+        req = prepare_request(adapter, rows, "davis-us", year, 7, utc_offset_hours=offset)
+        initial = adapter.reset({**req, "mode": "auto"})
+        if not matched_window(case, initial, manifest["source"]["sha256"]):
+            raise ValueError("The diagnostic does not match the native case's inputs.")
+        evidence = {"steps": 288, "completedSteps": 0, "solver": "bounded condensation (offline)"}
+        # Only this disposable runtime uses the alternative graph. The controller
+        # still reacts to its own evolving state. No production archive is exported.
+        with patch.object(adapter.core, "F", stable):
+            try:
+                _, last = _step_sequence(adapter, initial, "auto", None, evidence)
+            except (ValueError, RuntimeError) as exc:
+                return {**evidence, "status": "failed", "error": str(exc)}
+        return {**evidence, "status": "completed", "terminated": last["episode"]["terminated"]}
+    finally:
+        adapter.close()
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--full-window", action="store_true", help="Also run both 72-hour closed-loop diagnostics."
+    )
+    parser.add_argument(
+        "--collection", default=DEFAULT_COLLECTION, help="The named local weather collection."
+    )
+    args = parser.parse_args(argv)
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", args.collection):
+        parser.error("Collection name must use lowercase letters, digits and hyphens.")
+    report_dir = project_destination(DATA / "reports")
+    cases = [isolated_case(year, args.collection) for year in (2023, 2024)]
+    if args.full_window:
+        _, stable = probe_graphs()
+        for case in cases:
+            case["diagnosticWindow"] = diagnostic_window(case, stable)
     report = {
-        "scope": "Offline fixed-state numerical counterfactual, not calibration, a production fix or a saved successful run.",
+        "scope": "Offline numerical counterfactual; optional 72-hour runs use a separate integrator, not a production fix or calibration.",
         "nonfinitePolicy": "null represents a non-finite derivative; use adjacent Finite flags.",
         "modelStateUnits": "Temperatures in degrees Celsius, water vapour pressure in Pa. State order follows the pinned ODE.",
         "cases": cases,
     }
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-    path = DATA / "reports" / f"davis-cover-diagnostic-{stamp}.json"
+    path = project_destination(report_dir / f"davis-cover-diagnostic-{stamp}.json")
     save_new(path, json_bytes(report))
     for case in cases:
         print(
@@ -310,12 +394,17 @@ def main():
                         "verdict",
                         "correctorFailureSeconds",
                         "matchedStepExperiment",
+                        "diagnosticWindow",
                     )
                 }
             )
         )
     print(path.relative_to(ROOT))
-    return 0 if all(c["verdict"] == "matched numerical contrast reproduced" for c in cases) else 2
+    reproduced = all(c["verdict"] == "matched numerical contrast reproduced" for c in cases)
+    complete = not args.full_window or all(
+        c["diagnosticWindow"]["status"] == "completed" for c in cases
+    )
+    return 0 if reproduced and complete else 2
 
 
 if __name__ == "__main__":

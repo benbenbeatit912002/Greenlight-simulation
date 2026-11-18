@@ -9,9 +9,11 @@ import json
 import zipfile
 from copy import deepcopy
 
-from .model_defaults import CONTROL_NAMES
+from .model_defaults import CONTROL_NAMES, SCENARIOS
+from .run_window import STEP_SECONDS, source_datetime
 
-FORMAT = "greenlight-run/1"
+FORMAT = "greenlight-run/2"
+LEGACY_FORMAT = "greenlight-run/1"
 COLUMNS = (
     "step",
     "elapsed_min",
@@ -50,7 +52,12 @@ SERIES_FILE = "timeseries.csv"
 class RunArchive:
     """Record every accepted physical step, independently of the display history."""
 
-    def __init__(self, reset, identity):
+    def __init__(self, reset, identity, *, step_seconds, horizon_steps):
+        if step_seconds != STEP_SECONDS:
+            raise ValueError("Run archives require a native timestep of exactly 900 seconds.")
+        if type(horizon_steps) is not int or horizon_steps < 1:
+            raise ValueError("Invalid native run horizon.")
+        self.horizon_steps = horizon_steps
         self.reset = deepcopy(reset)
         self.identity = dict(identity)
         self.commands = []
@@ -58,6 +65,26 @@ class RunArchive:
         self.stream = io.StringIO(newline="")
         self.writer = csv.writer(self.stream, lineterminator="\n")
         self.writer.writerow(COLUMNS)
+
+    def calendar(self):
+        if self.reset["scenario"] == "uploaded":
+            w = self.reset["runWindow"]
+            year, start, end = w["sourceYear"], w["startSeconds"], w["endSeconds"]
+            convention = w["timeConvention"]
+        else:
+            preset = SCENARIOS[self.reset["scenario"]]
+            year = preset["growth_year"]
+            # The pinned loader slices at start_day * 86400 from year-second zero.
+            start = preset["start_day"] * 86400
+            end = start + self.horizon_steps * STEP_SECONDS
+            convention = "bundled-source-clock"
+        return {
+            "sourceYear": year,
+            "timeConvention": convention,
+            "start": source_datetime(year, start),
+            "plannedEnd": source_datetime(year, end),
+            "capturedEnd": source_datetime(year, start + (self.count - 1) * STEP_SECONDS),
+        }
 
     def append(self, step, values, command):
         if step != self.count or len(values) != len(COLUMNS) - 1:
@@ -82,7 +109,8 @@ class RunArchive:
             reset.pop("schedule", None)
         recipe = {
             "format": FORMAT,
-            "stepSeconds": 900,
+            "stepSeconds": STEP_SECONDS,
+            "calendar": self.calendar(),
             "completedSteps": self.count - 1,
             "reset": reset,
             "identity": self.identity,

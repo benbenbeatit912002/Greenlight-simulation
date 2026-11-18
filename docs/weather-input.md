@@ -33,7 +33,7 @@ Keep exact, unique column names in row 1, in the listed order. Only `Weather` an
 
 The interval is `[start, end)`. GreenLight uses the applied indoor/crop initial-state settings (unspecified states inherit model defaults) with **zero warm-up**; this is not equilibrium initialization or calibration. Each simulated date needs midnight-to-midnight weather for daily radiation totals, plus at least **12 hours after the selected end** for controller look-ahead. Both constraints affect the selectable range. No missing samples are filled and no next-year file is read. A partially covered first day cannot be used as a simulation date. Playback speed changes pacing/batch size, not the **900-second physical timestep**. Pause stops new batches; an in-flight batch can finish.
 
-Custom dates apply to uploaded Amsterdam-format weather. Built-in scenarios use preset windows. Configurable warm-up, full result-series export and location-specific calibration are not available yet.
+Custom dates apply to uploaded Amsterdam-format weather. Built-in scenarios use preset windows. You can [download the settings and full time series](user-guide.md#save-and-reproduce-a-run) for either kind of run. There is no configurable warm-up or automatic location-specific calibration.
 
 ### Greenhouse and initial state
 

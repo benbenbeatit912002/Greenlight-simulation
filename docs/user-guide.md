@@ -62,6 +62,8 @@ uv run --locked --extra greenlight python -B scripts/replay_run.py RUN.zip --wea
 
 Omit `--weather` for the built-in Amsterdam scenarios. The script starts its own model, not your live dashboard. It checks the model, effective weather including look-ahead, parameters, initial state, evaluation limits and cost assumptions. It reports exact reproduction only if the entire regenerated CSV has the same SHA-256. A different solver build or platform can produce small numerical differences; a mismatch is not reported as a verified replay.
 
+The settings file dates the start, the planned end and the last exported step in the source clock. An Amsterdam preset uses the clock in its bundled weather file; no timezone offset is inferred. Paused slider edits take effect on the next step, not retroactively in a saved baseline. Unset `GREENLIGHT_GYM_PATH` before replay. Only for an archive recorded from a trusted custom checkout, also supply `--source-checkout PATH`; never select a checkout on someone else's instructions in a ZIP.
+
 **Example:** run `uv run --locked --extra greenlight python -B examples/taipei_heating_replay.py`. The two 48-hour schedules use the included Taipei workbook and the same greenhouse. Only heating from 04:00 to 06:00 changes; both turn it off at 08:00, source local time. Compare heat per square metre, mean indoor temperature and hours outside 18–30°C. These are simulated effects, not a local calibration.
 
 ### Moving between pages

@@ -2,10 +2,75 @@ import math
 import os
 import unittest
 
-from scripts.diagnose_davis import FORCING, STATES, classify, finite_or_none, named, source_clock
+from scripts.diagnose_davis import (
+    FORCING,
+    STATES,
+    attempt_messages,
+    case_inputs,
+    classify,
+    finite_or_none,
+    matched_window,
+    named,
+    source_clock,
+)
 
 
 class DavisDiagnosticsTests(unittest.TestCase):
+    def test_only_failed_production_attempt_contributes_solver_warnings(self):
+        case = {"year": 2023, "completedSteps": 44}
+        stderr = (
+            "old warning\nDAVIS_NATIVE_2023_44_BEGIN\noriginal warning\n"
+            "DAVIS_NATIVE_2023_44_END\nretry warning\n"
+        )
+        self.assertEqual(attempt_messages(case, stderr), "original warning\n")
+        self.assertEqual(attempt_messages({**case, "completedSteps": 45}, stderr), "")
+        self.assertEqual(attempt_messages(case, stderr.split("_END")[0]), "")
+
+    def test_davis_reads_only_the_named_collection_after_path_checks(self):
+        from unittest.mock import patch
+
+        with (
+            patch("scripts.diagnose_davis.project_destination") as checked,
+            patch("scripts.diagnose_davis.load_year") as loader,
+        ):
+            case_inputs(2024, "fresh-collection")
+            loader.assert_called_once_with("davis-us", 2024, collection="fresh-collection")
+            self.assertEqual(len(checked.call_args_list), 3)
+            self.assertTrue(
+                all("fresh-collection" in str(c.args[0]) for c in checked.call_args_list)
+            )
+        with (
+            patch("scripts.diagnose_davis.project_destination", side_effect=ValueError("Linked")),
+            patch("scripts.diagnose_davis.load_year") as loader,
+            self.assertRaisesRegex(ValueError, "Linked"),
+        ):
+            case_inputs(2024, "fresh-collection")
+        loader.assert_not_called()
+
+    def test_full_window_requires_same_inputs_and_three_complete_days(self):
+        case = {
+            "model": "model",
+            "initial": "initial",
+            "parameters": "params",
+            "configuration": "config",
+            "weather": "weather",
+            "sourceSha256": "raw",
+            "window": {"totalSteps": 288},
+        }
+        initial = {
+            "modelVersion": "model",
+            "initialStateFingerprint": "initial",
+            "parameterFingerprint": "params",
+            "configurationFingerprint": "config",
+            "weatherFingerprint": "weather",
+            "runWindow": {"totalSteps": 288},
+        }
+        self.assertTrue(matched_window(case, initial, "raw"))
+        self.assertFalse(matched_window(case, initial, "other raw data"))
+        for key in initial:
+            wrong = {"totalSteps": 287} if key == "runWindow" else "different"
+            self.assertFalse(matched_window(case, {**initial, key: wrong}, "raw"))
+
     def test_inconclusive_contrasts_are_not_called_reproduced(self):
         evidence = {
             "originalEndpointFinite": False,

@@ -66,11 +66,20 @@ This checks January 15–18 and July 15–18 of each year, with an extra day of 
 
 An isolated, matched-input experiment on `gl-gym 0.3.2` reproduced both failures in the inner-cover temperature Jacobian (row/column 5). Before each failing step the roof vents were fully commanded open, both screens open and heating off. At the start of those intervals, outdoor temperature was 38.02°C / 36.75°C and global radiation was 980.56 / 952.78 W/m² (2023 / 2024). The weather imported successfully.
 
-Replacing only the numerical evaluation of the top-air/inner-cover condensation sigmoid with its mathematically equivalent bounded-exponential form completed both previously failing 15-minute steps from the same state, weather and applied controls. In 2023 the exponent at the alternative endpoint was 730.76, beyond the double-precision exponential limit of 709.78; the original derivative was non-finite while the stable derivative was finite. In 2024 the alternative endpoint was below that limit (687.31). The matched test implicates the same expression, but **does not locate the unobserved internal failing solver iterate**. Neither diagnostic run is a validated physical correction or evidence of a completed 72-hour production run. The shipped solver and defaults are unchanged. To regenerate the offline evidence after collecting the two archives, run `python -B scripts/diagnose_davis.py`.
+Replacing only the numerical evaluation of the top-air/inner-cover condensation sigmoid with its mathematically equivalent bounded-exponential form completed both previously failing 15-minute steps from the same state, weather and applied controls. In 2023 the exponent at the alternative endpoint was 730.76, beyond the double-precision exponential limit of 709.78; the original derivative was non-finite while the stable derivative was finite. In 2024 the alternative endpoint was below that limit (687.31), so the unobserved internal failing solver iterate cannot be identified from that endpoint.
 
-The command returns nonzero if any run fails. Completed runs may still exceed temperature or humidity limits. This is a numerical test, not evidence of accurate or safe greenhouse operation. A targeted rerun is `python -B scripts/check_weather_archive.py --site davis-us --months 7`.
+In a separate closed-loop check, the diagnostic solver started from the same initial state and completed **288/288 steps in each July window**. It used the original automatic controller, not controls copied from a failed run. The shipped solver still fails both windows. This result does not change the dashboard or validate the greenhouse physics.
 
-Use the same `--collection <name>` for the collector, weather checks and synthetic calibration demo when working with a fresh collection. Reports record that selection. Missing or damaged datasets are reported as failed cases without discarding earlier results. Model failures after reset retain the model, configuration, weather and initial-state fingerprints, along with the number of completed steps.
+After collecting both Davis site-years, run these checks from the repository root:
+
+```sh
+uv run --no-sync python -B scripts/check_weather_archive.py --site davis-us --months 7
+uv run --no-sync python -B scripts/diagnose_davis.py --full-window
+```
+
+The first command tests the **shipped solver** and returns 1 if a case fails. The second reproduces the failure and tests a separate solver: it returns 0 when both expected failure signatures are reproduced and both diagnostic windows finish, or 2 for an inconclusive comparison. A diagnostic pass is not a production pass. Completed simulations can still exceed temperature or humidity limits.
+
+If you gave the collector a different `--collection <name>`, pass that same name to both commands and to the synthetic calibration demo. Reports record that selection. Weather checks report missing or damaged datasets without discarding earlier results. Model failures after reset retain the model, configuration, weather and initial-state fingerprints, along with the number of completed steps.
 
 For future modelling, keep whole periods separate, for example 2023 for development and 2024 for held-out evaluation. Weather alone supplies no indoor target values or historical actuator inputs. See [calibration requirements and experiments](../../docs/calibration.md).
 

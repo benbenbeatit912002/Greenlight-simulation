@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import io
 import json
+import os
 import re
 import stat
 import sys
@@ -17,7 +18,7 @@ sys.path.insert(0, str(ROOT))
 
 from backend.application import ApiError, SimulatorApplication  # noqa: E402
 from backend.model_defaults import DEFAULT_TARGETS  # noqa: E402
-from backend.run_archive import FORMAT, RECIPE_FILE, SERIES_FILE  # noqa: E402
+from backend.run_archive import FORMAT, LEGACY_FORMAT, RECIPE_FILE, SERIES_FILE  # noqa: E402
 from backend.weather_upload import MAX_UPLOAD_BYTES, validate_weather_workbook  # noqa: E402
 
 MIB = 1024 * 1024
@@ -103,7 +104,22 @@ def validate_recipe(recipe):
         "commands",
         "seriesSha256",
     }
-    if not isinstance(recipe, dict) or set(recipe) != expected or recipe["format"] != FORMAT:
+    if not isinstance(recipe, dict) or recipe.get("format") not in (FORMAT, LEGACY_FORMAT):
+        raise ValueError("Unrecognized run settings format.")
+    if recipe["format"] == FORMAT:
+        expected.add("calendar")
+        cal = recipe.get("calendar")
+        if (
+            not isinstance(cal, dict)
+            or set(cal) != {"sourceYear", "timeConvention", "start", "plannedEnd", "capturedEnd"}
+            or type(cal["sourceYear"]) is not int
+            or not all(
+                isinstance(cal[k], str)
+                for k in ("timeConvention", "start", "plannedEnd", "capturedEnd")
+            )
+        ):
+            raise ValueError("Missing or invalid source calendar.")
+    if set(recipe) != expected:
         raise ValueError("Unrecognized run settings format.")
     steps = recipe["completedSteps"]
     if type(steps) is not int or not 1 <= steps <= MAX_STEPS or recipe["stepSeconds"] != 900:
@@ -161,9 +177,16 @@ def read_bundle(raw):
     return recipe
 
 
-def replay(recipe, workbook=None):
+def replay(recipe, workbook=None, *, source_checkout=None):
     """Use a fresh isolated engine; never touch a running dashboard."""
     validate_recipe(recipe)
+    if os.environ.get("GREENLIGHT_GYM_PATH"):
+        raise ValueError(
+            "Unset GREENLIGHT_GYM_PATH before replay; source overrides are not inherited."
+        )
+    is_checkout = recipe["identity"]["modelVersion"].startswith("gl-gym2@source-checkout+")
+    if is_checkout != (source_checkout is not None):
+        raise ValueError("Use --source-checkout only and explicitly for a source-checkout archive.")
     reset = dict(recipe["reset"])
     needs_weather = reset["scenario"] == "uploaded"
     if needs_weather != (workbook is not None):
@@ -178,7 +201,9 @@ def replay(recipe, workbook=None):
             raise ValueError("Use the original Amsterdam-format weather workbook.")
     from backend.greenlight_adapter import GreenLightGymAdapter
 
-    app = SimulatorApplication(GreenLightGymAdapter(), requested_engine="greenlight2")
+    app = SimulatorApplication(
+        GreenLightGymAdapter(source_path=source_checkout), requested_engine="greenlight2"
+    )
     try:
         if records:
             reset["weatherId"] = app.stage_weather(records)["weatherId"]
@@ -200,6 +225,8 @@ def replay(recipe, workbook=None):
                 remaining -= count
         bundle = app.engine.archive.bundle()
         new_recipe = read_bundle(bundle)
+        if recipe["format"] == FORMAT and recipe["calendar"] != new_recipe["calendar"]:
+            raise ValueError("The source calendar does not match the archived run.")
         if new_recipe["seriesSha256"] != recipe["seriesSha256"]:
             raise ValueError(
                 "The inputs match but the time series differs numerically; exact reproduction was not established."
@@ -216,6 +243,11 @@ def main(argv=None):
     )
     parser.add_argument("--weather", type=Path, help="Original .xlsx for an uploaded scenario.")
     parser.add_argument(
+        "--source-checkout",
+        type=Path,
+        help="Explicit trusted upstream source for a checkout archive only.",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         help="Write a NEW verified ZIP inside the simulator folder; do not overwrite an existing file.",
@@ -225,7 +257,7 @@ def main(argv=None):
         output = project_destination(args.output) if args.output else None
         recipe = read_bundle(read_bounded(args.bundle, 32 * MIB))
         weather = read_bounded(args.weather, MAX_UPLOAD_BYTES) if args.weather is not None else None
-        snapshot, new_bundle = replay(recipe, weather)
+        snapshot, new_bundle = replay(recipe, weather, source_checkout=args.source_checkout)
         if output:
             with project_destination(output).open("xb") as handle:
                 handle.write(new_bundle)

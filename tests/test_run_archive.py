@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import os
 import stat
 import threading
 import unittest
@@ -21,6 +22,7 @@ from scripts.replay_run import (
     ROOT,
     project_destination,
     read_bundle,
+    replay,
     validate_identity,
     validate_recipe,
 )
@@ -41,6 +43,8 @@ def archive():
             "modelVersion": "gl-gym2@0.3.2+sha256." + "b" * 64 + ".adapter.test.params." + "a" * 64,
             "costModelId": "greenlight-gym2-variable-costs",
         },
+        step_seconds=900,
+        horizon_steps=5761,
     )
 
 
@@ -49,6 +53,38 @@ def point(a, n, command):
 
 
 class RunArchiveTests(unittest.TestCase):
+    def test_native_timestep_must_match_archive_label(self):
+        a = archive()
+        for invalid in (300, 899.9, True, float("nan")):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, "900"):
+                RunArchive(a.reset, a.identity, step_seconds=invalid, horizon_steps=96)
+
+    def test_replay_never_follows_an_ambient_model_path(self):
+        a = archive()
+        point(a, 0, None)
+        point(a, 1, {"mode": "auto", "targets": DEFAULT_TARGETS})
+        recipe = read_bundle(a.bundle())
+        with (
+            patch.dict(os.environ, {"GREENLIGHT_GYM_PATH": "not-to-be-resolved"}),
+            patch("backend.greenlight_adapter.GreenLightGymAdapter") as ctor,
+            self.assertRaisesRegex(ValueError, "Unset GREENLIGHT_GYM_PATH"),
+        ):
+            replay(recipe)
+        ctor.assert_not_called()
+        with (
+            patch.dict(os.environ, {"GREENLIGHT_GYM_PATH": ""}),
+            patch("backend.greenlight_adapter.GreenLightGymAdapter") as ctor,
+        ):
+            with self.assertRaisesRegex(ValueError, "source-checkout"):
+                replay(recipe, source_checkout="not-to-be-resolved")
+            custom = deepcopy(recipe)
+            custom["identity"]["modelVersion"] = custom["identity"]["modelVersion"].replace(
+                "@0.3.2+", "@source-checkout+"
+            )
+            with self.assertRaisesRegex(ValueError, "source-checkout"):
+                replay(custom)
+            ctor.assert_not_called()
+
     def test_unused_schedule_not_disclosed_but_later_scheduled_steps_are_supported(self):
         a = archive()
         a.reset["schedule"] = {

@@ -76,6 +76,16 @@ class StaticContractTests(unittest.TestCase):
         for name in expected:
             self.assertRegex(self.model_defaults, rf'"{name}"')
 
+    def test_comparison_and_export_capture_only_confirmed_model_state(self) -> None:
+        # A paused UI can render draft controls without advancing the model.
+        assignments = re.findall(r"\bconfirmedSnapshot\s*=\s*([^;]+);", self.app_js)
+        self.assertCountEqual(assignments, ["null", "response.snapshot", "null"])
+        self.assertIn("baselineRun = createRunSummary(confirmedSnapshot);", self.app_js)
+        for consumer in ("renderArchive", "renderComparison"):
+            self.assertRegex(
+                self.app_js, rf"function {consumer}\(\)\s*\{{\s*const snapshot = confirmedSnapshot;"
+            )
+
     def test_no_external_runtime_dependencies(self) -> None:
         combined = "\n".join((self.html, self.app_js, self.styles))
         self.assertNotRegex(combined, r"https?://(?:cdn|unpkg|esm\.)")

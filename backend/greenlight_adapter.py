@@ -588,6 +588,10 @@ class GreenLightGymAdapter:
                 "configurationFingerprint": self.configuration_fingerprint,
                 "limitsFingerprint": fingerprint(self.evaluation_limits),
             },
+            step_seconds=self.core.dt,
+            # The bundled environment tests termination before incrementing its step;
+            # an explicit upload window instead stops at the exact requested endpoint.
+            horizon_steps=int(self.core.N) + int(self.run_window is None),
         )
         if self.git_revision:
             # A revision alone cannot distinguish uncommitted changes in a checkout.
