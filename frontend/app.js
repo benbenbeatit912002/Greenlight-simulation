@@ -12,6 +12,7 @@
   let resizeFrame = null;
   let currentSnapshot = null;
   let confirmedSnapshot = null;
+  let lastServerSnapshot = null;
   let activeEngine = "unavailable";
   let engineDisplayState = "error";
   let engineDisplayReason = "";
@@ -29,6 +30,7 @@
   let selectedGreenhouseConfig = { schemaVersion: 1, overrides: {} };
   let controllerPanel = null;
   let comparisonStopStep = null;
+  let mpcStoppedRun = null;
   let pages = null;
 
   const BASELINE_STORAGE_KEY = "greenlight-decision-baseline-v3";
@@ -146,6 +148,8 @@
       initialStateFingerprint: String(snapshot.initialStateFingerprint || "unknown"),
       climateMetrics: snapshot.climateMetrics ? { ...snapshot.climateMetrics } : null,
       schedule: snapshot.schedule ? JSON.parse(JSON.stringify(snapshot.schedule)) : null,
+      mpcDevices: [...(snapshot.mpcDevices || [])],
+      mpcPolicy: snapshot.mpcPolicy || null,
       strategyChanged: Boolean(snapshot.strategyChanged),
       targets: { ...snapshot.targets },
       controls: { ...snapshot.controls },
@@ -162,7 +166,19 @@
 
   function isRunSummary(value) {
     if (!value || value.schemaVersion !== 3 || typeof value.runId !== "string") return false;
-    if (typeof value.scenario !== "string" || !["auto", "manual", "schedule"].includes(value.mode))
+    if (
+      typeof value.scenario !== "string" ||
+      !["auto", "manual", "schedule", "mpc"].includes(value.mode)
+    )
+      return false;
+    if (
+      value.mode === "mpc" &&
+      (!Array.isArray(value.mpcDevices) ||
+        !value.mpcDevices.length ||
+        new Set(value.mpcDevices).size !== value.mpcDevices.length ||
+        !value.mpcDevices.every((k) => window.GreenlightControlPlan.names.includes(k)) ||
+        typeof value.mpcPolicy !== "string")
+    )
       return false;
     if (!["browser", "greenlight2"].includes(value.engine)) return false;
     if (typeof value.modelVersion !== "string" || !value.modelVersion) return false;
@@ -236,13 +252,7 @@
   function comparisonRunMeta(summary) {
     return formatTranslation("comparisonMeta", {
       step: String(summary.modelStep).padStart(4, "0"),
-      mode: t(
-        summary.mode === "schedule"
-          ? "scheduledControl"
-          : summary.mode === "manual"
-            ? "manualControl"
-            : "autoControl",
-      ),
+      mode: t(window.GreenlightControllerPanel.modeLabel(summary.mode)),
       engine: comparisonEngineLabel(summary.engine),
       version: displayModelVersion(summary.modelVersion),
     });
@@ -278,6 +288,15 @@
   }
 
   function comparisonStrategy(summary) {
+    const targetSummary = () =>
+      formatTranslation("comparisonAutoStrategy", {
+        day: formatNumber(summary.targets.dayTemp),
+        night: formatNumber(summary.targets.nightTemp),
+        co2: formatNumber(summary.targets.co2, 0),
+        rh: formatNumber(summary.targets.maxRh, 0),
+      });
+    if (summary.mode === "mpc")
+      return `MPC: ${window.GreenlightControllerPanel.deviceList(summary.mpcDevices, t)}; ${targetSummary()}`;
     if (summary.mode === "schedule")
       return `${t("scheduledControl")}, ${summary.schedule?.entries.map((row) => row.time).join(", ") || "—"}`;
     if (summary.mode === "manual") {
@@ -290,12 +309,7 @@
         blackout: Math.round(summary.controls.uBlScr * 100),
       });
     }
-    return formatTranslation("comparisonAutoStrategy", {
-      day: formatNumber(summary.targets.dayTemp),
-      night: formatNumber(summary.targets.nightTemp),
-      co2: formatNumber(summary.targets.co2, 0),
-      rh: formatNumber(summary.targets.maxRh, 0),
-    });
+    return targetSummary();
   }
 
   function clearComparisonDeltas() {
@@ -641,16 +655,14 @@
         status = await requestApi("/api/status");
       } catch (error) {
         if (!allowRecovery || error.code !== "MODEL_ERROR") throw error;
+        if (!window.confirm(t(lastServerSnapshot ? "recoverKnownRun" : "recoverDefaultRun")))
+          throw error;
         status = await requestApi("/api/reset", {
-          seed: 42,
-          scenario: selectedWeatherId ? "uploaded" : byId("scenarioSelect").value,
-          ...(selectedWeatherId
-            ? { weatherId: selectedWeatherId, runWindow: selectedRunWindow }
-            : {}),
-          mode: "auto",
-          targets: readTargets(),
+          ...window.GreenlightControlPlan.recoverySettings(
+            lastServerSnapshot,
+            window.GreenlightRunWindow.recipe,
+          ),
           expectedRevision: error.revision,
-          greenhouseConfig: selectedGreenhouseConfig,
         });
       }
       requireScientificResponse(status);
@@ -691,15 +703,18 @@
     }
     // Draft slider, target and mode edits may render before another step is applied.
     confirmedSnapshot = response.snapshot;
+    lastServerSnapshot = response.snapshot;
+    mpcStoppedRun = null;
   }
 
   async function stepActiveEngine(stepCount) {
     if (activeEngine !== "greenlight2" || !currentSnapshot) throw new Error(t("offlineModelNote"));
     const response = await requestApi("/api/step", {
-      steps: stepCount,
+      steps: currentSnapshot.mode === "mpc" ? 1 : stepCount,
       mode: currentSnapshot.mode,
-      controls: readControls(),
-      targets: readTargets(),
+      ...(currentSnapshot.mode === "mpc"
+        ? {}
+        : { controls: readControls(), targets: readTargets() }),
       expectedRevision: remoteRevision,
     });
     remoteRevision = response.revision;
@@ -729,6 +744,9 @@
         expectedRevision: remoteRevision,
         greenhouseConfig,
         ...(currentSnapshot.schedule ? { schedule: currentSnapshot.schedule } : {}),
+        ...((strategy.mode ?? currentSnapshot.mode) === "mpc"
+          ? { mpcDevices: currentSnapshot.mpcDevices }
+          : {}),
         evaluationLimits:
           currentSnapshot.climateMetrics?.limits || window.GreenlightControlPlan.limits,
         ...strategy,
@@ -847,18 +865,27 @@
       setText(`${name}Output`, `${percent}%`);
     });
 
+    const speedSelect = byId("speedSelect");
+    speedSelect.disabled = snapshot.mode === "mpc";
+    speedSelect.value = String(snapshot.mode === "mpc" ? 1 : speed);
+    speedSelect.title = snapshot.mode === "mpc" ? t("mpcSpeed") : "";
     modeButtons.forEach((button) => {
+      button.disabled = snapshot.mode === "mpc" && ["auto", "manual"].includes(button.dataset.mode);
       button.setAttribute("aria-pressed", String(button.dataset.mode === snapshot.mode));
     });
 
     byId("targetSection").classList.toggle("hidden", snapshot.mode !== "auto");
     setText(
       "actuatorModeHint",
-      snapshot.mode === "schedule"
-        ? t("scheduleActiveHint")
-        : snapshot.mode === "auto"
-          ? t("autoAdjusting")
-          : t("dragSliders"),
+      snapshot.mode === "mpc"
+        ? mpcStoppedRun === snapshot.runId
+          ? t("mpcStopped")
+          : `MPC: ${window.GreenlightControllerPanel.deviceList(snapshot.mpcDevices, t)}`
+        : snapshot.mode === "schedule"
+          ? t("scheduleActiveHint")
+          : snapshot.mode === "auto"
+            ? t("autoAdjusting")
+            : t("dragSliders"),
     );
   }
 
@@ -1001,7 +1028,13 @@
       }
     } catch (error) {
       setRunning(false);
-      showModelUnavailable(error instanceof Error ? error.message : String(error));
+      if (error.code === "MPC_STOPPED" && currentSnapshot?.mode === "mpc") {
+        mpcStoppedRun = currentSnapshot.runId;
+        controllerPanel?.notifyMpcStop();
+        updateControls(currentSnapshot);
+        updateRunStateCopy();
+        renderRunProgress();
+      } else showModelUnavailable(error instanceof Error ? error.message : String(error));
     } finally {
       remoteBusy = false;
       renderArchive();
@@ -1044,7 +1077,9 @@
         ? t("simulationCompleted")
         : isRunning
           ? t("pauseSimulation")
-          : t("startSimulation"),
+          : mpcStoppedRun && mpcStoppedRun === currentSnapshot?.runId
+            ? t("mpcRetry")
+            : t("startSimulation"),
     );
     byId("playButton").disabled = completed || resetBusy || activeEngine !== "greenlight2";
     byId("resetButton").disabled = resetBusy || activeEngine !== "greenlight2";
@@ -1067,13 +1102,15 @@
     if (panel.hidden) return;
     const state = resetBusy
       ? "simulationInitializing"
-      : progress.status === "completed"
-        ? "simulationCompleted"
-        : isRunning
-          ? "simulationRunning"
-          : progress.completedSteps
-            ? "simulationPaused"
-            : "simulationReady";
+      : mpcStoppedRun === currentSnapshot.runId
+        ? "simulationPaused"
+        : progress.status === "completed"
+          ? "simulationCompleted"
+          : isRunning
+            ? "simulationRunning"
+            : progress.completedSteps
+              ? "simulationPaused"
+              : "simulationReady";
     setText("runProgressTitle", t("progressTitle"));
     setText(
       "runProgressRange",
@@ -1233,6 +1270,14 @@
 
     modeButtons.forEach((button) => {
       button.addEventListener("click", () => {
+        if (button.dataset.mode === "mpc") {
+          pages.navigate("controllerPlanner", { focus: false });
+          const choice = byId("controllerPlanner").querySelector(
+            'input[name="mpcDevice"]:not(:disabled)',
+          );
+          (choice || byId("mpcTitle")).focus();
+          return;
+        }
         if (button.dataset.mode === "schedule") {
           pages.navigate("controllerPlanner", { focus: false });
           byId("controllerPlanner").scrollIntoView({ block: "start" });

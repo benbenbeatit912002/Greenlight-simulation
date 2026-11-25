@@ -1,12 +1,12 @@
 # Model notes: GreenLight Simulation
 
-Documentation updated: 2026-11-18. This is a learning and research tool, not a production climate computer or a system for controlling real equipment.
+Documentation updated: 2026-11-25. This is a learning and research tool, not a production climate computer or a system for controlling real equipment.
 
 ## Model and scope
 
 The dashboard runs only GreenLight-Gym2, installed as **gl-gym 0.3.2**. It uses the 28-state `gl_gym/GreenLightTomato-v0` environment with six actuator controls. The standard installation includes Amsterdam/2010 weather; an advanced source-checkout override is described in [installation](docs/installation.md).
 
-All simulated climate, crop and resource values come from the full model. A missing connection or solver error stops playback and hides results. There is no simplified-model fallback.
+All simulated climate, crop and resource values come from the full model. If the connection or plant integration fails, playback stops and results are hidden. If only the MPC controller fails to find a command, the last confirmed state remains visible and no interval is applied. There is no simplified-model fallback.
 
 This project adds the interface and adapter. It has software and full-model integration tests, but predictions have not been independently validated here against a real greenhouse. Validation of the original GreenLight model does not automatically validate this package, controller or a user's configuration. Upstream authors and publications are credited in [CITATION.md](CITATION.md).
 
@@ -28,7 +28,9 @@ See [weather input](docs/weather-input.md) for file limits and [greenhouse confi
 
 Automatic control uses the upstream rule-based controller. Manual and scheduled modes supply six absolute control values between 0 and 1: heating, CO₂ injection, thermal screen, roof ventilation, lamps and blackout screen. Scheduled controls repeat daily according to the weather clock; they do not react to indoor conditions. See [the schedule guide](docs/controller-schedules.md).
 
-The physical timestep is 900 seconds. Playback speed changes request batching, not model time. The API accepts integer batches of 1–192 steps.
+The dashboard also offers experimental model predictive control for selected devices. It plans up to two 15-minute intervals using recorded weather and applies only the first move. The other devices stay on the upstream rules. This is a simulated comparison, not field validation or a claim of energy savings. See [MPC assumptions and limits](docs/controller-schedules.md#select-equipment-for-mpc).
+
+The physical timestep is 900 seconds. MPC takes one step per request. Other modes accept batches of 1–192 steps; playback speed changes the batch size, not model time.
 
 Outputs include indoor/outdoor climate, crop states, actuator positions, heating, lamp electricity, CO₂ use, estimated cost and climate-limit warnings. The live chart is a short rolling history, not a complete result archive.
 

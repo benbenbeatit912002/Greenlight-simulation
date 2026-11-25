@@ -4,10 +4,12 @@ The same-origin API is available only from the local server. CORS is disabled an
 
 - `GET /api/status` reports engine availability, model provenance, economic assumptions, and the current revision.
 - `POST /api/reset` starts a new run for the selected weather scenario.
-- `POST /api/step` advances the simulation with rule-based (`auto`), manual (`manual`) or scheduled (`schedule`) control.
+- `POST /api/step` advances the simulation with rule-based (`auto`), manual (`manual`), scheduled (`schedule`) or model predictive (`mpc`) control.
 - `POST /api/weather/preview` validates a raw `.xlsx` body with its standard XLSX MIME type and `X-GreenLight-Upload: 1`. It accepts local same-origin requests, retains at most two converted datasets in memory (the active dataset and one pending dataset), and returns an opaque `weather.weatherId` only when the full model can prepare the Amsterdam-format dataset. Datasets remain in memory until they are replaced or the server process ends; no workbook is persisted. The response sets `conversionReady: true` and `modelReady: false` until `POST /api/reset` succeeds. `POST /api/reset` accepts `scenario: "uploaded"` with that `weatherId` to explicitly start a new run. Invalid data returns HTTP 422 with structured `error.issues`; other failures include 403 (origin), 410 (expired upload), 413 (size), 415 (media type), and 429 (busy).
 
 Every mutation carries a monotonically increasing `revision`. Clients send `expectedRevision` so stale tabs and duplicate requests cannot overwrite newer simulation state. The backend serializes access to the CasADi environment.
+
+To give MPC heating and ventilation, send `{"mode":"mpc","mpcDevices":["uBoil","uVent"]}` on reset, with the current `expectedRevision`. An empty list selects ordinary automatic control. Each MPC step advances a single 15-minute interval; the remaining devices use the current rule outputs. Start a new run to change the selection or control targets. HTTP 422 `MPC_STOPPED` means the solver did not apply a command: the step and revision are unchanged, so the client can retry. See [controller settings and limits](controller-schedules.md#select-equipment-for-mpc).
 
 Scheduled control is configured only on reset with `schedule` and optional `evaluationLimits`; see the [exact schedule contract and metric definitions](controller-schedules.md#api-and-tests). Snapshots expose `scheduleFingerprint`, `climateMetrics`, `controlHistory` (latest 96 physical steps, requested and applied commands), and `strategyChanged`. Scheduling uses the weather source clock and the fixed 900-second step, not playback time. Metrics cover the whole run, even after the rolling history expires.
 

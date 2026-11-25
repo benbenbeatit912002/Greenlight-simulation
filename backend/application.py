@@ -6,6 +6,7 @@ import threading
 import uuid
 from typing import Any, Mapping
 
+from . import mpc_controller
 from .climate_metrics import validate_limits
 from .control_schedule import validate_schedule
 from .greenhouse_config import validate_config
@@ -143,6 +144,8 @@ class SimulatorApplication:
             "runWindow",
             "greenhouseConfig",
             "schedule",
+            "mpcDevices",
+            "mpcPolicy",
             "evaluationLimits",
         }
         self._reject_unknown(payload, allowed)
@@ -223,6 +226,8 @@ class SimulatorApplication:
                 raise ApiError(503, "MODEL_ERROR", self.model_error)
             try:
                 snapshot = self.engine.step(payload)
+            except mpc_controller.MpcStopped as exc:
+                raise ApiError(422, "MPC_STOPPED", str(exc)) from exc
             except ValueError as exc:
                 raise ApiError(400, "INVALID_REQUEST", str(exc)) from exc
             except Exception as exc:
@@ -321,6 +326,15 @@ class SimulatorApplication:
                     validator(payload[key])
                 except ValueError as exc:
                     raise ApiError(400, "INVALID_REQUEST", str(exc), key) from exc
+        if payload.get("mode") == "mpc":
+            try:
+                mpc_controller.devices(payload.get("mpcDevices"))
+            except ValueError as exc:
+                raise ApiError(400, "INVALID_REQUEST", str(exc), "mpcDevices") from exc
+            if payload.get("mpcPolicy", mpc_controller.POLICY) != mpc_controller.POLICY:
+                raise ApiError(400, "INVALID_REQUEST", "Unsupported MPC policy.", "mpcPolicy")
+        elif "mpcDevices" in payload or "mpcPolicy" in payload:
+            raise ApiError(400, "INVALID_REQUEST", "MPC settings require MPC mode.", "mode")
         if payload.get("mode") == "schedule" and "schedule" not in payload:
             raise ApiError(
                 400, "INVALID_REQUEST", "Scheduled mode requires a schedule.", "schedule"
@@ -355,8 +369,8 @@ class SimulatorApplication:
                 "runWindow",
             )
         mode = payload.get("mode")
-        if mode is not None and mode not in {"auto", "manual", "schedule"}:
-            raise ApiError(400, "INVALID_REQUEST", "mode must be auto, manual or schedule", "mode")
+        if mode is not None and mode not in ("auto", "manual", "schedule", "mpc"):
+            raise ApiError(400, "INVALID_REQUEST", "Unknown control mode.", "mode")
         seed = payload.get("seed")
         if seed is not None and (isinstance(seed, bool) or not isinstance(seed, int)):
             raise ApiError(400, "INVALID_REQUEST", "seed must be an integer", "seed")
@@ -372,8 +386,8 @@ class SimulatorApplication:
                 "steps",
             )
         mode = payload.get("mode")
-        if mode is not None and mode not in {"auto", "manual", "schedule"}:
-            raise ApiError(400, "INVALID_REQUEST", "mode must be auto, manual or schedule", "mode")
+        if mode is not None and mode not in ("auto", "manual", "schedule", "mpc"):
+            raise ApiError(400, "INVALID_REQUEST", "Unknown control mode.", "mode")
         self._validate_targets(payload.get("targets"))
 
         controls = payload.get("controls")

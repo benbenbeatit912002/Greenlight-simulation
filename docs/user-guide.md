@@ -35,12 +35,14 @@ Unknown properties still matter. Unspecified initial states use the reference es
 
 ## 3. Run and compare control plans
 
-Use **Controllers & comparison** to compare automatic control with a daily schedule. Keep the applied weather, greenhouse, initial state and evaluation limits fixed.
+Use **Run & compare** to compare automatic control with a daily schedule or with selected devices under MPC. Keep the applied weather, greenhouse, initial state and evaluation limits fixed.
+
+To try MPC, check devices under **Model predictive control (MPC)**, click **Initialize with this selection**, then start the simulation. Unchecked devices stay on the usual rules. See [how the controller chooses its next move](controller-schedules.md#select-equipment-for-mpc).
 
 1. Set the comparison limits and select **Initialize automatic baseline**.
 2. Select **Start simulation**. Pause at the duration you want to compare and let the in-flight batch finish.
 3. Save the current result as the baseline.
-4. Edit the daily equipment schedule and select **Apply schedule and initialize**. This starts a separate run using the same applied weather and greenhouse configuration.
+4. Choose the second controller. For a daily schedule, edit the equipment times and select **Apply schedule and initialize**. For MPC, check the devices and select **Initialize with this selection**. Either starts a new run with the same weather and greenhouse.
 5. Select **Run to saved baseline duration**.
 6. Review temperature, humidity, heating and time outside limits together. Lower energy alone does not establish a better growing strategy.
 
@@ -68,11 +70,11 @@ The settings file dates the start, the planned end and the last exported step in
 
 ### Moving between pages
 
-Four pages are available: **Weather & dates**, **Greenhouse settings**, **Controllers & comparison**, and **Live simulation**. The guide and next-step links only navigate; they never apply drafts, change model settings or start a run. You can skip uploading weather or editing settings and use the active reference example.
+Four pages are available: **Weather & dates**, **Greenhouse settings**, **Run & compare**, and **Live simulation**. The guide and next-step links only navigate; they never apply drafts, change model settings or start a run. You can skip uploading weather or editing settings and use the active reference example.
 
 Switching pages does not restart the model or discard unsaved form edits. Start/pause and progress stay available across pages. Browser Back/Forward and direct page links are supported. Reloading is different: unsaved drafts are not guaranteed to survive a reload.
 
-Playback speed changes the number of steps per request, not the physical timestep. Pausing allows the current batch to finish. Reset initializes a new run. A connection or solver error stops playback and hides values; there is no browser approximation fallback.
+Each step is 15 simulated minutes. Playback speed changes the batch size except in MPC mode, which takes one step per request. Pausing lets an in-flight request finish. Reset starts a new run. If MPC cannot find a command, the last confirmed values stay on screen; **Retry and resume** restarts playback. If the connection or the greenhouse model fails, playback stops and values are hidden.
 
 Each local server owns a shared run. Another tab is not a private session; different people should use separate local instances. The default server binds only to the local computer.
 

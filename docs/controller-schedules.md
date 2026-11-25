@@ -11,10 +11,22 @@ Set a daily schedule for the six greenhouse controls and compare it with automat
 
 GreenLight already accepts prescribed control inputs. This project adds the schedule editor, equipment timeline and comparison checks around that model interface.
 
+## Select equipment for MPC
+
+On **3. Run & compare**, under **Model predictive control (MPC)**, check the devices the optimizer may move. Select **Initialize with this selection**, then press **Start simulation**. Leave all six unchecked to start normal rule-based control. You can edit the next selection during a run; it has no effect until you initialize a new run. The active ownership line lists what was actually applied.
+
+Every 15 minutes the existing rules calculate all six commands from the current simulated greenhouse. Only the selected entries can be replaced by MPC. A rule-owned screen can still open or close; its position is not frozen. The optimizer predicts with the full GreenLight integrator using up to two recorded weather intervals, never beyond the run end. It tests one candidate command per selected device across this short horizon and holds the other devices at their current rule outputs. It applies the combined command for only 15 minutes before recalculating. Recorded future weather is assumed known; this is not a weather forecast service.
+
+The experimental objective tracks day/night air-temperature targets, penalizes excess humidity and daytime CO₂ shortfall, and discourages equipment effort and abrupt changes. Positive outdoor shortwave marks daytime in this objective. It does not optimize profit, cumulative lighting or yield. An unsuccessful solve pauses before applying a command; there is no hidden switch to another controller. MPC advances one physical interval at a time. Exports include the selected devices and policy version. Use the same conditions and duration when comparing with a rule-based baseline.
+
+The 30 minutes describe the integration horizon, not an information cutoff for the whole controller. GreenLight's existing rules can use the recorded total radiation for the whole source day when deciding on lighting. A morning plan may therefore depend on later sunshine. These are retrospective what-if comparisons, not a real-time forecasting test.
+
+Only MPC-owned devices have a move limit: up to 20 percentage points per 15-minute step relative to their last applied output (for example, 50% can move to 30–70%). This is a controller design limit, not a change to the plant or the original rules.
+
 ## Using the panel
 
 1. Select weather and greenhouse settings. For an uploaded workbook, set the source year, clock convention, and simulation window before initialization. Use the [public examples](public-weather-examples.md) if needed.
-2. Under **Controller schedules and comparison**, choose temperature and RH evaluation limits. These limits score the run; they do not secretly override actuator commands.
+2. Under **Equipment control and comparison**, choose temperature and RH evaluation limits. These limits score the run; they do not secretly override actuator commands.
 3. Click **Initialize automatic baseline**. Run the model for the desired duration, pause, and use **Save baseline** in the comparison panel. Keep this baseline until the experiment is complete.
 4. Edit the schedule. Every row specifies all six actuators. The first row must be 00:00; subsequent times must be unique, ascending, and on a 15-minute boundary.
 5. Click **Apply schedule and initialize**. This starts a fresh run from the same selected weather, greenhouse configuration, seed, and initial state. Draft changes do not affect an active run until applied.

@@ -178,7 +178,7 @@ class ApiServerTests(unittest.TestCase):
             for method in ("GET", "HEAD"):
                 for path in (
                     "/AGENTS.md",
-                    "/SECOND_COMPUTER_PROMPT.md",
+                    "/draft-prompt.md",
                     "/IMPLEMENTATION_PLAN.md",
                     "/PRODUCT_STRATEGY.md",
                     "/worklogs/index.html",

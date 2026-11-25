@@ -7,7 +7,7 @@ This project helps people try local weather and equipment settings in the GreenL
 - Upload weather in the supported Excel format and check its contents before running.
 - Choose simulation dates within the available weather coverage.
 - Set greenhouse dimensions, equipment capacities and starting conditions.
-- Run the full GreenLight-Gym2 model with automatic, manual or daily scheduled controls.
+- Run the full GreenLight-Gym2 model with automatic, manual or daily scheduled controls, or select individual devices for [model predictive control](controller-schedules.md#select-equipment-for-mpc).
 - Compare runs with matching weather, greenhouse settings and duration.
 - Download the full 15-minute time series and settings, and [replay a run locally](user-guide.md#save-and-reproduce-a-run) with the same model and weather.
 - Use the dashboard in English or Traditional Chinese.

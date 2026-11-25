@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT))
 
 from backend.application import ApiError, SimulatorApplication  # noqa: E402
 from backend.model_defaults import DEFAULT_TARGETS  # noqa: E402
+from backend.mpc_controller import POLICY, devices  # noqa: E402
 from backend.run_archive import FORMAT, LEGACY_FORMAT, RECIPE_FILE, SERIES_FILE  # noqa: E402
 from backend.weather_upload import MAX_UPLOAD_BYTES, validate_weather_workbook  # noqa: E402
 
@@ -94,6 +95,14 @@ def read_bounded(path, limit):
     return raw
 
 
+def validate_mpc_reset(reset):
+    if reset["mode"] == "mpc":
+        if reset.get("mpcPolicy") != POLICY or not devices(reset.get("mpcDevices")):
+            raise ValueError("Missing devices or unsupported MPC policy in this run.")
+    elif {"mpcPolicy", "mpcDevices"} & reset.keys():
+        raise ValueError("Unexpected MPC settings in a non-MPC run.")
+
+
 def validate_recipe(recipe):
     expected = {
         "format",
@@ -128,12 +137,15 @@ def validate_recipe(recipe):
     if not isinstance(reset, dict) or not RESET_KEYS <= set(reset) <= RESET_KEYS | {
         "runWindow",
         "schedule",
+        "mpcDevices",
+        "mpcPolicy",
     }:
         raise ValueError("Run settings contain missing or unsupported reset fields.")
     if not isinstance(reset["targets"], dict) or set(reset["targets"]) != set(DEFAULT_TARGETS):
         raise ValueError("A full set of initial targets is required.")
     if (reset["scenario"] == "uploaded") != ("runWindow" in reset):
         raise ValueError("Uploaded weather requires an explicit time window.")
+    validate_mpc_reset(reset)
     validate_identity(recipe["identity"])
     if not isinstance(recipe["commands"], list) or not 1 <= len(recipe["commands"]) <= steps:
         raise ValueError("Invalid command sequence.")
@@ -146,7 +158,11 @@ def validate_recipe(recipe):
             raise ValueError("Invalid interval count or command.")
         mode = command.get("mode")
         keys = {"mode", "targets", "controls"} if mode == "manual" else {"mode", "targets"}
-        if mode not in ("auto", "manual", "schedule") or set(command) != keys:
+        if (mode == "mpc") != (reset["mode"] == "mpc") or (
+            mode == "mpc" and command.get("targets") != reset["targets"]
+        ):
+            raise ValueError("MPC ownership and targets must match the archived reset.")
+        if mode not in ("auto", "manual", "schedule", "mpc") or set(command) != keys:
             raise ValueError("Unsupported control command.")
         if not isinstance(command["targets"], dict) or set(command["targets"]) != set(
             DEFAULT_TARGETS
@@ -217,7 +233,7 @@ def replay(recipe, workbook=None, *, source_checkout=None):
         for segment in recipe["commands"]:
             remaining = segment["steps"]
             while remaining:
-                count = min(192, remaining)
+                count = 1 if segment["command"]["mode"] == "mpc" else min(192, remaining)
                 previous = snapshot["modelStep"]
                 snapshot = app.step({**segment["command"], "steps": count})["snapshot"]
                 if snapshot["modelStep"] != previous + count:

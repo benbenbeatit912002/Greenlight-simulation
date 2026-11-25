@@ -121,6 +121,29 @@
       "WEATHER_EXPIRED",
     ].includes(error?.code);
   }
+  // Recovery starts a new run only after explicit confirmation, never from a UI draft.
+  function recoverySettings(s, windowRecipe) {
+    if (!s)
+      return {
+        mode: "auto",
+        scenario: "spring",
+        seed: 42,
+        greenhouseConfig: { schemaVersion: 1, overrides: {} },
+      };
+    return {
+      mode: s.mode,
+      scenario: s.scenario,
+      seed: s.seed ?? 42,
+      targets: { ...s.targets },
+      greenhouseConfig: s.greenhouse.request,
+      evaluationLimits: s.climateMetrics.limits,
+      ...(s.mode === "mpc" ? { mpcDevices: [...s.mpcDevices], mpcPolicy: s.mpcPolicy } : {}),
+      ...(s.mode === "schedule" ? { schedule: s.schedule } : {}),
+      ...(s.scenario === "uploaded"
+        ? { weatherId: s.weatherId, runWindow: windowRecipe(s.runWindow) }
+        : {}),
+    };
+  }
   function captureState(steps, connected, running, inFlight, resetting) {
     if (!connected) return "archiveEmpty";
     if (resetting) return "simulationInitializing";
@@ -129,6 +152,7 @@
     return steps > 0 ? "ready" : "archiveEmpty";
   }
   const api = {
+    recoverySettings,
     captureState,
     names,
     limits,

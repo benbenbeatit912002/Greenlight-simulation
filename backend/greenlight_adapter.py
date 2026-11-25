@@ -8,6 +8,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from backend import mpc_controller
 from backend.climate_metrics import DEFAULT_LIMITS, ClimateMetrics, validate_limits
 from backend.control_schedule import fingerprint, scheduled_controls, validate_schedule
 from backend.greenhouse_config import (
@@ -176,6 +177,7 @@ class GreenLightGymAdapter:
         self.run_window: dict[str, Any] | None = None
         self._uploaded_prepared: Mapping[str, Any] | None = None
         self.mode = "auto"
+        self.mpc = None
         self.schedule = None
         self.evaluation_limits = dict(DEFAULT_LIMITS)
         self.climate_metrics = ClimateMetrics(self.evaluation_limits)
@@ -320,8 +322,16 @@ class GreenLightGymAdapter:
             config = validate_config(request.get("greenhouseConfig", self.greenhouse_config))
             effective_parameters = apply_parameters(self.core.base_p, config)
             self.mode = str(request.get("mode", self.mode))
-            if self.mode not in {"auto", "manual", "schedule"}:
-                raise ValueError("mode must be auto, manual or schedule")
+            if self.mode not in ("auto", "manual", "schedule", "mpc"):
+                raise ValueError("Unknown control mode.")
+            if self.mode == "mpc":
+                previous = list(self.mpc.selected) if self.mpc is not None else None
+                selected = mpc_controller.devices(request.get("mpcDevices", previous))
+                self.mpc = mpc_controller.SelectiveMpc(selected) if selected else None
+                if not selected:
+                    self.mode = "auto"
+            else:
+                self.mpc = None
             if "schedule" in request:
                 self.schedule = validate_schedule(request["schedule"])
             if self.mode == "schedule" and self.schedule is None:
@@ -384,6 +394,7 @@ class GreenLightGymAdapter:
             "model_identifier": self.model_identifier,
             "core": self.core,
             "mode": self.mode,
+            "mpc": self.mpc,
             "targets": dict(self.targets),
             "scenario_key": self.scenario_key,
             "weather_fingerprint": self.weather_fingerprint,
@@ -577,6 +588,8 @@ class GreenLightGymAdapter:
             reset["runWindow"] = {key: self.run_window[key] for key in WINDOW_KEYS}
         if self.schedule is not None:
             reset["schedule"] = self.schedule
+        if self.mpc is not None:
+            reset.update(mpcDevices=list(self.mpc.selected), mpcPolicy=mpc_controller.POLICY)
         self.archive = RunArchive(
             reset,
             {
@@ -601,6 +614,7 @@ class GreenLightGymAdapter:
     def _restore_run_state(self, previous_state):
         """Restore bookkeeping after the previous solver has been recovered."""
         self.mode = previous_state["mode"]
+        self.mpc = previous_state["mpc"]
         self.targets = previous_state["targets"]
         self.scenario_key = previous_state["scenario_key"]
         self.weather_fingerprint = previous_state["weather_fingerprint"]
@@ -641,8 +655,15 @@ class GreenLightGymAdapter:
             raise ValueError("steps must be between 1 and 192")
 
         mode = str(request.get("mode", self.mode))
-        if mode not in {"auto", "manual", "schedule"}:
-            raise ValueError("mode must be auto, manual or schedule")
+        if mode not in ("auto", "manual", "schedule", "mpc"):
+            raise ValueError("Unknown control mode.")
+        if mode != self.mode and "mpc" in (mode, self.mode):
+            raise ValueError("Initialize a new run to change MPC equipment ownership.")
+        if mode == "mpc":
+            if steps != 1 or request.get("controls") is not None:
+                raise ValueError("MPC accepts one physical step and no manual commands.")
+            if any(self.targets.get(k) != v for k, v in (request.get("targets") or {}).items()):
+                raise ValueError("Initialize a new run to change MPC targets.")
         if mode == "schedule" and self.schedule is None:
             raise ValueError("Apply a schedule and initialize before running scheduled control.")
         self.mode = mode
@@ -658,6 +679,13 @@ class GreenLightGymAdapter:
 
             if self.mode == "auto":
                 action = self._controller_action()
+            elif self.mode == "mpc":
+                action = self.mpc.action(
+                    self.core,
+                    self._controller_action(),
+                    self.targets,
+                    self.archive.horizon_steps - int(self.core.timestep),
+                )
             elif self.mode == "schedule":
                 action = self._manual_action(
                     scheduled_controls(self.schedule, int(round(float(self.core.hour_of_day) * 60)))
@@ -692,7 +720,8 @@ class GreenLightGymAdapter:
         strategy = fingerprint(
             {
                 "mode": self.mode,
-                "targets": self.targets if self.mode == "auto" else None,
+                "targets": self.targets if self.mode in ("auto", "mpc") else None,
+                "mpcDevices": self.mpc.selected if self.mpc else None,
                 "schedule": self.schedule if self.mode == "schedule" else None,
             }
         )
@@ -903,6 +932,7 @@ class GreenLightGymAdapter:
 
         snapshot = {
             "runId": self.run_id,
+            "seed": self.archive.reset["seed"],
             "greenhouse": self.greenhouse_summary,
             "parameterFingerprint": self.parameter_fingerprint,
             "initialStateFingerprint": self.initial_state_fingerprint,
@@ -916,6 +946,8 @@ class GreenLightGymAdapter:
             "hour": hour,
             "minuteOfDay": minute_of_day,
             "mode": self.mode,
+            "mpcDevices": list(self.mpc.selected) if self.mpc else [],
+            "mpcPolicy": mpc_controller.POLICY if self.mpc else None,
             "schedule": deepcopy(self.schedule),
             "scheduleFingerprint": fingerprint(self.schedule) if self.schedule else None,
             "climateMetrics": self.climate_metrics.snapshot(),

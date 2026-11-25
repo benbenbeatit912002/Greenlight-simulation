@@ -18,15 +18,15 @@
     />
     <meta property="og:locale" content="zh_TW" />
     <title>GreenLight 2 溫室模擬器</title>
-    <link rel="stylesheet" href="styles.css?v=20261106-release" />
+    <link rel="stylesheet" href="styles.css?v=20261125-mpc" />
     <script defer src="frontend/run-window.js?v=20260912"></script>
     <script defer src="frontend/greenhouse-settings.js?v=20261024-ui-polish"></script>
     <script defer src="frontend/charts.js?v=20261023-light"></script>
-    <script defer src="frontend/translations.js?v=20261118-replay"></script>
-    <script defer src="frontend/control-plan.js?v=20261118-replay"></script>
-    <script defer src="frontend/controller-panel.js?v=20261024-ui-polish"></script>
+    <script defer src="frontend/translations.js?v=20261125-mpc"></script>
+    <script defer src="frontend/control-plan.js?v=20261125-mpc"></script>
+    <script defer src="frontend/controller-panel.js?v=20261125-mpc"></script>
     <script defer src="frontend/pages.js?v=20261024-ui-polish"></script>
-    <script defer src="frontend/app.js?v=20261118-replay"></script>
+    <script defer src="frontend/app.js?v=20261125-mpc"></script>
     <script defer src="frontend/climate-upload.js?v=20261106-release"></script>
   </head>
   <body>
@@ -180,8 +180,8 @@
             <li>
               <a href="#controllerPlanner" data-i18n="workflowCompareStep">3. Run &amp; compare</a>
               <p data-i18n="workflowCompareHelp">
-                Run automatic control, save a baseline, then test a schedule under the same
-                conditions.
+                Save an automatic baseline, then test a schedule or MPC with the same weather and
+                greenhouse.
               </p>
               <p class="workflow-status" id="workflowComparisonStatus" role="status"></p>
             </li>
@@ -490,6 +490,70 @@
             Set when equipment turns on, turns off, or changes its level. Applying a schedule
             creates a new simulation. The example is for practice, not growing advice.
           </p>
+          <section class="mpc-card" aria-labelledby="mpcTitle">
+            <h3 id="mpcTitle" data-i18n="mpcTitle" tabindex="-1">Model predictive control (MPC)</h3>
+            <p id="mpcInstructions" data-i18n="mpcInstructions">
+              Select the equipment MPC may adjust. The remaining devices follow the existing rules
+              every 15 minutes. Changes apply only when you start a new run.
+            </p>
+            <fieldset class="mpc-devices" aria-describedby="mpcInstructions">
+              <legend data-i18n="mpcDevicesLegend">MPC equipment for the next run</legend>
+              <div class="mpc-options">
+                <label
+                  ><input type="checkbox" name="mpcDevice" value="uBoil" /><span
+                    data-i18n="boilerHeating"
+                    >Heating</span
+                  ></label
+                >
+                <label
+                  ><input type="checkbox" name="mpcDevice" value="uVent" /><span
+                    data-i18n="roofVentilation"
+                    >Roof ventilation</span
+                  ></label
+                >
+                <label
+                  ><input type="checkbox" name="mpcDevice" value="uThScr" /><span
+                    data-i18n="thermalScreen"
+                    >Thermal screen</span
+                  ></label
+                >
+                <label
+                  ><input type="checkbox" name="mpcDevice" value="uBlScr" /><span
+                    data-i18n="blackoutScreen"
+                    >Blackout screen</span
+                  ></label
+                >
+                <label
+                  ><input type="checkbox" name="mpcDevice" value="uLamp" /><span
+                    data-i18n="supplementalLighting"
+                    >Lighting</span
+                  ></label
+                >
+                <label
+                  ><input type="checkbox" name="mpcDevice" value="uCO2" /><span
+                    data-i18n="co2Injection"
+                    >CO₂ injection</span
+                  ></label
+                >
+              </div>
+            </fieldset>
+            <p data-i18n="mpcForecastNote">
+              MPC simulates up to 30 minutes ahead. The existing rules can use whole-day radiation.
+              Recorded weather is treated as known. Leave all boxes clear for rule-based control.
+            </p>
+            <button
+              type="button"
+              id="applyMpcButton"
+              class="showcase-primary"
+              data-i18n="applyMpc"
+              disabled
+            >
+              Initialize with this selection
+            </button>
+            <a href="#simulation" data-i18n="workflowViewSimulation">View the live simulation</a>
+            <p id="mpcOwnership" aria-live="polite"></p>
+            <p id="mpcMessage" role="status" aria-live="polite"></p>
+          </section>
           <section class="comparison-guide" aria-labelledby="comparisonGuideTitle">
             <h3 id="comparisonGuideTitle" data-i18n="workflowComparisonTitle">
               Compare two control plans
@@ -504,8 +568,8 @@
                 current batch to finish before saving.
               </li>
               <li data-i18n="workflowComparisonC">
-                B — Edit the daily schedule and select Apply schedule and initialize. This starts a
-                separate run with the applied weather and greenhouse settings.
+                B — For a schedule, select Apply schedule and initialize. For MPC, check the devices
+                and select Initialize with this selection.
               </li>
               <li data-i18n="workflowComparisonD">
                 Select Run to saved baseline duration. Compare temperature, humidity, heating and
@@ -659,9 +723,9 @@
             </button>
           </div>
           <p data-i18n="controllerWorkflow">
-            Initialize automatic control, run and save a baseline on this page. Then apply your
-            schedule and run to the saved baseline duration. Weather, greenhouse settings, initial
-            state and comparison limits must match.
+            Save an automatic baseline, then initialize a schedule or MPC and run to the saved
+            baseline duration. Weather, greenhouse settings, initial state and comparison limits
+            must match.
           </p>
           <div class="equipment-columns">
             <section>
@@ -1391,6 +1455,9 @@
               <button type="button" data-mode="schedule" aria-pressed="false">
                 <span data-i18n="scheduledControl">Scheduled control</span>
               </button>
+              <button type="button" data-mode="mpc" aria-pressed="false">
+                <span data-i18n="mpcControl">MPC</span>
+              </button>
             </div>
 
             <section class="target-section" id="targetSection" aria-labelledby="targetTitle">
@@ -1452,7 +1519,7 @@
             <section class="actuator-section" aria-labelledby="actuatorTitle">
               <div class="section-title-row">
                 <h3 id="actuatorTitle" data-i18n="actuators">GreenLight 致動器</h3>
-                <span id="actuatorModeHint">自動調節中</span>
+                <span id="actuatorModeHint" role="status" aria-live="polite">自動調節中</span>
               </div>
 
               <div class="control-list">

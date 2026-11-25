@@ -2455,6 +2455,48 @@ h3 {
   border-radius: 7px;
   cursor: pointer;
 }
+.mpc-card {
+  margin-block: 1.2rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.mpc-devices {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.mpc-devices legend {
+  font-weight: 650;
+}
+.mpc-options {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  margin-block: 0.65rem;
+}
+.mpc-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem;
+  cursor: pointer;
+}
+.mpc-options input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--green);
+}
+.mpc-card a {
+  margin-inline-start: 0.65rem;
+}
+#mpcMessage:empty {
+  display: none;
+}
+#mpcMessage[data-error="true"] {
+  color: var(--danger);
+}
+
 .schedule-actions {
   display: flex;
   flex-wrap: wrap;

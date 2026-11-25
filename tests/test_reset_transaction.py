@@ -32,6 +32,7 @@ def fake_adapter():
         "greenhouse_config": {"schemaVersion": 1, "overrides": {}},
         "greenhouse_summary": {"previous": True},
         "mode": "auto",
+        "mpc": None,
         "targets": {"dayTemp": 21.5},
         "scenario_key": "spring",
         "weather_id": None,

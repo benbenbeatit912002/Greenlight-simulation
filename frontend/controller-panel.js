@@ -10,6 +10,22 @@
     uBlScr: "blackoutScreen",
   };
   const displayOrder = ["uBoil", "uThScr", "uBlScr", "uVent", "uCO2", "uLamp"];
+  function modeLabel(mode) {
+    return {
+      auto: "autoControl",
+      manual: "manualControl",
+      schedule: "scheduledControl",
+      mpc: "mpcControl",
+    }[mode];
+  }
+  function deviceList(keys, t) {
+    return (
+      displayOrder
+        .filter((key) => keys.includes(key))
+        .map((key) => t(labels[key]))
+        .join(", ") || t("mpcNone")
+    );
+  }
   function create({ byId, t, initialize, replay }) {
     let busy = false,
       snapshot = null,
@@ -17,6 +33,40 @@
       candidate = null;
     const rows = byId("scheduleRows");
     const message = byId("scheduleMessage");
+    const boxes = Array.from(document.querySelectorAll('input[name="mpcDevice"]'));
+    let mpcNote = "",
+      mpcError = "",
+      stopped = false,
+      draftDirty = false,
+      lastRunId = null;
+    boxes.forEach((box) =>
+      box.addEventListener("change", () => {
+        draftDirty = true;
+        renderMpc();
+      }),
+    );
+    function renderMpc() {
+      const selected = snapshot?.mpcDevices || [];
+      byId("mpcOwnership").textContent = !snapshot
+        ? t("offlineModelNote")
+        : snapshot.mode === "mpc"
+          ? `${t("activeController")}: MPC: ${deviceList(selected, t)}; ${t("mpcRules")}: ${deviceList(
+              displayOrder.filter((k) => !selected.includes(k)),
+              t,
+            )}`
+          : `${t("activeController")}: ${t(modeLabel(snapshot.mode))}`;
+      const note = byId("mpcMessage");
+      note.textContent = mpcError
+        ? mpcError.translationKey
+          ? t(mpcError.translationKey)
+          : mpcError.message
+        : stopped
+          ? t("mpcStopped")
+          : draftDirty
+            ? t("mpcDraftChanged")
+            : mpcNote && t(mpcNote);
+      note.dataset.error = String(stopped || Boolean(mpcError));
+    }
     function setMessage(text, error = false) {
       message.textContent = text;
       message.dataset.error = String(error);
@@ -77,17 +127,21 @@
       return plan.validate({ schemaVersion: 1, entries });
     }
     function readLimits() {
+      const invalid = () =>
+        Object.assign(new Error(t("scheduleLimitsError")), {
+          translationKey: "scheduleLimitsError",
+        });
       const result = {};
       for (const key of Object.keys(plan.limits)) {
         const input = byId(`limit${key}`);
-        if (input.value === "" || !input.checkValidity()) throw new Error(t("scheduleLimitsError"));
+        if (input.value === "" || !input.checkValidity()) throw invalid();
         result[key] = Number(input.value);
       }
       if (
         result.temperatureMin >= result.temperatureMax ||
         result.humidityMin >= result.humidityMax
       )
-        throw new Error(t("scheduleLimitsError"));
+        throw invalid();
       return result;
     }
     function clock(minute) {
@@ -147,12 +201,24 @@
       try {
         const settings = { mode, evaluationLimits: readLimits() };
         if (mode === "schedule") settings.schedule = readDraft();
+        if (mode === "mpc") {
+          const selected = boxes.filter((box) => box.checked).map((box) => box.value);
+          if (selected.length) settings.mpcDevices = selected;
+          else settings.mode = "auto";
+        }
         busy = true;
         updateButtons();
         await initialize(settings);
-        setMessage(t(mode === "schedule" ? "scheduleApplied" : "automaticInitialized"));
+        if (mode === "mpc") {
+          mpcNote = "mpcApplied";
+          mpcError = "";
+          draftDirty = false;
+        } else setMessage(t(mode === "schedule" ? "scheduleApplied" : "automaticInitialized"));
       } catch (error) {
-        setMessage(error.message, true);
+        if (mode === "mpc") {
+          mpcError = error;
+          mpcNote = "";
+        } else setMessage(error.message, true);
       } finally {
         busy = false;
         updateButtons();
@@ -161,6 +227,11 @@
     function updateButtons() {
       const available = Boolean(snapshot) && !busy;
       byId("applyScheduleButton").disabled = !available;
+      byId("applyMpcButton").disabled = !available;
+      boxes.forEach((box) => {
+        box.disabled = !available;
+      });
+      renderMpc();
       byId("automaticBaselineButton").disabled = !available;
       byId("runToBaselineButton").disabled =
         !available ||
@@ -206,6 +277,17 @@
       add(t("heating"), baseline.resources.heatKwh, candidate.resources.heatKwh, "kWh/m²", 3);
     }
     function render(nextSnapshot, nextBaseline, nextCandidate) {
+      if (nextSnapshot && nextSnapshot.runId !== lastRunId) {
+        lastRunId = nextSnapshot.runId;
+        stopped = false;
+        mpcNote = "";
+        mpcError = "";
+        if (!draftDirty && nextSnapshot.mode === "mpc")
+          boxes.forEach((box) => {
+            box.checked = nextSnapshot.mpcDevices.includes(box.value);
+          });
+      } else if (nextSnapshot && snapshot && nextSnapshot.modelStep !== snapshot.modelStep)
+        stopped = false;
       snapshot = nextSnapshot;
       baseline = nextBaseline;
       candidate = nextCandidate;
@@ -222,7 +304,7 @@
         ? `${t("elapsedTime")}: ${history[0].elapsedMinutes}–${history.at(-1).elapsedMinutes + 15} min`
         : "";
       byId("activeControllerText").textContent = snapshot
-        ? `${t("activeController")}: ${t(snapshot.mode === "schedule" ? "scheduledControl" : snapshot.mode === "auto" ? "autoControl" : "manualControl")}`
+        ? `${t("activeController")}: ${t(modeLabel(snapshot.mode))}`
         : t("offlineModelNote");
       const limits = snapshot?.climateMetrics?.limits;
       byId("appliedComparisonLimits").textContent = limits
@@ -265,11 +347,21 @@
         setMessage(error.message, true);
       }
     });
+    byId("applyMpcButton").addEventListener("click", () => apply("mpc"));
     byId("applyScheduleButton").addEventListener("click", () => apply("schedule"));
     byId("automaticBaselineButton").addEventListener("click", () => apply("auto"));
     byId("runToBaselineButton").addEventListener("click", () => replay());
     translate();
-    return { render, translate, readDraft };
+    return {
+      render,
+      translate,
+      readDraft,
+      notifyMpcStop() {
+        mpcError = "";
+        stopped = true;
+        renderMpc();
+      },
+    };
   }
-  root.GreenlightControllerPanel = { create };
+  root.GreenlightControllerPanel = { create, modeLabel, deviceList };
 })(window);

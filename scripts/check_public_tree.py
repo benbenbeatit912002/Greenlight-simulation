@@ -22,7 +22,6 @@ PRIVATE_ROOTS = {
 PRIVATE_NAMES = {
     "AGENTS.md",
     "AGENTS.override.md",
-    "SECOND_COMPUTER_PROMPT.md",
     "IMPLEMENTATION_PLAN.md",
     "PRODUCT_STRATEGY.md",
     ".env",
@@ -42,6 +41,7 @@ def inspect_paths(paths):
         if (
             path.parts[0] in PRIVATE_ROOTS
             or path.name in PRIVATE_NAMES
+            or (path.suffix.casefold() in {".md", ".txt"} and "prompt" in path.stem.casefold())
             or path.name.startswith(".env.")
             or "__pycache__" in path.parts
             or ".ipynb_checkpoints" in path.parts

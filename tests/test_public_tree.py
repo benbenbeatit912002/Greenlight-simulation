@@ -23,6 +23,8 @@ class PublicTreeTests(unittest.TestCase):
 
     def test_rejects_environment_variants_and_generated_files(self):
         paths = [
+            "notes/draft-prompt.md",
+            "LOCAL_PROMPTS.TXT",
             ".env.local",
             ".env.production",
             "frontend/.env.test",

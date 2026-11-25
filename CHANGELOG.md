@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-25
+
+- Added [model predictive control (MPC)](docs/controller-schedules.md#select-equipment-for-mpc) to **Run & compare**. Choose which devices MPC controls. For example, let MPC adjust heating and roof ventilation while the usual rules run the screens, lights and CO₂ every 15 minutes.
+- The panel shows which controller runs each device. If the solver cannot find a command, the simulation pauses without advancing. Run downloads save the selection for replay.
+
 ## 2026-11-18
 
 - Download an entire run as a CSV and settings file, including steps beyond the live chart. A local replay command verifies the result with the same model and weather.

@@ -30,7 +30,7 @@
       workflowWeatherHelp: "上傳並檢查檔案，選好日期後套用；也可使用內建 Amsterdam 天氣。",
       workflowGreenhouseHelp:
         "確認尺寸、設備和作物起始狀態。空白欄位採參考預設值，修改後需明確套用。",
-      workflowCompareHelp: "先跑自動控制並儲存基準，再以相同天氣與溫室設定測試排程。",
+      workflowCompareHelp: "先儲存自動控制基準，再用相同天氣與溫室設定測試排程或 MPC。",
       workflowUnavailable: "尚未連接完整模型，無法確認目前套用內容。",
       workflowSampleActive: "目前套用：內建 Amsterdam 天氣；不是你的當地資料。",
       workflowUploadedActive: "目前套用：已上傳的天氣與所選日期。",
@@ -58,7 +58,7 @@
         "A — 固定天氣、溫室和評估界限。按下方「初始化自動控制基準」，再按上方「開始模擬」。",
       workflowComparisonB: "執行至想比較的時長後暫停，等目前一批運算結束，再在本頁儲存基準。",
       workflowComparisonC:
-        "B — 編輯每日排程，再按「套用排程並初始化」。這會使用已套用的天氣和溫室設定，建立獨立的新模擬。",
+        "B — 選擇一種方案：編輯每日排程並按「套用排程並初始化」，或勾選 MPC 設備並按「套用勾選並初始化」。",
       workflowComparisonD:
         "按「執行至已儲存的基準時長」。一起查看溫度、濕度、供暖與超限時間，不只看能源用量。",
       workflowComparisonBoundary:
@@ -72,8 +72,25 @@
         "查看溫室內的變化，也可以直接調整設備。切換頁面不會中斷模擬或清除尚未套用的設定。",
       pageWeatherDescription: "上傳天氣資料，查看可用日期，再選擇要模擬的時間。",
       pageGreenhouseDescription: "填入溫室大小、設備容量，以及空氣和作物的起始條件。",
-      pageControllersDescription: "安排設備每天的運作時間，看看和自動控制有什麼不同。",
-      controllerPlannerTitle: "控制排程與結果比較",
+      pageControllersDescription: "選擇由 MPC 控制的設備，或安排每日排程，再和原本的自動控制比較。",
+      controllerPlannerTitle: "設備控制與結果比較",
+      mpcTitle: "模型預測控制（MPC）",
+      mpcControl: "MPC",
+      mpcDevicesLegend: "下一次模擬由 MPC 控制的設備",
+      mpcInstructions:
+        "勾選要交給 MPC 的設備。沒勾的每 15 分鐘由原規則依當下溫室狀態控制，不是固定開度。勾選不會改到正在跑的模擬。",
+      mpcForecastNote:
+        "MPC 最多向前模擬 30 分鐘。原規則仍可使用整天的輻射量，例如決定是否補光。天氣是假設已知的歷史資料。不勾選就是全規則控制。",
+      applyMpc: "套用勾選並初始化",
+      mpcApplied: "已初始化。按「開始模擬」即可執行。",
+      mpcDraftChanged: "勾選已變更。請重新初始化，才會套用到新的一輪。",
+      mpcRules: "原規則",
+      mpcRetry: "重試並繼續",
+      mpcSpeed: "MPC 每次只前進一個 15 分鐘的模擬步長。",
+      recoverKnownRun: "目前模擬無法接續。要用上次確認的控制方式與溫室設定，從起點重新模擬嗎？",
+      recoverDefaultRun: "無法取回目前的設定。要使用預設溫室和全規則控制，開始一輪新模擬嗎？",
+      mpcNone: "無",
+      mpcStopped: "MPC 求解未成功，已暫停。這一步沒有送出指令；可重試，或重新初始化。",
       appliedEvaluationLimits: "目前運算使用的評估界限",
       controllerGuide: "控制操作教學與論文",
       publicWeatherGuide: "公開氣候資料：來源、年份與假設",
@@ -102,7 +119,7 @@
       applyScheduleButton: "套用排程並初始化",
       runToBaselineButton: "執行至已儲存的基準時長",
       controllerWorkflow:
-        "先初始化自動控制、執行並在本頁儲存基準，再套用排程並執行至基準時長。氣候、溫室設定、初始狀態和評估界限必須相同。",
+        "儲存自動控制基準後，套用每日排程或 MPC 設備選擇，再執行至基準時長。天氣、溫室設定、初始狀態和評估界限必須相同。",
       scheduleTimelineTitle: "草稿每日設備命令",
       appliedTimelineTitle: "實際套用命令・最近 24 小時",
       climateComparisonTitle: "整次模擬氣候比較",
@@ -353,7 +370,7 @@
       workflowGreenhouseHelp:
         "Review dimensions, equipment and crop starting conditions. Blank fields use reference defaults; apply edits explicitly.",
       workflowCompareHelp:
-        "Run automatic control, save a baseline, then test a schedule with the same weather and greenhouse.",
+        "Save an automatic baseline, then test a schedule or MPC with the same weather and greenhouse.",
       workflowUnavailable: "Full model not connected; applied inputs cannot be confirmed.",
       workflowSampleActive: "Applied: bundled Amsterdam weather, not your local weather.",
       workflowUploadedActive: "Applied: uploaded weather and selected dates.",
@@ -385,7 +402,7 @@
       workflowComparisonB:
         "Pause at the duration you want to compare. Wait for the current batch to finish, then save the baseline on this page.",
       workflowComparisonC:
-        "B — Edit the daily schedule and select Apply schedule and initialize. This creates a separate run with the applied weather and greenhouse settings.",
+        "B — For a schedule, select Apply schedule and initialize. For MPC, check the devices and select Initialize with this selection.",
       workflowComparisonD:
         "Select Run to saved baseline duration. Compare temperature, humidity, heating and time outside limits together, not energy alone.",
       workflowComparisonBoundary:
@@ -402,8 +419,28 @@
       pageGreenhouseDescription:
         "Enter the greenhouse size, equipment capacities, and starting air and crop conditions.",
       pageControllersDescription:
-        "Plan when equipment runs each day and see how your schedule compares with automatic control.",
-      controllerPlannerTitle: "Controller schedules and comparison",
+        "Choose devices for MPC or set a daily schedule, then compare with rule-based control.",
+      controllerPlannerTitle: "Equipment control and comparison",
+      mpcTitle: "Model predictive control (MPC)",
+      mpcControl: "MPC",
+      mpcDevicesLegend: "MPC equipment for the next run",
+      mpcInstructions:
+        "Select the devices MPC may adjust. The existing rules control the rest from the current greenhouse state every 15 minutes. Editing this selection does not change an active run.",
+      mpcForecastNote:
+        "MPC simulates up to 30 minutes ahead. The existing rules can use whole-day radiation, for example to decide when to light. Recorded weather is treated as known. Leave all boxes clear for rule-based control.",
+      applyMpc: "Initialize with this selection",
+      mpcApplied: "Initialized. Select Start simulation when ready.",
+      mpcDraftChanged: "Selection changed. Initialize a new run to apply it.",
+      mpcRules: "Rule-based",
+      mpcRetry: "Retry and resume",
+      mpcSpeed: "MPC advances one 15-minute model interval at a time.",
+      recoverKnownRun:
+        "This run cannot resume. Start again from the beginning with the last confirmed controller and greenhouse settings?",
+      recoverDefaultRun:
+        "The previous settings are unavailable. Start a new rule-based run with the reference greenhouse?",
+      mpcNone: "None",
+      mpcStopped:
+        "MPC could not find a command and paused. No interval was applied. Retry or initialize a new run.",
       appliedEvaluationLimits: "Applied evaluation limits",
       controllerGuide: "Controller guide and papers",
       publicWeatherGuide: "Public weather: source, year and assumptions",
@@ -432,7 +469,7 @@
       applyScheduleButton: "Apply schedule and initialize",
       runToBaselineButton: "Run to saved baseline duration",
       controllerWorkflow:
-        "Initialize automatic control, run and save a baseline on this page. Then apply your schedule and run to the saved baseline duration. Weather, greenhouse settings, initial state and comparison limits must match.",
+        "Initialize automatic control, run and save a baseline on this page. Then initialize a schedule or MPC and run to the saved baseline duration. Weather, greenhouse settings, initial state and comparison limits must match.",
       scheduleTimelineTitle: "Draft daily commands",
       appliedTimelineTitle: "Applied commands, latest 24 hours",
       climateComparisonTitle: "Whole-run climate comparison",

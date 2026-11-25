@@ -42,11 +42,13 @@ Use the Excel template to upload weather, check the available dates, and choose 
 
 Enter the greenhouse size, equipment capacities and starting air and crop conditions. Blank fields use model defaults. Your edits take effect only when you apply them.
 
-### 3. Compare equipment schedules
+### 3. Compare equipment controls
 
 ![Open-loop schedule editor showing daily commands for six greenhouse actuators and temperature and humidity comparison limits](docs/images/controller-schedule.jpg)
 
 Choose when to heat, ventilate, use lights, add CO₂, or open and close the screens. Compare your schedule with automatic control using the same weather, greenhouse settings and run length. Review temperature, humidity, heating energy and time outside your chosen limits together.
+
+To try [model predictive control (MPC)](docs/controller-schedules.md#select-equipment-for-mpc), open **Run & compare** and select the devices it can adjust. For example, give MPC heating and roof ventilation, and leave the screens, lights and CO₂ to the usual rules. Leave all six unchecked for a rule-based run.
 
 The **Live simulation** page shows the running model. Pause either run and download its settings and complete 15-minute time series from **Run & compare**. The [user guide](docs/user-guide.md#save-and-reproduce-a-run) explains how someone else can reproduce it with the same weather.
 
